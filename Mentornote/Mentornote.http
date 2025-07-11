@@ -1,0 +1,6 @@
+@Mentornote_HostAddress = http://localhost:5055
+
+GET {{Mentornote_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
