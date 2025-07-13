@@ -1,10 +1,13 @@
 ﻿using Mentornote.Data;
+using Mentornote.DTOs;
 using Mentornote.Models;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.IdentityModel.Tokens;
+using System.IdentityModel.Tokens.Jwt;
+using System.Security.Claims;
 using System.Security.Cryptography;
 using System.Text;
-using Mentornote.DTOs;
-using Microsoft.EntityFrameworkCore;
 
 
 namespace Mentornote.Controllers
@@ -14,11 +17,14 @@ namespace Mentornote.Controllers
     public class AuthController : ControllerBase
     {
         private readonly ApplicationDbContext _context;
+        private readonly IConfiguration _config;
 
-        public AuthController(ApplicationDbContext context)
+        public AuthController(ApplicationDbContext context, IConfiguration config)
         {
             _context = context;
+            _config = config;
         }
+
 
         [HttpPost("register")]
         public async Task<IActionResult> Register(UserDto request)
@@ -68,8 +74,8 @@ namespace Mentornote.Controllers
                 if (computedHash[i] != user.PasswordHash[i])
                     return BadRequest("Incorrect password.");
             }
-
-            return Ok("Login successful.");
+            var token = CreateJwtToken(user);
+            return Ok(new { Token = token });
         }
 
         public string GenerateRandomCode(int length)
@@ -80,6 +86,27 @@ namespace Mentornote.Controllers
 
             return new string(Enumerable.Repeat(chars, length)
                 .Select(s => s[random.Next(s.Length)]).ToArray());
+        }
+        private string CreateJwtToken(User user)
+        {
+            var claims = new[]
+            {
+                new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),
+                new Claim(ClaimTypes.Email, user.Email)
+             };
+
+            var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_config["Jwt:Key"]));
+            var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
+
+            var token = new JwtSecurityToken(
+                issuer: _config["Jwt:Issuer"],
+                audience: _config["Jwt:Audience"],
+                claims: claims,
+                expires: DateTime.Now.AddMinutes(Convert.ToDouble(_config["Jwt:ExpiresInMinutes"])),
+                signingCredentials: creds
+            );
+
+            return new JwtSecurityTokenHandler().WriteToken(token);
         }
     }
 }

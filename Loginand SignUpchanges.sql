@@ -12,3 +12,17 @@ ALTER TABLE Users
 ADD 
     PasswordHash VARBINARY(MAX) NOT NULL,
     PasswordSalt VARBINARY(MAX) NOT NULL;
+
+
+DROP TABLE Users;
+
+EXEC sp_rename 'Users', 'Users_OLD';
+
+-- Create new table
+CREATE TABLE Users (
+    Id INT IDENTITY(1,1) PRIMARY KEY,
+    Email NVARCHAR(255) NOT NULL,
+    PasswordHash VARBINARY(MAX) NOT NULL,
+    PasswordSalt VARBINARY(MAX) NOT NULL,
+    AuthProvider NVARCHAR(100)
+);
