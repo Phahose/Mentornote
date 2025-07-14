@@ -13,12 +13,22 @@ namespace Mentornote
         {
             var builder = WebApplication.CreateBuilder(args);
             var jwtSettings = builder.Configuration.GetSection("Jwt");
+            
+            Console.WriteLine($"JWT Key: {jwtSettings["Key"]}");
+            Console.WriteLine($"JWT Issuer: {jwtSettings["Issuer"]}");
+            Console.WriteLine($"JWT Audience: {jwtSettings["Audience"]}");
+
             var key = Encoding.UTF8.GetBytes(jwtSettings["Key"]);
+            if (string.IsNullOrEmpty(jwtSettings["Key"]))
+            {
+                throw new Exception("JWT Key is missing in appsettings.json!");
+            }
+
             // Add services to the container.
             builder.Services.AddControllers();
             // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
             builder.Services.AddEndpointsApiExplorer();
-            builder.Services.AddSwaggerGen();
+            builder.Services.AddSwaggerGen(); 
             builder.Services.AddAuthentication(options =>
             {
                 options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
@@ -42,9 +52,12 @@ namespace Mentornote
         
             var app = builder.Build();
 
+
+            app.UseDeveloperExceptionPage();
             // Configure the HTTP request pipeline.
             if (app.Environment.IsDevelopment())
             {
+                app.UseDeveloperExceptionPage();
                 app.UseSwagger();
                 app.UseSwaggerUI();
             }

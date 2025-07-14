@@ -1,4 +1,5 @@
-﻿using Mentornote.Data;
+﻿#nullable disable
+using Mentornote.Data;
 using Mentornote.DTOs;
 using Mentornote.Models;
 using Microsoft.AspNetCore.Mvc;
@@ -78,15 +79,7 @@ namespace Mentornote.Controllers
             return Ok(new { Token = token });
         }
 
-        public string GenerateRandomCode(int length)
-        {
-            const string chars = "0123456789"; // Use only numbers
-            var random = new Random();
-
-
-            return new string(Enumerable.Repeat(chars, length)
-                .Select(s => s[random.Next(s.Length)]).ToArray());
-        }
+        [NonAction]
         private string CreateJwtToken(User user)
         {
             var claims = new[]
