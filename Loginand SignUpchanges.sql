@@ -26,3 +26,25 @@ CREATE TABLE Users (
     PasswordSalt VARBINARY(MAX) NOT NULL,
     AuthProvider NVARCHAR(100)
 );
+
+-- Flashcard Changes 
+DROP TABLE IF EXISTS Flashcards;
+DROP TABLE IF EXISTS FlashcardSets;
+
+
+CREATE TABLE FlashcardSets (
+    Id INT IDENTITY(1,1) PRIMARY KEY,
+    Title NVARCHAR(MAX) NOT NULL,
+    CreatedAt DATETIME2 NOT NULL DEFAULT GETUTCDATE(),
+    UserId INT NOT NULL,
+    Source NVARCHAR(MAX),
+    PromptUsed NVARCHAR(MAX)
+);
+
+CREATE TABLE Flashcards (
+    Id INT IDENTITY(1,1) PRIMARY KEY,
+    Front NVARCHAR(MAX) NOT NULL,
+    Back NVARCHAR(MAX) NOT NULL,
+    FlashcardSetId INT NOT NULL,
+    FOREIGN KEY (FlashcardSetId) REFERENCES FlashcardSets(Id)
+);

@@ -1,4 +1,5 @@
-﻿using Mentornote.Data;
+﻿#nullable disable
+using Mentornote.Data;
 using Mentornote.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -12,6 +13,7 @@ namespace Mentornote.Controllers
     public class FlashcardSetController : ControllerBase
     {
         private readonly ApplicationDbContext _context;
+        public List<string> ErrorList;
 
         public FlashcardSetController(ApplicationDbContext context)
         {
@@ -41,10 +43,24 @@ namespace Mentornote.Controllers
             var userExists = await _context.Users.AnyAsync(u => u.Id == set.UserId);
             if (!userExists)
             {
+                ErrorList.Add("Invalid user ID — user does not exist.");
                 return BadRequest("Invalid user ID — user does not exist.");
             }
-            _context.FlashcardSets.Add(set);
-            await _context.SaveChangesAsync();
+            if (set.Id <= 0)
+            {
+                ErrorList.Add("This is an Invalid Card ID");
+                return BadRequest("Invalid Card ID");
+            }
+            if (string.IsNullOrWhiteSpace(set.Title))
+            {
+                ErrorList.Add("Title cannot be Empty");
+                return BadRequest("Invalid Title");
+            }
+            if (ErrorList.Count == 0) 
+            {
+                _context.FlashcardSets.Add(set);
+                await _context.SaveChangesAsync();             
+            }
             return Ok(set);
         }
     }

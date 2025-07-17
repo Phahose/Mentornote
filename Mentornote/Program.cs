@@ -1,5 +1,6 @@
 #nullable disable
 using Mentornote.Data;
+using Mentornote.Services;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
@@ -28,7 +29,8 @@ namespace Mentornote
             builder.Services.AddControllers();
             // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
             builder.Services.AddEndpointsApiExplorer();
-            builder.Services.AddSwaggerGen(); 
+            builder.Services.AddSwaggerGen();
+            builder.Services.AddScoped<FlashcardService>();
             builder.Services.AddAuthentication(options =>
             {
                 options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
