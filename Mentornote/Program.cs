@@ -31,6 +31,7 @@ namespace Mentornote
             builder.Services.AddEndpointsApiExplorer();
             builder.Services.AddSwaggerGen();
             builder.Services.AddScoped<FlashcardService>();
+            builder.Services.AddScoped<PdfReaderService>();
             builder.Services.AddAuthentication(options =>
             {
                 options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
