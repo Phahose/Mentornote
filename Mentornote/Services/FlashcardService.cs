@@ -4,9 +4,21 @@ namespace Mentornote.Services
 {
     public class FlashcardService
     {
-        public List<Flashcard> GenerateFromNotes(string notes)
+        private readonly HttpClient _httpClient;
+        private readonly IConfiguration _config;
+        public async Task<List<Flashcard>> GenerateFromNotes(string notes)
         {
+            var apiKey = _config["OpenAI:ApiKey"];
+            var prompt = $"Generate flashcards from these notes:\n{notes}\n\nReturn JSON array with 'question' and 'answer'.";
             var lines = notes.Split('\n', StringSplitOptions.RemoveEmptyEntries);
+            var requestBody = new
+            {
+                model = "gpt-3.5-turbo",
+                messages = new[]
+                {
+                    new { role = "user", content = prompt }
+                }
+            };
             return GenerateFromLines(lines);
         }
 
