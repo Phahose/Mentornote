@@ -33,7 +33,7 @@ namespace Mentornote.Controllers
             var userId = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier).Value);
 
             // 🧠 Step 1: Run your NLP/AI logic to convert notes into flashcards
-            var flashcards = _flashcardService.GenerateFromNotes(request.Notes);
+            var flashcards = await _flashcardService.GenerateFromNotes(request.Notes);
 
             // 🧠 Step 2: Create a flashcard set with a smart name or timestamp
             var setTitle = $"Auto Set - {DateTime.Now:MMM dd, yyyy HH:mm}";
@@ -62,13 +62,13 @@ namespace Mentornote.Controllers
 
             var text = _pdfReaderService.ExtractText(request.File.OpenReadStream());
 
-            var cards = _flashcardService.GenerateFromNotes(text);
+            var cards = await _flashcardService.GenerateFromNotes(text);
             var title = $"PDF Set - {DateTime.Now:yyyy-MM-dd HH:mm}";
 
             var set = _flashcardService.CreateFlashcardSet(title, userId, cards);
             _context.FlashcardSets.Add(set);
             await _context.SaveChangesAsync();
-
+              
             return Ok(set);
         }
 

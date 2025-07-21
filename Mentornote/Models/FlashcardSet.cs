@@ -9,6 +9,6 @@
         public int UserId { get; set; }
         public User User { get; set; } = new();
 
-        public ICollection<Flashcard> Flashcards { get; set; }
+        public List<Flashcard> Flashcards { get; set; } = new List<Flashcard> { };
     }
 }

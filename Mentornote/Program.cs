@@ -30,6 +30,7 @@ namespace Mentornote
             // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
             builder.Services.AddEndpointsApiExplorer();
             builder.Services.AddSwaggerGen();
+            builder.Services.AddHttpClient();
             builder.Services.AddScoped<FlashcardService>();
             builder.Services.AddScoped<PdfReaderService>();
             builder.Services.AddAuthentication(options =>
@@ -53,7 +54,7 @@ namespace Mentornote
             builder.Services.AddDbContext<ApplicationDbContext>(options =>
             options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
         
-            var app = builder.Build();
+             var app = builder.Build();
 
 
             app.UseDeveloperExceptionPage();
