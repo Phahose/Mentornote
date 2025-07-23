@@ -41,7 +41,7 @@ namespace Mentornote.Controllers
             {
                 Title = setTitle,
                 UserId = userId,
-                Flashcards = flashcards
+                Flashcards = flashcards,
             };
 
             _context.FlashcardSets.Add(flashcardSet);

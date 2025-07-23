@@ -7,7 +7,7 @@
         public DateTime CreatedAt { get; set; }
 
         public int UserId { get; set; }
-        public User User { get; set; } = new();
+        public string Source { get; set; } = string.Empty;
 
         public List<Flashcard> Flashcards { get; set; } = new List<Flashcard> { };
     }
