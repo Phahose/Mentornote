@@ -31,6 +31,7 @@ namespace Mentornote
             builder.Services.AddEndpointsApiExplorer();
             builder.Services.AddSwaggerGen();
             builder.Services.AddHttpClient();
+            builder.Services.AddRazorPages();
             builder.Services.AddScoped<FlashcardService>();
             builder.Services.AddScoped<PdfReaderService>();
             builder.Services.AddAuthentication(options =>
@@ -66,11 +67,14 @@ namespace Mentornote
                 app.UseSwaggerUI();
             }
 
+            app.UseStaticFiles();
+            app.UseRouting();
             app.UseHttpsRedirection();
             app.UseAuthentication();
             app.UseAuthorization();
 
 
+            app.MapRazorPages();
             app.MapControllers();
 
             app.Run();

@@ -1,0 +1,28 @@
+﻿@page
+@model Mentornote.Project.IndexModel
+@{
+    ViewData["Title"] = "Welcome to Mentornote";
+}
+<header>
+    <ul class="nav nav-tabs">
+        <li class="nav-item">
+            <a class="nav-link active" asp-page="/Index"><img src="~/images/logo.jpg" alt="Mentornote Logo" class="logo" /></a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link" asp-page="/FlashcardSets/Index">Lets Get Started</a>
+        </li>
+    </ul>
+</header>
+<div class="home-container">
+    <div class="hometextcontainer">
+        <h1>Boost Your Learning</h1>
+        <p>AI powered FlashCards and More!!</p>
+        <a href="#" class="getStarted">Get Startet</a>
+    </div>
+    <div class="videocontainer">
+        <video controls autoplay muted loop>
+            <source src="~/vids/homepage.mp4" type="video/mp4">
+            Your browser does not support the video tag.
+        </video>
+    </div>
+</div>
