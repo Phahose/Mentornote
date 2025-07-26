@@ -8,6 +8,8 @@
 body {
     background-color: #171a18;
     font-family: "Bruno Ace", sans-serif;
+    padding:0;
+    margin:0
 }
 .nav{
     list-style: none;
@@ -165,4 +167,57 @@ body {
 }
 .social-buttons span{
     margin-left: 1rem;
+}
+
+/*Functionaliteos*/
+.func-nav-body {
+    display: flex;
+    color: white;
+    width: 90%;
+    background-color: #181c19;
+}
+.func-navigation {
+    width: 18rem;
+    height: 100vh;
+    background-color: #0a0a0a; /* optional for visibility */
+}
+.func-navigation-ul{
+    list-style:none;
+}
+.func-navigation-ul li {
+    padding: 0.5rem;
+}
+.func-navigation-ul a{
+    text-decoration: none;
+    color: white;
+    font-size: 0.7rem;
+}
+
+.f-home-controller {
+    width: 100vw;
+    height: inherit;
+    display: flex;
+    justify-content: center;
+}
+.func-holder {
+    width: 100%;
+    display: flex;
+    flex-flow: column;
+    align-items: center;
+    justify-content: center;
+}
+.fg{
+    padding: 1rem;
+    width: 100%;
+}
+.front {
+    background-color: #18191c;
+    display: flex;
+    flex-flow: column;
+    align-items:center;
+    justify-content:center;
+    height: 15rem
+}
+.flashcard-container{
+    width: 50%;
 }

@@ -1,0 +1,29 @@
+﻿<!DOCTYPE html>
+
+<html>
+<head>
+    <meta name="viewport" content="width=device-width" />
+    <title>@ViewBag.Title</title>
+    <link rel="stylesheet" href="~/css/styles.css" />
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Bruno+Ace&family=Michroma&family=Smooch+Sans:wght@100..900&display=swap" rel="stylesheet">
+</head>
+<body class="func-nav-body">
+    <nav class="func-navigation">
+        <ul class="func-navigation-ul">
+            <li class="nav-item">
+                <a class="nav-link active" asp-page="/Index"><img src="~/images/logo.jpg" alt="Mentornote Logo" class="logo" /></a>
+            </li>
+            <li><a href="~/">Notes</a></li>
+            <li><a href="~/FlashCards">Flashcards</a></li>
+            <li><a href="#">Chatbot</a></li>
+            <li><a href="#">Quiz</a></li>
+            <li><a href="#">Settings</a></li>
+        </ul>
+    </nav>
+    <div class="f-home-controller">
+        @RenderBody()
+    </div>
+</body>
+</html>
