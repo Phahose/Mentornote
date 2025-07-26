@@ -1,0 +1,27 @@
+﻿@page
+@model Mentornote.Pages.LoginModel
+@{
+    ViewData["Title"] = "Login";
+}
+<div class="auth-container">
+    <h1>Welcome Back</h1>
+    <p class="tagline">Smarter learning, louder bragging.</p>
+
+    <form class="auth-form">
+        <div class="social-buttons">
+            <button class="google-btn">
+                <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/google/google-original.svg" alt="Google" />
+                <span>Continue with Google</span>
+            </button>
+
+            <button class="apple-btn">
+                <img src="https://upload.wikimedia.org/wikipedia/commons/f/fa/Apple_logo_black.svg" alt="Apple" />
+                <span>Continue with Apple</span>
+            </button>
+        </div>
+        <input type="email" placeholder="Email" required />
+        <input type="password" placeholder="Password" required />
+        <button type="submit">Login</button>
+        <p class="switch">Don't have an account? <a href="~/SignUp">Sign up</a></p>
+    </form>
+</div>
