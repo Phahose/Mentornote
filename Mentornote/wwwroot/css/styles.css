@@ -178,7 +178,7 @@ body {
 }
 .func-navigation {
     width: 18rem;
-    height: 100vh;
+    height: inherit;
     background-color: #0a0a0a; /* optional for visibility */
 }
 .func-navigation-ul{
@@ -196,15 +196,35 @@ body {
 .f-home-controller {
     width: 100vw;
     height: inherit;
+    min-height: 100vh;
     display: flex;
     justify-content: center;
+}
+.notes-holder{
+    background-color: black;
+    margin: 0;
+    padding: 1rem;
+    border-radius: 2rem;
+    height: 40rem;
+    width:20rem
+}
+.notes-container{
+    
+}
+.notes-container ul{
+    padding: 0
+}
+.notes-holder li{
+    list-style: none;
+    padding: 0.5rem;
+    margin: 1rem;
+    border: 1px solid white;
 }
 .func-holder {
     width: 100%;
     display: flex;
-    flex-flow: column;
     align-items: center;
-    justify-content: center;
+    justify-content: space-between;
 }
 .fg{
     padding: 1rem;
@@ -219,5 +239,7 @@ body {
     height: 15rem
 }
 .flashcard-container{
-    width: 50%;
+    width: 30%;
+    border: 1px solid;
+    padding: 1rem;
 }
