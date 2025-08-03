@@ -1,5 +1,7 @@
 ﻿#nullable disable
 using Mentornote.Models;
+using Microsoft.Data.SqlClient;
+using System.Data;
 using System.Net;
 using System.Net.Http.Headers;
 using System.Text;
@@ -18,9 +20,9 @@ namespace Mentornote.Services
         }
         public async Task<List<Flashcard>> GenerateFromNotes(string notes)
         {
-            await Task.Delay(2000);
+           // await Task.Delay(2000);
             var apiKey = _config["OpenAI:ApiKey"].Trim();
-            var prompt = $"Generate flashcards from these notes:\n{notes}\n\nReturn JSON array with 'question' and 'answer'.";
+            var prompt = $"Generate flashcards from these notes and also a title based on the notes the title should be 2 words max per title:\n{notes}\n\nReturn JSON array with 'title' 'question' and 'answer'.";
             var lines = notes.Split('\n', StringSplitOptions.RemoveEmptyEntries);
             var requestBody = new
             {
@@ -30,8 +32,6 @@ namespace Mentornote.Services
                     new { role = "user", content = prompt }
                 }
             };
-            
-
 
             for (int attempt = 0; attempt < 3; attempt++)
             {
@@ -56,22 +56,6 @@ namespace Mentornote.Services
 
             throw new Exception("Failed after multiple attempts due to rate limiting.");
 
-        }
-
-        public List<Flashcard> GenerateFromLines(string[] lines)
-        {
-            var cards = new List<Flashcard>();
-
-            foreach (var line in lines)
-            {
-                cards.Add(new Flashcard
-                {
-                    Front = line.Trim(),
-                    Back = "TBD" // Replace with logic later
-                });
-            }
-
-            return cards;
         }
 
         public FlashcardSet CreateFlashcardSet(string title, int userId, List<Flashcard> cards)
@@ -101,22 +85,12 @@ namespace Mentornote.Services
             return rawFlashcards.Select(fc => new Flashcard
             {
                 Front = fc.Front,
-                Back = fc.Back
+                Back = fc.Back,
+                Title = fc.Title
             }).ToList();
         }
 
-        public async Task TestKeyAsync()
-        {
-            var apiKey = _config["OpenAI:ApiKey"]?.Trim();
-            var request = new HttpRequestMessage(HttpMethod.Get, "https://api.openai.com/v1/models");
-            request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", apiKey);
-
-            var response = await _httpClient.SendAsync(request);
-            Console.WriteLine("Status: " + response.StatusCode);
-
-            var content = await response.Content.ReadAsStringAsync();
-            Console.WriteLine("Response: " + content);
-        }
+       
 
     }
 }

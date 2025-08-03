@@ -48,3 +48,46 @@ CREATE TABLE Flashcards (
     FlashcardSetId INT NOT NULL,
     FOREIGN KEY (FlashcardSetId) REFERENCES FlashcardSets(Id)
 );
+
+CREATE PROCEDURE GetUserByEmail
+    @Email NVARCHAR(255)
+AS
+BEGIN
+    SET NOCOUNT ON;
+
+    SELECT 
+        Id,
+        Email,
+        PasswordHash,
+        PasswordSalt,
+        AuthProvider,
+        FirstName,
+        LastName
+    FROM dbo.Users
+    WHERE Email = @Email;
+END;
+
+
+CREATE PROCEDURE GetUserFlashcards
+    @UserId INT
+AS
+BEGIN
+    SET NOCOUNT ON;
+
+    SELECT 
+        fcs.Id AS FlashcardSetId,
+        fcs.Title AS FlashcardSetTitle,
+        fcs.CreatedAt,
+        fcs.Source,
+		fcs.UserId,
+        f.Id AS FlashcardId,
+        f.Front,
+        f.Back
+    FROM dbo.FlashcardSets fcs
+    INNER JOIN dbo.Flashcards f 
+        ON fcs.Id = f.FlashcardSetId
+    WHERE fcs.UserId = @UserId
+    ORDER BY fcs.CreatedAt DESC, f.Id;
+END;
+
+Drop Procedure GetUserFlashcards

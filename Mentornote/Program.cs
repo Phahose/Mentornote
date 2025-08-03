@@ -1,4 +1,5 @@
 #nullable disable
+using Mentornote.Controllers;
 using Mentornote.Data;
 using Mentornote.Services;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
@@ -32,8 +33,11 @@ namespace Mentornote
             builder.Services.AddSwaggerGen();
             builder.Services.AddHttpClient();
             builder.Services.AddRazorPages();
+            builder.Services.AddSession(); 
             builder.Services.AddScoped<FlashcardService>();
-            builder.Services.AddScoped<PdfReaderService>();
+            builder.Services.AddScoped<FlashCardsController>();
+            builder.Services.AddScoped<AuthController>();
+            builder.Services.AddScoped<CardsServices>();
             builder.Services.AddAuthentication(options =>
             {
                 options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
@@ -69,6 +73,7 @@ namespace Mentornote
 
             app.UseStaticFiles();
             app.UseRouting();
+            app.UseSession();
             app.UseHttpsRedirection();
             app.UseAuthentication();
             app.UseAuthorization();

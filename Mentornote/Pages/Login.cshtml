@@ -7,7 +7,8 @@
     <h1>Welcome Back</h1>
     <p class="tagline">Smarter learning, louder bragging.</p>
 
-    <form class="auth-form">
+    <form class="auth-form" method="post">
+        @Html.AntiForgeryToken() <!-- Required for Razor Pages -->
         <div class="social-buttons">
             <button class="google-btn">
                 <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/google/google-original.svg" alt="Google" />
@@ -19,9 +20,15 @@
                 <span>Continue with Apple</span>
             </button>
         </div>
-        <input type="email" placeholder="Email" required />
-        <input type="password" placeholder="Password" required />
-        <button type="submit">Login</button>
+        @{
+            if (Model.ErrorMessage != "")
+            {
+                <p>@Model.ErrorMessage</p>
+            }
+        }
+        <input type="email" placeholder="Email" name="Email" required />
+        <input type="password" placeholder="Password" name="Password" required />
+        <input type="submit" name="Submit" value="Login"/>
         <p class="switch">Don't have an account? <a href="~/SignUp">Sign up</a></p>
     </form>
 </div>

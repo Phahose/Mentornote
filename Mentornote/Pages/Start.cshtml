@@ -15,37 +15,33 @@
     </nav>
     <div class="start-con-holder">
         <h2>How Would You like to Begin</h2>
-        <form class="start-form">
+        <form name="start-form" method="post" class="start-form" enctype="multipart/form-data">
+            @Html.AntiForgeryToken() <!-- Required for Razor Pages -->
             <div class="startform">
                 <ul>
                     <li>
-                        <input type="file" id="Audio" name="Audio" required>
-                        <input type="submit" name="Audio Sumbit" value="Audio Post" />
+                        <input type="file"  name="UploadedNote" required>
+                        <input type="submit" name="Submit" value="Upload" class="btn"/>
                     </li>
                     <li>
                         <input type="text" id="Video" name="video" required>
-                        <input type="submit" name="Video Sumbit" value="Video Post" />
+                        <input type="submit" name="Sumbit" value="Video Post" />
                     </li>
                     <li>
                         <input type="text" id="Text" name="text" required>
-                        <input type="submit" name="Video Sumbit" value="Video Post" />
+                        <input type="submit" name="Sumbit" value="Video Post" />
                     </li>
                 </ul>
             </div>
         </form>
         <div class="notes-cards-container">
-            <div class="notes-cards">
-                <p class="note-title">Chemisty Notes</p>
-                <p class="note-content">Chemistry is the study of matter, its properties, and how it interacts with other matter and energy.</p>
-            </div>
-            <div class="notes-cards">
-                <p class="note-title">Physice Notes</p>
-                <p class="note-content">Chemistry is the study of matter, its properties, and how it interacts with other matter and energy.</p>
-            </div>
-            <div class="notes-cards">
-                <p class="note-title">Math Notes</p>
-                <p class="note-content">Chemistry is the study of matter, its properties, and how it interacts with other matter and energy.</p>
-            </div>
+            <p class="cont-head">My Notes</p>
+            @foreach (var flashcardset in @Model.FlashcardSets)
+            {
+                <div class="notes-cards">
+                    <p class="note-title">@flashcardset.Title</p>
+                </div>
+            }
         </div>
     </div>
 </div>

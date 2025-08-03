@@ -45,6 +45,8 @@ namespace Mentornote.Controllers
             using var hmac = new HMACSHA512();
             var user = new User
             {
+                FirstName = request.FirstName,
+                LastName = request.LastName,
                 Email = request.Email,
                 PasswordHash = hmac.ComputeHash(Encoding.UTF8.GetBytes(request.Password)),
                 PasswordSalt = hmac.Key,

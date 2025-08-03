@@ -7,7 +7,8 @@
     <h1>Create Account</h1>
     <p class="tagline">Smarter learning, louder bragging.</p>
 
-    <form class="auth-form">
+    <form class="auth-form" method="post">
+        @Html.AntiForgeryToken() <!-- Required for Razor Pages -->
         <div class="social-buttons">
             <button class="google-btn">
                 <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/google/google-original.svg" alt="Google" />
@@ -19,12 +20,12 @@
                 <span>Continue with Apple</span>
             </button>
         </div>
-        <input type="text" placeholder="First Name" required />
-        <input type="text" placeholder="Last Name" required />
-        <input type="email" placeholder="Email" required />
-        <input type="password" placeholder="Password" required />
-        <input type="password" placeholder="Confirm Password" required />
-        <button type="submit">Sign Up</button>
+        <input type="text" placeholder="First Name" name="FirstName" required />
+        <input type="text" placeholder="Last Name" name="LastName" required />
+        <input type="email" placeholder="Email" name="Email" required />
+        <input type="password" placeholder="Password" name="Password" required />
+        <input type="password" placeholder="Confirm Password" name="ConfirmPassword" required />
+        <input type="submit" class="button" name="Submit" value="Sign Up"/>
         <p class="switch">Already have an account? <a href="~/Login">Login</a></p>
     </form>
 </div>

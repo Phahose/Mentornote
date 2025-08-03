@@ -208,9 +208,6 @@ body {
     height: 40rem;
     width:20rem
 }
-.notes-container{
-    
-}
 .notes-container ul{
     padding: 0
 }
@@ -248,45 +245,84 @@ body {
     color: white;
     display:flex;
 }
-.startpagecont nav{
+.startpagecont nav {
     width: 15rem;
-    background-color: grey;
+    background-color: #171a18;
     height: inherit;
     min-height: 100vh;
+    display:flex;
 }
 .startpagecont nav ul{
     list-style: none;
+    margin:auto;
 }
 .startpagecont nav li{
     padding: 0.5rem;
 }
 .startpagecont nav a{
     text-decoration: none;
+    color: white
+}
+.startpagecont nav a:hover{
+    color: yellow;
 }
 .start-con-holder{
     padding: 1rem;
     margin-left: auto;
     margin-right: auto;
+    width: 80%;
 }
-.startform ul{
+.start-con-holder h2{
+    margin:auto;
+    width: fit-content;
+    padding-bottom: 1rem;
+    border-bottom: 1px ridge yellow;
+}
+.startform{
+    width:fit-content;
+    margin:auto;
+}
+.startform ul {
     list-style: none;
     display: flex
 }
 .startform li{
-    background-color: green;
     margin: 1rem;
     padding: 1rem;
+    border: 2px solid yellow;
     border-radius: 1rem;
+    height: 5rem;
 }
+.startform input{
+    margin: auto;
+    margin-top: 1.5rem;
+}
+.startform input[type="file"]::-webkit-file-upload-button {
+    border: none;
+    padding: 10px 15px;
+    border-radius: 5px;
+    cursor: pointer;
+  }
 .notes-cards-container {
-    display: flex;
+   width: 90%;
+   margin:auto;
+   max-height: 40rem;
+   overflow-y:scroll;
+}
+.cont-head {
+    width: fit-content;
+    margin: auto;
 }
 .notes-cards {
-    background-color: #c9b273;
-    width: 25rem;
+    width: inherit;
     padding: 1rem;
     margin: 1rem;
     border-radius: 1rem;
+    border: 2px solid yellow;
+    transition: background-color 0.2s ease-in;
+}
+.notes-cards:hover{
+   background-color: gray;
 }
 .note-title{
    font-weight: bold;
