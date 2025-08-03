@@ -5,6 +5,7 @@ using Mentornote.Services;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
+using Microsoft.AspNetCore.Authentication.Cookies;
 using System.Text;
 
 namespace Mentornote
@@ -38,7 +39,8 @@ namespace Mentornote
             builder.Services.AddScoped<FlashCardsController>();
             builder.Services.AddScoped<AuthController>();
             builder.Services.AddScoped<CardsServices>();
-            builder.Services.AddAuthentication(options =>
+            builder.Services.AddHttpContextAccessor();
+ /*           builder.Services.AddAuthentication(options =>
             {
                 options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
                 options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
@@ -54,6 +56,11 @@ namespace Mentornote
                     IssuerSigningKey = new SymmetricSecurityKey(key),
                     ClockSkew = TimeSpan.Zero
                 };
+            });*/
+            builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
+            .AddCookie(options =>
+            {
+                options.LoginPath = "/Login";
             });
             builder.Services.AddAuthorization();
             builder.Services.AddDbContext<ApplicationDbContext>(options =>
@@ -71,10 +78,14 @@ namespace Mentornote
                 app.UseSwaggerUI();
             }
 
-            app.UseStaticFiles();
-            app.UseRouting();
-            app.UseSession();
             app.UseHttpsRedirection();
+
+            app.UseStaticFiles();
+
+            app.UseRouting();
+
+            // Authentication & Authorization MUST be after routing but before endpoints
+            app.UseSession();
             app.UseAuthentication();
             app.UseAuthorization();
 

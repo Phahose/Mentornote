@@ -1,10 +1,18 @@
 #nullable disable
+using Azure;
+using Mentornote.Controllers;
+using Mentornote.DTOs;
+using Mentornote.Services;
+using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
-using Mentornote.Controllers;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
-using Mentornote.DTOs;
+using System.Security.Claims;
+using System.Security.Cryptography;
 using System.Threading.Tasks;
+using System.Text;
 
 namespace Mentornote.Pages
 {
@@ -48,20 +56,67 @@ namespace Mentornote.Pages
                     Email = Email,
                     Password = Password
                 };
-                var result = await _authController.Login(user); 
-                if (result is OkObjectResult okResult)
-                {
-                    HttpContext.Session.SetString("Email", Email);
-                    return RedirectToPage("/Start");
-                }
-                else if (result is BadRequestObjectResult badRequest)
-                {
-                    ErrorMessage = "Invalid login attempt.";
-                    ErrorList.Add(ErrorMessage);
-                    return Page();
-                }
+
+                return await Login(user);
             }
+        }
+
+        public async Task<IActionResult> Login(UserDto request)
+        {
+
+            UsersService usersService = new();
+            var user = usersService.GetUserByEmail(Email);
+            if (user == null)
+                return BadRequest("User not found.");
+
+            if (user.AuthProvider != "local")
+                return BadRequest($"Please log in using {user.AuthProvider}.");
+
+
+            // Convert user Input to byte[] hash and then to strings
+            using var hmac = new HMACSHA512(user.PasswordSalt);
+
+            byte[] enteredHashedPassword = hmac.ComputeHash(Encoding.UTF8.GetBytes(request.Password));
+
+
+            if (ByteArraysAreEqual(user.PasswordHash, enteredHashedPassword))
+            {
+                var claims = new List<Claim>
+                {
+                    new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),
+                    new Claim(ClaimTypes.Email, user.Email),
+                };
+
+                var claimsIdentity = new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme);
+                AuthenticationProperties authProperties = new AuthenticationProperties
+                {
+                    IsPersistent = true, // Remember login across sessions
+                    ExpiresUtc = DateTimeOffset.UtcNow.AddHours(1)
+                };
+
+                // Sign in with cookie
+                await HttpContext.SignInAsync(CookieAuthenticationDefaults.AuthenticationScheme, new ClaimsPrincipal(claimsIdentity), authProperties);
+
+                HttpContext.Session.SetString("Email", Email);
+                return RedirectToPage("/Start");
+            }
+
             return Page();
+
+        }
+
+        private bool ByteArraysAreEqual(byte[] a, byte[] b)
+        {
+            if (a == null || b == null || a.Length != b.Length)
+                return false;
+
+            for (int i = 0; i < a.Length; i++)
+            {
+                if (a[i] != b[i])
+                    return false;
+            }
+
+            return true;
         }
     }
 }

@@ -49,6 +49,8 @@ namespace Mentornote.Services
                     user.LastName = (string)UserReader["LastName"];
                     user.Id = (int)UserReader["Id"];
                     user.Email = (string)UserReader["Email"];
+                    user.PasswordSalt = (byte[])UserReader["PasswordSalt"];
+                    user.PasswordHash = (byte[])UserReader["PasswordHash"];
                 }
             }
             UserReader.Close();

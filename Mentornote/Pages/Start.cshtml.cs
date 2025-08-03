@@ -2,12 +2,14 @@
 using Mentornote.Controllers;
 using Mentornote.Models;
 using Mentornote.Services;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.VisualStudio.Web.CodeGenerators.Mvc.Templates.BlazorIdentity.Pages.Manage;
 
 namespace Mentornote.Pages.Shared
 {
+    [Authorize]
     public class StartModel : PageModel
     {
         private readonly FlashCardsController _flashCardsController;
@@ -30,7 +32,18 @@ namespace Mentornote.Pages.Shared
 
         public void OnGet()
         {
+            if (!User.Identity.IsAuthenticated)
+            {
+                Response.Redirect("/Login");
+                return;
+            }
+
             Email = HttpContext.Session.GetString("Email")!;
+            if (string.IsNullOrEmpty(Email))
+            {
+                Response.Redirect("/Login");
+                return;
+            }
             UsersService usersService = new();
             NewUser = usersService.GetUserByEmail(Email);
             FlashcardSets = flashcardService.GetUserFlashcards(NewUser.Id);
