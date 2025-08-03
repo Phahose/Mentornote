@@ -174,12 +174,14 @@ body {
     display: flex;
     color: white;
     width: 90%;
-    background-color: #181c19;
+    background-color: #171a18;
 }
 .func-navigation {
     width: 18rem;
     height: inherit;
-    background-color: #0a0a0a; /* optional for visibility */
+    background-color: #171a18; /* optional for visibility */
+    display:flex;
+    align-items:center;
 }
 .func-navigation-ul{
     list-style:none;
@@ -190,7 +192,11 @@ body {
 .func-navigation-ul a{
     text-decoration: none;
     color: white;
-    font-size: 0.7rem;
+    font-size: 1rem;
+    transition: background-color 0.2s ease-in;
+}
+.func-navigation-ul a:hover{
+     color: yellow;
 }
 
 .f-home-controller {
@@ -200,45 +206,95 @@ body {
     display: flex;
     justify-content: center;
 }
-.notes-holder{
-    background-color: black;
-    margin: 0;
-    padding: 1rem;
-    border-radius: 2rem;
+
+.flashcard{
     height: 40rem;
-    width:20rem
-}
-.notes-container ul{
-    padding: 0
-}
-.notes-holder li{
-    list-style: none;
-    padding: 0.5rem;
-    margin: 1rem;
-    border: 1px solid white;
+    width: 100%;
 }
 .func-holder {
     width: 100%;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
 }
 .fg{
     padding: 1rem;
     width: 100%;
 }
-.front {
+.flashcard-container {
+    width: 70%;
+    height: 30rem;
+    margin: auto;
+    position: relative; /* key: stack cards */
+    perspective: 1000px;
+}
+
+.flashcard {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    transform-style: preserve-3d;
+    transition: transform 0.6s ease;
+    display: none; /* hide all cards initially */
+}
+
+    .flashcard.active {
+        display: block; /* only active one shows */
+    }
+
+    .flashcard:hover {
+        transform: rotateY(180deg);
+    }
+
+.front,
+.back {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
     background-color: #18191c;
     display: flex;
     flex-flow: column;
-    align-items:center;
-    justify-content:center;
-    height: 15rem
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 25px 50px rgba(0, 0, 0, 0.8), 0 10px 20px rgba(0, 0, 0, 0.4) inset;
+    border-radius: 10px;
+    backface-visibility: hidden;
 }
-.flashcard-container{
-    width: 30%;
-    border: 1px solid;
-    padding: 1rem;
+
+.back {
+    transform: rotateY(180deg);
+}
+
+.front p, .back p {
+    max-width: 70%;
+    text-align: center; 
+    display: block;
+}
+
+.controls{
+    margin-top: 2rem;
+    width:fit-content;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.controls button {
+    background: linear-gradient(135deg, #2c2c2c, #181818); /* Dark grey to black */
+    color: #fff;
+    border: none;
+    border-radius: 8px;
+    padding: 0.7rem 1.5rem;
+    font-size: 1rem;
+    font-weight: bold;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.4);
+}
+.controls button:hover {
+    background: linear-gradient(135deg, #3a3a3a, #1f1f1f); /* Slightly lighter on hover */
+    transform: scale(1.05);
+    box-shadow: 0 6px 15px rgba(0, 0, 0, 0.7);
 }
 /*Start Page*/
 .startpagecont{
@@ -286,16 +342,18 @@ body {
     list-style: none;
     display: flex
 }
-.startform li{
-    margin: 1rem;
-    padding: 1rem;
-    border: 2px solid yellow;
-    border-radius: 1rem;
-    height: 5rem;
-}
+    .startform li {
+        margin: 1rem;
+        padding: 1rem;
+        background-color: #18191c;
+        box-shadow: 0 25px 50px rgba(0, 0, 0, 0.8), 0 10px 20px rgba(0, 0, 0, 0.4) inset;
+        border-radius: 1rem;
+        height: 5rem;
+    }
 .startform input{
     margin: auto;
     margin-top: 1.5rem;
+
 }
 .startform input[type="file"]::-webkit-file-upload-button {
     border: none;
@@ -316,14 +374,25 @@ body {
 .notes-cards {
     width: inherit;
     padding: 1rem;
-    margin: 1rem;
+    margin: 2rem;
     border-radius: 1rem;
-    border: 2px solid yellow;
+    display: flex;
+    justify-content: space-between;
+    background-color: #18191c;
+    box-shadow: 0 25px 50px rgba(0, 0, 0, 0.8), 0 10px 20px rgba(0, 0, 0, 0.4) inset;
     transition: background-color 0.2s ease-in;
 }
-.notes-cards:hover{
-   background-color: gray;
+.notes-cards:hover {
+    transition: 0.5s ease-in-out;
+    transform: scale(1.05);
 }
 .note-title{
    font-weight: bold;
+}
+.notes-go{
+    background-color: forestgreen;
+    color: white;
+    padding: 0.5rem;
+    width:3rem;
+    border-radius: 1rem;
 }

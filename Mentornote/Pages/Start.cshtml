@@ -9,7 +9,7 @@
                 <a class="startnavlink" href="~/">Notes</a>
             </li>
             <li class="startnavitem">
-                <a class="startnavlink" href="~/">Start</a>
+                <a class="startnavlink" href="~/Functionalities/FlashCards">Start</a>
             </li>
         </ul>
     </nav>
@@ -34,15 +34,26 @@
                 </ul>
             </div>
         </form>
-        <div class="notes-cards-container">
-            <p class="cont-head">My Notes</p>
-            @foreach (var flashcardset in @Model.FlashcardSets)
-            {
-                <div class="notes-cards">
-                    <p class="note-title">@flashcardset.Title</p>
-                </div>
-            }
-        </div>
+        <form name="Notesform" method="post" class="notes-form">
+            @Html.AntiForgeryToken() <!-- Required for Razor Pages -->
+            <div class="notes-cards-container">
+                <p class="cont-head">My Notes</p>
+                @foreach (var flashcardset in @Model.FlashcardSets)
+                {
+                    <div class="notes-cards">
+                        <p class="note-title">@flashcardset.Title</p>
+                        <input type="hidden" name="FlashCardSetId" value="@flashcardset.Id" />
+                        <div class="notes-contols">
+                            <a href="/Functionalities/FlashCards?flashcardSetId=@flashcardset.Id" class="notes-go">
+                                Go
+                            </a>
+                            @* <input type="submit" name="Submit" value="Go" class="notes-go" /> *@
+                        </div>
+                    </div>
+                }
+            </div>
+        </form>
+        
     </div>
 </div>
 

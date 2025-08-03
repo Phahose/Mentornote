@@ -11,9 +11,9 @@ namespace Mentornote.Pages.Shared
     public class StartModel : PageModel
     {
         private readonly FlashCardsController _flashCardsController;
-    
-        
 
+        [BindProperty]
+        public int FlashCardSetId { get; set; } = new();
         [BindProperty]
         public string Submit { get; set; } = string.Empty;
         [BindProperty]
@@ -36,7 +36,7 @@ namespace Mentornote.Pages.Shared
             FlashcardSets = flashcardService.GetUserFlashcards(NewUser.Id);
         }
 
-        public void OnPost() 
+        public IActionResult OnPost() 
         {
             Email = HttpContext.Session.GetString("Email")!;
             UsersService usersService = new();
@@ -51,8 +51,15 @@ namespace Mentornote.Pages.Shared
                     };
                     _flashCardsController.GenerateFromPdf(notesDto, NewUser.Id).GetAwaiter().GetResult();
                 }
+                return Page();
+            }
+            if (Submit == "Go")
+            {
+                HttpContext.Session.SetInt32("FlashCardSetID", FlashCardSetId);
+                return RedirectToPage("~/Functionalities/FlashCards");
             }
             OnGet();
+            return Page();
         }
     }
 }

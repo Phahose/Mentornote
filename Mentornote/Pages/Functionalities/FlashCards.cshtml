@@ -5,36 +5,43 @@
 }
 <div class="fg">
     <h1>Flashcards</h1>
-    <div class="func-holder">
-        <div class="notes-holder">
-            <p>Your cards</p>
-            <div class="notes-container">
-                <ul>
-                    <li>Math</li>
-                    <li>English</li>
-                    <li>Chamistry</li>
-                    <li>Social Studies</li>
-                    <li>Basic Technology</li>
-                    <li>Physics</li>
-                </ul>
-            </div>
-        </div>
-        <div class="flashcard-container">
-            <section class="upload-section">
-                <h2>Upload Your Notes</h2>
-                <input type="file" accept=".pdf">
-            </section>
-
-            <div class="flashcard">
+    <div class="flashcard-container">
+        @for (int i = 0; i < Model.FlashcardSets.First().Flashcards.Count; i++)
+        {
+            var card = Model.FlashcardSets.First().Flashcards[i];
+            <div class="flashcard @(i == 0 ? "active" : "")" data-index="@i">
                 <div class="front">
                     <h2>Question</h2>
-                    <p>What is the capital of France?</p>
+                    <p>@card.Front</p>
+                    <p>@(i + 1) of @Model.FlashcardSets.First().Flashcards.Count</p>
                 </div>
                 <div class="back">
                     <h2>Answer</h2>
-                    <p>The capital of France is Paris.</p>
+                    <p>@card.Back</p>
+                    <p>@(i + 1) of @Model.FlashcardSets.First().Flashcards.Count</p>
                 </div>
             </div>
-        </div>
+        }
+    </div>
+
+    <div class="controls">
+        <button id="prev-btn" class="prev-btn">Previous</button>
+        <button id="next-btn" class="next-btn">Next</button>
     </div>
 </div>
+<script>
+    let currentIndex = 0;
+    const flashcards = document.querySelectorAll(".flashcard");
+
+    document.getElementById("next-btn").addEventListener("click", () => {
+        flashcards[currentIndex].classList.remove("active");
+        currentIndex = (currentIndex + 1) % flashcards.length;
+        flashcards[currentIndex].classList.add("active");
+    });
+
+    document.getElementById("prev-btn").addEventListener("click", () => {
+        flashcards[currentIndex].classList.remove("active");
+        currentIndex = (currentIndex - 1 + flashcards.length) % flashcards.length;
+        flashcards[currentIndex].classList.add("active");
+    });
+</script>
