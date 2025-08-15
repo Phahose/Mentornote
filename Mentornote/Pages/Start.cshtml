@@ -20,15 +20,15 @@
             <div class="startform">
                 <ul>
                     <li>
+                        <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/google/google-original.svg" alt="Google" class="upload-logo"/>
+                        <label for="UploadedNote">Upload File</label><br />
                         <input type="file"  name="UploadedNote" required>
                         <input type="submit" name="Submit" value="Upload" class="btn"/>
                     </li>
                     <li>
-                        <input type="text" id="Video" name="video" required>
-                        <input type="submit" name="Sumbit" value="Video Post" />
-                    </li>
-                    <li>
-                        <input type="text" id="Text" name="text" required>
+                        <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/google/google-original.svg" alt="Google" class="upload-logo" />
+                        <label for="Videolink">Youtube Link</label><br />
+                        <input type="text" id="Video" name="Videolink">
                         <input type="submit" name="Sumbit" value="Video Post" />
                     </li>
                 </ul>
@@ -52,10 +52,8 @@
                     </div>
                 }
                 @if (Model.FlashcardSets.Count == 0)
-                {
-                  
-                    <p class="note-title">You have no Notes Yes Lets Make Some!!</p>
-               
+                {                 
+                    <p class="empty-list">You have no Notes Yet Lets Make Some!!</p>
                 }
             </div>
         </form>

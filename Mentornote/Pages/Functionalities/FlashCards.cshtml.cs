@@ -18,6 +18,11 @@ namespace Mentornote.Pages.Functionalities
         {
             HttpContext.Session.SetInt32("SelectedFlashcardSetId", flashcardSetId);
             Email = HttpContext.Session.GetString("Email")!;
+            if (string.IsNullOrEmpty(Email))
+            {
+                Response.Redirect("/Start");
+                return;
+            }
             UsersService usersService = new();
             NewUser = usersService.GetUserByEmail(Email);
             FlashcardSets = flashcardService.GetUserFlashcards(NewUser.Id);

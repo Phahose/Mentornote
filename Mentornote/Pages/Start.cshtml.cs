@@ -64,6 +64,7 @@ namespace Mentornote.Pages.Shared
                     };
                     _flashCardsController.GenerateFromPdf(notesDto, NewUser.Id).GetAwaiter().GetResult();
                 }
+                OnGet();
                 return Page();
             }
             if (Submit == "Go")

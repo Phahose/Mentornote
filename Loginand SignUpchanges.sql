@@ -91,3 +91,6 @@ BEGIN
 END;
 
 Drop Procedure GetUserFlashcards
+
+
+DELETE FROM FlashcardSets
