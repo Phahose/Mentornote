@@ -94,3 +94,6 @@ Drop Procedure GetUserFlashcards
 
 
 DELETE FROM FlashcardSets
+
+ALTER TABLE Flashcards
+ALTER COLUMN Title nvarchar(max) NULL;

@@ -406,3 +406,61 @@ body {
     width: fit-content;
     margin:2rem auto;
 }
+
+/*Loaing bar*/
+
+#overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background: rgba(0,0,0,0.6);
+    z-index: 1000;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    color: white;
+    font-family: sans-serif;
+}
+
+.overlay-content {
+    text-align: center;
+}
+
+.loading-bar {
+    width: 300px;
+    height: 20px;
+    background-color: #444;
+    border-radius: 10px;
+    overflow: hidden;
+    margin-top: 20px;
+}
+
+.loading-bar-fill {
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(to right, #bb86fc 0%, #3700b3 50%, #bb86fc 100%);
+    background-size: 200% auto;
+    animation: progressIndeterminate 1.5s linear infinite;
+}
+
+@keyframes progressIndeterminate {
+    0% {
+        background-position: 200% 0;
+    }
+
+    100% {
+        background-position: -200% 0;
+    }
+}
+
+@keyframes spin {
+    0% {
+        transform: rotate(0deg);
+    }
+
+    100% {
+        transform: rotate(360deg);
+    }
+}

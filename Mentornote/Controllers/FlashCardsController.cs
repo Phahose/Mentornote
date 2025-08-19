@@ -43,12 +43,24 @@ namespace Mentornote.Controllers
 
             var cards = await _flashcardService.GenerateFromNotes(text);
             var title = cards.FirstOrDefault()?.Title ?? "Flashcard Set";
-
             var set = _flashcardService.CreateFlashcardSet(title, userId, cards);
             _context.FlashcardSets.Add(set);
             await _context.SaveChangesAsync();
               
             return Ok(set);
+        }
+
+        public void DeleteFlashcardSet(int flashcardSetId)
+        {
+            var flashcards = _context.Flashcards.Where(f => f.FlashcardSetId == flashcardSetId).ToList();
+            _context.Flashcards.RemoveRange(flashcards);
+            var setToDelete = _context.FlashcardSets.FirstOrDefault(f => f.Id == flashcardSetId);
+
+            if (setToDelete != null)
+            {
+                _context.FlashcardSets.Remove(setToDelete);
+                _context.SaveChanges();
+            }
         }
 
 

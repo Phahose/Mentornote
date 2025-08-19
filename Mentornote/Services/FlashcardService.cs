@@ -33,55 +33,14 @@ namespace Mentornote.Services
                 }
                 catch (Exception ex)
                 {
-
-                    Console.WriteLine($"❌ Error in chunk {chunk}: {ex.Message}");
+                    Console.WriteLine($"Error in chunk {chunk}: {ex.Message}");
                     continue; // skip this one and keep going;
-                }
-                
+                }     
             }
 
             return allFlashcards;
         }
 
-        /* public async Task<List<Flashcard>> GenerateFromNotes(string notes)
-         {
-            // await Task.Delay(2000);
-             var apiKey = _config["OpenAI:ApiKey"].Trim();
-             var prompt = $"Generate flashcards from these notes and also a title based on the notes the title should be 2 words max per title:\n{notes}\n\nReturn JSON array with 'title' 'question' and 'answer'.";
-             var lines = notes.Split('\n', StringSplitOptions.RemoveEmptyEntries);
-             var requestBody = new
-             {
-                 model = "gpt-3.5-turbo",
-                 messages = new[]
-                 {
-                     new { role = "user", content = prompt }
-                 }
-             };
-
-             for (int attempt = 0; attempt < 3; attempt++)
-             {
-                 var requestJson = JsonSerializer.Serialize(requestBody);
-                 var request = new HttpRequestMessage(HttpMethod.Post, "https://api.openai.com/v1/chat/completions");
-                 request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", apiKey);
-                 request.Content = new StringContent(requestJson, Encoding.UTF8, "application/json");
-
-                 var response = await _httpClient.SendAsync(request);
-
-                 if (response.StatusCode == HttpStatusCode.TooManyRequests)
-                 {
-                     Console.WriteLine("Rate limit hit. Retrying in 2 seconds...");
-                     await Task.Delay(2000);
-                     continue;
-                 }
-
-                 response.EnsureSuccessStatusCode();
-                 var json = await response.Content.ReadAsStringAsync();
-                 return ParseResponse(json);
-             }
-
-             throw new Exception("Failed after multiple attempts due to rate limiting.");
-
-         }*/
         private async Task<List<Flashcard>> GenerateFlashcardsFromChunk(string notesChunk)
         {
             var apiKey = _config["OpenAI:ApiKey"].Trim();

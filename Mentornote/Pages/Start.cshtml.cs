@@ -54,25 +54,45 @@ namespace Mentornote.Pages.Shared
             Email = HttpContext.Session.GetString("Email")!;
             UsersService usersService = new();
             NewUser = usersService.GetUserByEmail(Email);
-            if (Submit == "Upload")
+
+            if (!string.IsNullOrEmpty(Submit))
             {
-                if (UploadedNote != null && UploadedNote.Length > 0)
+                string[] split;
+                var action = string.Empty;
+                var id = 0;
+                if (Submit.Contains('-'))
                 {
-                    var notesDto = new Mentornote.DTOs.NotesDto
+                    split = Submit.Split('-');
+                    action = split[0];
+                    id = int.Parse(split[1]);
+                }
+               
+                if (Submit == "Upload")
+                {
+                    if (UploadedNote != null && UploadedNote.Length > 0)
                     {
-                        File = UploadedNote
-                    };
-                    _flashCardsController.GenerateFromPdf(notesDto, NewUser.Id).GetAwaiter().GetResult();
+                        var notesDto = new Mentornote.DTOs.NotesDto
+                        {
+                            File = UploadedNote
+                        };
+                        _flashCardsController.GenerateFromPdf(notesDto, NewUser.Id).GetAwaiter().GetResult();
+                    }
+                    OnGet();
+                    return Page();
+                }
+                if (Submit == "Go")
+                {
+                    HttpContext.Session.SetInt32("FlashCardSetID", FlashCardSetId);
+                    return RedirectToPage("~/Functionalities/FlashCards");
+                }
+                if (action == "Delete")
+                {
+                    _flashCardsController.DeleteFlashcardSet(id);
                 }
                 OnGet();
                 return Page();
             }
-            if (Submit == "Go")
-            {
-                HttpContext.Session.SetInt32("FlashCardSetID", FlashCardSetId);
-                return RedirectToPage("~/Functionalities/FlashCards");
-            }
-            OnGet();
+            
             return Page();
         }
     }

@@ -8,14 +8,11 @@
             <li class="startnavitem">
                 <a class="startnavlink" href="~/">Notes</a>
             </li>
-            <li class="startnavitem">
-                <a class="startnavlink" href="~/Functionalities/FlashCards">Start</a>
-            </li>
         </ul>
     </nav>
     <div class="start-con-holder">
         <h2>How Would You like to Begin</h2>
-        <form name="start-form" method="post" class="start-form" enctype="multipart/form-data">
+        <form name="start-form" method="post" class="start-form" enctype="multipart/form-data" onsubmit="return showLoadingBar();">
             @Html.AntiForgeryToken() <!-- Required for Razor Pages -->
             <div class="startform">
                 <ul>
@@ -47,7 +44,7 @@
                             <a href="/Functionalities/FlashCards?flashcardSetId=@flashcardset.Id" class="notes-go">
                                 Go
                             </a>
-                            @* <input type="submit" name="Submit" value="Go" class="notes-go" /> *@
+                            <button type="submit" name="Submit" value="Delete-@flashcardset.Id" class="notes-go delete-btn">Delete</button>
                         </div>
                     </div>
                 }
@@ -60,6 +57,24 @@
         
     </div>
 </div>
-
-
-
+<div id="overlay" style="display: none;">
+    <div class="overlay-content">
+        <p>Generating flashcards from your notes...</p>
+        <div class="loading-bar">
+            <div class="loading-bar-fill"></div>
+        </div>
+    </div>
+</div>
+<script>
+    function showLoadingBar() {
+        console.log('Blaawskcm')
+        const overlay = document.getElementById("overlay");
+        if (overlay) { 
+            console.log('founfff')
+            overlay.style.display = 'flex';
+        } else {
+            console.log("Overlay not found");
+        }
+        return true;
+    }
+</script>
