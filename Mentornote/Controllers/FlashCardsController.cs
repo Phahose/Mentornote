@@ -63,6 +63,16 @@ namespace Mentornote.Controllers
             }
         }
 
+        public void UpdateFlashcardSetTitle(int setId, string newTitle)
+        {
+            var setToUpdate = _context.FlashcardSets.FirstOrDefault(f => f.Id == setId);
+
+            if (setToUpdate != null)
+            {
+                setToUpdate.Title = newTitle;
+                _context.SaveChanges();
+            }
+        }
 
         public string ExtractText(Stream pdfStream)
         {

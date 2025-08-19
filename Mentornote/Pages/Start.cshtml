@@ -17,16 +17,21 @@
             <div class="startform">
                 <ul>
                     <li>
-                        <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/google/google-original.svg" alt="Google" class="upload-logo"/>
-                        <label for="UploadedNote">Upload File</label><br />
-                        <input type="file"  name="UploadedNote" required>
-                        <input type="submit" name="Submit" value="Upload" class="btn"/>
+                        <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/google/google-original.svg" alt="Google" class="upload-logo" />
+                        <section>
+                            <label for="UploadedNote">Upload File</label><br />
+                            <input type="file" name="UploadedNote" required>
+                            <input type="submit" name="Submit" value="Upload" class="btn" />
+                        </section>
+                       
                     </li>
                     <li>
                         <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/google/google-original.svg" alt="Google" class="upload-logo" />
-                        <label for="Videolink">Youtube Link</label><br />
-                        <input type="text" id="Video" name="Videolink">
-                        <input type="submit" name="Sumbit" value="Video Post" />
+                        <section>
+                            <label for="Videolink">Youtube Link</label><br />
+                            <input type="text" id="Video" name="Videolink">
+                            <input type="submit" name="Sumbit" value="Video Post" />
+                        </section>
                     </li>
                 </ul>
             </div>
@@ -38,20 +43,39 @@
                 @foreach (var flashcardset in @Model.FlashcardSets)
                 {
                     <div class="notes-cards">
-                        <p class="note-title">@flashcardset.Title</p>
                         <input type="hidden" name="FlashCardSetId" value="@flashcardset.Id" />
+                        <input type="text" name="NewTitle-@flashcardset.Id" value="@flashcardset.Title" class="note-title-input note-title" />
+
                         <div class="notes-contols">
-                            <a href="/Functionalities/FlashCards?flashcardSetId=@flashcardset.Id" class="notes-go">
-                                Go
-                            </a>
-                            <button type="submit" name="Submit" value="Delete-@flashcardset.Id" class="notes-go delete-btn">Delete</button>
+                            <a href="/Functionalities/FlashCards?flashcardSetId=@flashcardset.Id" class="notes-go">Go</a>
+                         @*    <button type="submit" name="Submit" value="Rename-@flashcardset.Id" class="notes-go rename-btn">Rename</button>
+                            <button type="submit" name="Submit" value="Delete-@flashcardset.Id" class="notes-go delete-btn">Delete</button> *@
+
+                            <!-- Kebab Icon with onclick handler -->
+                            <svg onclick="togglePopup(this)" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" viewBox="0 0 24 24" class="kebab-img">
+                                <circle cx="12" cy="5" r="2" />
+                                <circle cx="12" cy="12" r="2" />
+                                <circle cx="12" cy="19" r="2" />
+                            </svg>
+
+                            <!-- Popup attached to this card -->
+                            <div class="popup-menu hidden">
+                                <button type="submit" name="Submit" value="Rename-@flashcardset.Id">Rename</button>
+                                <button type="submit" name="Submit" value="Delete-@flashcardset.Id">Delete</button>
+                            </div>
                         </div>
                     </div>
+
                 }
                 @if (Model.FlashcardSets.Count == 0)
                 {                 
                     <p class="empty-list">You have no Notes Yet Lets Make Some!!</p>
                 }
+                <!-- Popup Menu -->
+                <div class="popup-menu hidden" id="startpopup">
+                    <button onclick="renameCard(this)">Rename</button>
+                    <button onclick="deleteCard(this)">Delete</button>
+                </div>
             </div>
         </form>
         
@@ -66,6 +90,7 @@
     </div>
 </div>
 <script>
+     // loading animation
     function showLoadingBar() {
         console.log('Blaawskcm')
         const overlay = document.getElementById("overlay");
@@ -77,4 +102,23 @@
         }
         return true;
     }
+
+    // pop up effect
+    // Toggle popup specific to clicked kebab icon
+    function togglePopup(iconElement) {
+        // Close all open popups
+        document.querySelectorAll('.popup-menu').forEach(p => p.classList.add('hidden'));
+
+        const popup = iconElement.nextElementSibling; // assumes popup is right after icon
+        if (popup && popup.classList.contains('popup-menu')) {
+            popup.classList.toggle('hidden');
+        }
+    }
+
+    // Optional: close popup if user clicks outside
+    document.addEventListener("click", function (e) {
+        if (!e.target.closest(".notes-contols")) {
+            document.querySelectorAll('.popup-menu').forEach(p => p.classList.add('hidden'));
+        }
+    });
 </script>

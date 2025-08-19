@@ -89,6 +89,16 @@ namespace Mentornote.Pages.Shared
                 {
                     _flashCardsController.DeleteFlashcardSet(id);
                 }
+                if (action == "Rename")
+                {
+                    string titleKey = $"NewTitle-{id}";
+                    var newTitle = Request.Form[titleKey];
+
+                    if (!string.IsNullOrEmpty(newTitle))
+                    {
+                        _flashCardsController.UpdateFlashcardSetTitle(id, newTitle);
+                    }
+                }
                 OnGet();
                 return Page();
             }
