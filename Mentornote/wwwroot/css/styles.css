@@ -374,14 +374,21 @@ body {
     max-height: 2rem;
     height: 1.5rem;
 }
+
 /*FlashCards*/
 .notes-cards-container {
     width: 90%;
     margin: auto;
     max-height: 40rem;
-    overflow-y: scroll;
+    overflow-y: auto;
     overflow-x: hidden;
     padding: 1rem;
+}
+.notes-contols{
+    align-items: center;
+    justify-content: center;
+    width: 8rem;
+    display: flex;
 }
 .cont-head {
     width: fit-content;
@@ -397,6 +404,8 @@ body {
     border: 1px solid white;
     background-color: #18191c;
     transition: background-color 0.2s ease-in;
+    align-items: center;
+    max-height: 3rem
 }
 .notes-cards:hover {
     transition: 0.5s ease-in-out;
@@ -406,13 +415,11 @@ body {
    font-weight: bold;
 }
 .notes-go{
-    background-color: forestgreen;
-    color: white;
+    color: forestgreen;
     padding: 0.5rem;
     width:fit-content;
     border-radius: 1rem;
     text-decoration: none;
-    min-width: 6rem;
 }
 .empty-list{
     width: fit-content;
@@ -435,7 +442,7 @@ body {
     position: relative;
     top: 30px;
     right: 0;
-    background: #1a1a1a;    
+    background: #1a1a1a;
     color: white;
     padding: 10px;
     border-radius: 6px;
@@ -444,6 +451,7 @@ body {
     gap: 8px;
     box-shadow: 0 0 10px #000;
     z-index: 99;
+    transition: ease-in-out;
 }
 
     .popup-menu.hidden {

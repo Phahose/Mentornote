@@ -3,13 +3,14 @@
 @{
 }
 <div class="startpagecont">
-    <nav>
+    @* <nav>
         <ul class="startnav">
-            <li class="startnavitem">
-                <a class="startnavlink" href="~/">Notes</a>
-            </li>
+            <li class="startnavitem"> <a class="startnavlink" href="~/">Notes</a>  </li>
+            <li><a href="#">Chatbot</a></li>
+            <li><a href="#">Quiz</a></li>
+            <li><a href="#">Settings</a></li>
         </ul>
-    </nav>
+    </nav> *@
     <div class="start-con-holder">
         <h2>How Would You like to Begin</h2>
         <form name="start-form" method="post" class="start-form" enctype="multipart/form-data" onsubmit="return showLoadingBar();">
@@ -48,11 +49,9 @@
 
                         <div class="notes-contols">
                             <a href="/Functionalities/FlashCards?flashcardSetId=@flashcardset.Id" class="notes-go">Go</a>
-                         @*    <button type="submit" name="Submit" value="Rename-@flashcardset.Id" class="notes-go rename-btn">Rename</button>
-                            <button type="submit" name="Submit" value="Delete-@flashcardset.Id" class="notes-go delete-btn">Delete</button> *@
-
+                  
                             <!-- Kebab Icon with onclick handler -->
-                            <svg onclick="togglePopup(this)" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" viewBox="0 0 24 24" class="kebab-img">
+                            <svg onmouseover="togglePopup(this)" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" viewBox="0 0 24 24" class="kebab-img">
                                 <circle cx="12" cy="5" r="2" />
                                 <circle cx="12" cy="12" r="2" />
                                 <circle cx="12" cy="19" r="2" />
