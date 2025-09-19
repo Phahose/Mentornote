@@ -3,20 +3,84 @@
 @{
 }
 <div class="startpagecont">
-    @* <nav>
-        <ul class="startnav">
-            <li class="startnavitem"> <a class="startnavlink" href="~/">Notes</a>  </li>
-            <li><a href="#">Chatbot</a></li>
-            <li><a href="#">Quiz</a></li>
-            <li><a href="#">Settings</a></li>
-        </ul>
-    </nav> *@
-    <div class="start-con-holder">
-        <h2>How Would You like to Begin</h2>
+    <h2>How Would You like to Begin</h2>
+    <div class="fun-cards">
+        <div class="fun-card">
+            <div class="blob blob-blue"></div>
+
+            <div class="card-content">
+                <p class="card-title">Study Notes</p>
+                <h2>0</h2>
+                <p class="card-word">Uploaded Notes</p>
+            </div>
+        </div>
+        <div class="fun-card">
+            <div class="blob blob-red"></div>
+
+            <div class="card-content">
+                <p class="card-title">Study Notes</p>
+                <h2>0</h2>
+                <p class="card-word">Generated Cards</p>
+            </div>
+        </div>
+        <div class="fun-card">
+            <div class="blob blob-green"></div>
+
+            <div class="card-content">
+                <p class="card-title">Study Notes</p>
+                <h2>0</h2>
+                <p class="card-word">Keep it Going</p>
+            </div>
+        </div>
+        <div class="fun-card">
+            <div class="blob blob-yellow"></div>
+
+            <div class="card-content">
+                <p class="card-title">Study Notes</p>
+                <h2>0</h2>
+                <p class="card-word">Practice exams</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="start-con-holder"> 
         <form name="start-form" method="post" class="start-form" enctype="multipart/form-data" onsubmit="return showLoadingBar();">
             @Html.AntiForgeryToken() <!-- Required for Razor Pages -->
             <div class="startform">
-                <ul>
+                <div class="quick-actions">
+                    <p>Quick Actions</p>
+                    <div class="actions">
+                        <div>
+                            <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/google/google-original.svg" alt="Google" class="upload-logo" />
+                            <section>
+                                <p>Upload Notes</p>
+                                <p class="sub-text">Add new study materials</p>
+                            </section>
+                        </div>
+                        <div>
+                            <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/google/google-original.svg" alt="Google" class="upload-logo" />
+                            <section>
+                                <p>Study Cards</p>
+                                <p class="sub-text">Review Flashcards</p>
+                            </section>     
+                        </div>
+                        <div>
+                            <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/google/google-original.svg" alt="Google" class="upload-logo" />
+                            <section>
+                                <p>Ask AI Tutor</p>
+                                <p class="sub-text">Get Instant Help</p>
+                            </section>
+                        </div>
+                        <div>
+                            <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/google/google-original.svg" alt="Google" class="upload-logo" />
+                            <section>
+                                <p>Take Exam</p>
+                                <p class="sub-text">Test Your knowledge</p>
+                            </section>
+                        </div>
+                    </div>
+                </div>
+              @*   <ul>
                     <li>
                         <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/google/google-original.svg" alt="Google" class="upload-logo" />
                         <section>
@@ -34,13 +98,13 @@
                             <input type="submit" name="Sumbit" value="Video Post" />
                         </section>
                     </li>
-                </ul>
+                </ul> *@
             </div>
         </form>
         <form name="Notesform" method="post" class="notes-form">
             @Html.AntiForgeryToken() <!-- Required for Razor Pages -->
             <div class="notes-cards-container">
-                <p class="cont-head">My Notes</p>
+                <p class="cont-head">Recent Activity </p>
                 @foreach (var flashcardset in @Model.FlashcardSets)
                 {
                     <div class="notes-cards">

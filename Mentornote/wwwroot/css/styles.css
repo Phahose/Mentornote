@@ -296,36 +296,91 @@ body {
     box-shadow: 0 6px 15px rgba(0, 0, 0, 0.7);
 }
 /*Start Page*/
-.startpagecont{
-    color: white;
+.startpagecont {
+    background-color: #e1e6ed;
+    display: flex;
+    flex-flow: column;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+}
+.fun-cards{
+    display: flex;
+    min-width: 10rem;
+}
+.fun-card .card-title{
+    font-size: 10px;
+    color:grey;
+    font-weight: bold;
+    margin: 0;
+}
+.fun-card .card-word{
+    font-size: 10px;
+}
+.fun-card{
+    background-color: white;
+    margin: 1rem;
+    padding: 1rem;
+    min-width: 15rem;
+    height: 4rem;
+}
+.fun-card h2{
+   margin: 0;
+}
+.quick-actions {
+    background-color: white;
+    padding: 1rem;
+    min-width: 25rem;
+    box-shadow: 0 6px 15px rgba(0, 0, 0, 0.2);
+    border-radius: 0.5rem;
+}
+.quick-actions>p:first-of-type{
+    color: black;
+    font-weight: bold;
+}
+.actions div{
     display:flex;
-}
-.startpagecont nav {
-    width: 15rem;
-    background-color: #171a18;
-    height: inherit;
-    min-height: 100vh;
-    display:flex;
-}
-.startpagecont nav ul{
-    list-style: none;
-    margin:auto;
-}
-.startpagecont nav li{
+    background-color: lightblue;
+    margin: 1rem;
     padding: 0.5rem;
+    font-size: 10px;
 }
-.startpagecont nav a{
-    text-decoration: none;
-    color: white
+.actions div:nth-child(1){
+    background-color: lightgreen;
 }
-.startpagecont nav a:hover{
-    color: yellow;
+
+.actions div:nth-child(2){
+    background-color: lightpink;
+}
+
+.actions div:nth-child(3){
+    background-color: lightyellow;
+}
+
+.actions div:nth-child(4){
+    background-color: lightcyan;
+}
+
+.actions div section{
+    margin-left: 1rem;
+}
+.actions div section p:first-child{
+    color: black;
+    font-weight: bold;
+}
+.actions div section p:nth-child(2){
+   color: grey;
+   font-weight: bold;
+}
+.actions div img{
+    margin-top: 1rem;
 }
 .start-con-holder{
     padding: 1rem;
     margin-left: auto;
     margin-right: auto;
     width: 80%;
+    display: flex;
 }
 .start-con-holder h2{
     margin:auto;
@@ -333,16 +388,13 @@ body {
     padding-bottom: 1rem;
     border-bottom: 1px ridge yellow;
 }
-.startform{
-    width:fit-content;
-    margin:auto;
-}
+
 .startform ul {
     list-style: none;
-    display: flex;
-    flex-wrap: wrap;
     justify-content:center;
     border-radius: 1rem;
+    background-color: white;
+    height: 50%;
 }
 .startform li {
     margin: 1rem;
@@ -362,6 +414,18 @@ body {
     margin-top: 5px;
     margin-bottom: 5px;
     max-width: 12rem
+}
+
+.notes-form {
+    background-color: white;
+    margin-left: auto;
+    margin-right: auto;
+    min-width: 60rem;
+    border-radius: 0.5rem;
+}
+.cont-head {
+   color: black;
+   font-weight: bold;
 }
 .startform input[type="file"]::-webkit-file-upload-button {
     border: none;
