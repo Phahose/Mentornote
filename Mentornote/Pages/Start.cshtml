@@ -1,45 +1,48 @@
 ﻿@page
 @model Mentornote.Pages.Shared.StartModel
 @{
+    Layout = "Navigation";
 }
 <div class="startpagecont">
-    <h2>How Would You like to Begin</h2>
+    <h2>Welcome to MentorNote</h2>
     <div class="fun-cards">
-        <div class="fun-card">
-            <div class="blob blob-blue"></div>
 
+        <div class="fun-card">
             <div class="card-content">
                 <p class="card-title">Study Notes</p>
                 <h2>0</h2>
                 <p class="card-word">Uploaded Notes</p>
             </div>
+            <span class="card-icon bg-blue"><img src="https://img.icons8.com/?size=24&id=Yj5svDsC4jQA&format=png" /></span>
         </div>
-        <div class="fun-card">
-            <div class="blob blob-red"></div>
 
+        <div class="fun-card">
             <div class="card-content">
                 <p class="card-title">Study Notes</p>
                 <h2>0</h2>
                 <p class="card-word">Generated Cards</p>
             </div>
+            <span class="icon bg-purple"><img src="https://img.icons8.com/?size=24&id=Yj5svDsC4jQA&format=png" /></span>
         </div>
+
         <div class="fun-card">
-            <div class="blob blob-green"></div>
+         @*    <div class="blob blob-green"></div> *@
 
             <div class="card-content">
                 <p class="card-title">Study Notes</p>
                 <h2>0</h2>
                 <p class="card-word">Keep it Going</p>
             </div>
+            <span class="icon bg-green"><img src="https://img.icons8.com/?size=24&id=Yj5svDsC4jQA&format=png" /></span>
         </div>
-        <div class="fun-card">
-            <div class="blob blob-yellow"></div>
 
+        <div class="fun-card">
             <div class="card-content">
                 <p class="card-title">Study Notes</p>
                 <h2>0</h2>
                 <p class="card-word">Practice exams</p>
             </div>
+            <span class="icon bg-orange"><img src="https://img.icons8.com/?size=24&id=Yj5svDsC4jQA&format=png" /></span>
         </div>
     </div>
 
@@ -51,28 +54,28 @@
                     <p>Quick Actions</p>
                     <div class="actions">
                         <div>
-                            <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/google/google-original.svg" alt="Google" class="upload-logo" />
+                            <img src="https://img.icons8.com/?size=24&id=88655&format=png" alt="Google" class="upload-logo" />
                             <section>
                                 <p>Upload Notes</p>
                                 <p class="sub-text">Add new study materials</p>
                             </section>
                         </div>
                         <div>
-                            <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/google/google-original.svg" alt="Google" class="upload-logo" />
+                            <img src="https://img.icons8.com/?size=24&id=86563&format=png" alt="Google" class="upload-logo" />
                             <section>
                                 <p>Study Cards</p>
                                 <p class="sub-text">Review Flashcards</p>
                             </section>     
                         </div>
                         <div>
-                            <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/google/google-original.svg" alt="Google" class="upload-logo" />
+                            <img src="https://img.icons8.com/?size=50&id=7859&format=png" alt="Google" class="upload-logo" />
                             <section>
                                 <p>Ask AI Tutor</p>
                                 <p class="sub-text">Get Instant Help</p>
                             </section>
                         </div>
                         <div>
-                            <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/google/google-original.svg" alt="Google" class="upload-logo" />
+                            <img src="https://img.icons8.com/?size=64&id=46520&format=png" alt="Google" class="upload-logo" />
                             <section>
                                 <p>Take Exam</p>
                                 <p class="sub-text">Test Your knowledge</p>
@@ -107,7 +110,46 @@
                 <p class="cont-head">Recent Activity </p>
                 @foreach (var flashcardset in @Model.FlashcardSets)
                 {
-                    <div class="notes-cards">
+                    <div class="note-card">
+                        <div class="note-left">
+                            <div class="icon-circle">
+                                <img src="https://img.icons8.com/ios-filled/20/3b82f6/book.png" alt="Book Icon" />
+                            </div>
+                            <div class="note-text">
+                                <strong>@flashcardset.Title</strong>
+                                <p class="timestamp">@flashcardset.UserId</p>
+                            </div>
+                        </div>
+
+                        <div class="note-right">
+                            <a href="/Functionalities/FlashCards?flashcardSetId=@flashcardset.Id" class="tag note-tag">View Card</a>
+
+                            <svg onmouseover="togglePopup(this)" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="black" viewBox="0 0 24 24" class="kebab-img">
+                                <circle cx="12" cy="5" r="2" />
+                                <circle cx="12" cy="12" r="2" />
+                                <circle cx="12" cy="19" r="2" />
+                            </svg>
+
+                            <div class="popup-menu hidden">
+                                <button type="submit" name="Submit" value="Rename-@flashcardset.Id" class="popup-btn">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="popup-icon" viewBox="0 0 24 24" width="16" height="16" fill="currentColor">
+                                        <path d="M4 21h4.586L20.293 9.293a1 1 0 0 0 0-1.414l-4.172-4.172a1 1 0 0 0-1.414 0L4 15.586V21zM5.414 17L15 7.414l1.586 1.586L7 18.586H5.414V17z" />
+                                    </svg>
+                                    Edit Title                    
+                                </button>
+                                <button type="submit" name="Submit" value="Delete-@flashcardset.Id" class="popup-btn">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="popup-icon" viewBox="0 0 24 24" width="16" height="16" fill="currentColor">
+                                        <path d="M6 7h12v13a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2V7zm3 3v7h2v-7H9zm4 0v7h2v-7h-2z" />
+                                        <path d="M18 4h-3.5l-1-1h-3l-1 1H6v2h12V4z" />
+                                    </svg>
+                                    Delete
+                                </button>
+                            </div>
+                        </div>
+                      
+                    </div>
+
+                    @* <div class="notes-cards">
                         <input type="hidden" name="FlashCardSetId" value="@flashcardset.Id" />
                         <input type="text" name="NewTitle-@flashcardset.Id" value="@flashcardset.Title" class="note-title-input note-title" />
 
@@ -115,7 +157,7 @@
                             <a href="/Functionalities/FlashCards?flashcardSetId=@flashcardset.Id" class="notes-go">Go</a>
                   
                             <!-- Kebab Icon with onclick handler -->
-                            <svg onmouseover="togglePopup(this)" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" viewBox="0 0 24 24" class="kebab-img">
+                            <svg onmouseover="togglePopup(this)" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="black" viewBox="0 0 24 24" class="kebab-img">
                                 <circle cx="12" cy="5" r="2" />
                                 <circle cx="12" cy="12" r="2" />
                                 <circle cx="12" cy="19" r="2" />
@@ -127,7 +169,7 @@
                                 <button type="submit" name="Submit" value="Delete-@flashcardset.Id">Delete</button>
                             </div>
                         </div>
-                    </div>
+                    </div> *@
 
                 }
                 @if (Model.FlashcardSets.Count == 0)
