@@ -1,0 +1,136 @@
+﻿@page
+@model Mentornote.Pages.Functionalities.UploadModel
+@{
+    Layout = "Navigation";
+}
+<div class="startpagecont">
+    <div class="upload-container">
+
+        <form class="upload-form" method="post" enctype="multipart/form-data" onsubmit="return showLoadingBar();">
+            @Html.AntiForgeryToken() <!-- Required for Razor Pages -->
+        <h2>Add Study Materials</h2>
+
+
+        <div class="tab-buttons">
+            <button type="button" id="fileTab" class="active tab-button" onclick="showTab('files')">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="popup-icon" viewBox="0 0 24 24" width="16" height="16" fill="grey">
+                        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8l-6-6zM13 9V3.5L18.5 9H13z" />
+                    </svg>
+                    Files
+             </button>
+            <button type="button" id="videoTab" class="tab-button" onclick="showTab('videos')">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="popup-icon" viewBox="0 0 24 24" width="16" height="16" fill="grey">
+                        <path d="M17 10.5V7a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-3.5l4 4v-11l-4 4z" />
+                    </svg>
+                Video Links
+            </button>
+        </div>
+
+
+        <!-- Wrap your files section in a container with id="files" -->
+        <div id="files" class="tab-content">
+            <div class="file-upload-container" onclick="document.getElementById('fileInput').click()">
+                <div class="file-upload-box">
+                    <img class="upload-icon" src="https://cdn-icons-png.flaticon.com/512/337/337946.png" alt="Upload" />
+                    <p class="upload-title">Drop your files here</p>
+                    <p class="upload-subtitle">or click to browse your device</p>
+                    <div class="upload-types">
+                        <span>PDF</span>
+                        <span>Images</span>
+                        <span>Text</span>
+                    </div>
+                </div>
+            </div>
+            <input type="file" name="UploadedNote" required id="fileInput" style="display: none;" />
+        </div>
+
+
+        <div id="videos" class="tab-content hidden">
+            <div class="video-url-group">
+                <input type="text" placeholder="Paste YouTube, Vimeo, or other video URL..." />
+                <button type="button">+</button>
+            </div>
+            <i class="fas fa-link"></i>
+            <p>Add video links<br>YouTube, Vimeo, and other educational videos</p>
+        </div>
+        <div id="selectedFilesContainer" class="selected-files-container"></div>
+
+        <input type="submit" name="Sumbit" class="upload-button" value="Create Study Materials"/>
+    </form>
+</div>
+</div>
+
+<script>
+    function showTab(tab) {
+    const fileTab = document.getElementById('fileTab');
+    const videoTab = document.getElementById('videoTab');
+    const files = document.getElementById('files');
+    const videos = document.getElementById('videos');
+
+
+    if (tab === 'files') {
+    fileTab.classList.add('active');
+    videoTab.classList.remove('active');
+    files.classList.remove('hidden');
+    videos.classList.add('hidden');
+    } else {
+    fileTab.classList.remove('active');
+    videoTab.classList.add('active');
+    files.classList.add('hidden');
+    videos.classList.remove('hidden');
+    }
+    }
+
+    // selected files Functionality
+        document.getElementById("fileInput").addEventListener("change", function () {
+        const selectedFilesContainer = document.getElementById("selectedFilesContainer");
+        selectedFilesContainer.innerHTML = ""; // Clear old file
+
+        const file = this.files[0];
+
+        if (file) {
+            const fileSizeMB = (file.size / (1024 * 1024)).toFixed(2);
+
+            const fileBox = document.createElement("div");
+            fileBox.className = "file-box";
+
+            fileBox.innerHTML = `
+                <div class="file-info">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="file-icon" viewBox="0 0 24 24" width="24" height="24" fill="#e74c3c">
+                        <path d="M6 2a2 2 0 0 0-2 2v16c0 1.103.897 2 2 2h12a2 2 0 0 0 2-2V8l-6-6H6zm7 1.5L18.5 9H13V3.5zM6 4h6v5h5v11H6V4z"/>
+                    </svg>
+                    <div>
+                        <p class="filename">${file.name}</p>
+                        <p class="filesize">${fileSizeMB} MB</p>
+                    </div>
+                </div>
+                <span class="remove-file" onclick="removeSelectedFile()">×</span>
+            `;
+
+            selectedFilesContainer.appendChild(fileBox);
+        }
+    });
+
+    function removeSelectedFile() {
+        const fileInput = document.getElementById("fileInput");
+        const selectedFilesContainer = document.getElementById("selectedFilesContainer");
+
+        fileInput.value = ""; // Clear input
+        selectedFilesContainer.innerHTML = ""; // Remove display
+    }
+
+    //Loading animation
+
+      function showLoadingBar() {
+        console.log('Blaawskcm')
+        const overlay = document.getElementById("overlay");
+        if (overlay) {
+            console.log('founfff')
+            overlay.style.display = 'flex';
+        } else {
+            console.log("Overlay not found");
+        }
+        return true;
+    }
+
+</script>

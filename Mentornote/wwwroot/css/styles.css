@@ -246,6 +246,10 @@ body {
     transition: background 0.2s ease;
 }
 
+.nav-item a{
+    text-decoration: none;
+    color: black;
+}
 .nav-item:hover,
 .quick-stats li:hover {
     background: #f0f0f0;
@@ -522,29 +526,43 @@ body {
     color: black;
     font-weight: bold;
 }
-.actions div {
+.actions a {
     display: flex;
     background-color: lightblue;
+    align-items:center;
     margin: 1rem;
     padding: 0.1rem 0.5rem;
     font-size: 10px;
     border-radius: 0.5rem;
+    text-decoration: none;
+    color: black;
 }
-    .actions div:nth-child(1) {
+
+.actions a img{
+    margin-right: 1rem;
+}
+    .actions a:nth-child(1) {
         background-color: #d5f0df;
     }
 
-.actions div:nth-child(2){
-    background-color: var(--light-red);
-}
+    .actions a:nth-child(2) {
+        background-color: var(--light-red);
+    }
 
-.actions div:nth-child(3){
-    background-color: lightyellow;
-}
+    .actions a:nth-child(3) {
+        background-color: lightyellow;
+    }
 
-.actions div:nth-child(4){
-    background-color: lightcyan;
-}
+    .actions a:nth-child(4) {
+        background-color: lightcyan;
+    }
+
+        .actions a:nth-child(1):hover, .actions a:nth-child(2):hover, .actions a:nth-child(3):hover, .actions a:nth-child(4):hover {
+            background-color: #788a7d;
+            transition: 0.2s ease-in;
+        }
+
+
 
 .actions div section{
     margin-left: 1rem;
@@ -826,3 +844,173 @@ body {
         transform: rotate(360deg);
     }
 }
+
+/*Upload*/
+
+.upload-container {
+    border-radius: 12px;
+    background: #f9fafb;
+    padding: 2rem;
+    text-align: center;
+    width: 25%;
+}
+
+.upload-container h2 {
+    font-size: 1rem;
+    margin-bottom: 1rem;
+}
+.upload-container h1 {
+    font-size: 1rem;
+    margin-bottom: 1rem;
+}
+
+.tab-buttons {
+    display: flex;
+    margin-bottom: 1rem;
+    margin-top: 1rem;
+    background: #f0f0f0;
+    align-items: center;
+    justify-content: space-around;
+    padding: 0.5rem;
+    border-radius: 12px;
+}
+.tab-button {
+    padding: 0.3rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s;
+    border: none;
+}
+
+.tab-buttons .active {
+    border: 1px solid grey;
+    border-radius: 12px;
+    padding: 0.4rem 0.4rem;
+}
+
+.tab-content{
+    margin-top: 3rem;
+    border: 1px dashed grey;
+    padding: 1rem;
+    border-radius: 1rem;
+    height: 10rem;
+    display: flex;
+    flex-flow: column;
+    align-items: center;
+    justify-content: center;
+}
+.tab-content span{
+    font-size: 0.5rem;
+    border: 1px solid grey;
+    padding: 0.5rem;
+    border-radius: 1rem;
+}
+
+.tab-content p {
+    color: #4b5563;
+    font-size: 0.7rem;
+}
+
+.upload-button {
+    display: block;
+    margin-top: 1.5rem;
+    width: 100%;
+    background: linear-gradient(to right, #4f46e5, #9333ea);
+    border: none;
+    color: white;
+    padding: 0.9rem;
+    border-radius: 8px;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.upload-form{
+    display: block;
+}
+.upload-icon{
+    width: 4rem;
+    height: 4rem;
+}
+.video-url-group {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 1rem;
+    width: 100%;
+}
+
+.video-url-group input {
+    flex: 1;
+    padding: 0.5rem;
+}
+
+.video-url-group button {
+    background: #ec4899;
+    border: none;
+    color: white;
+    padding: 0 1rem;
+    border-radius: 8px;
+    cursor: pointer;
+}
+
+.hidden {
+    display: none;
+}
+
+.selected-files-container {
+    margin-top: 2rem;
+}
+
+.file-box {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background-color: #dae6dd;
+    border-radius: 10px;
+    padding: 10px 15px;
+    margin-bottom: 10px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+}
+
+.file-box p{
+    font-size: 0.6rem;
+    margin: 0.3rem;
+}
+
+.file-info {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.file-info div{
+    display:flex;
+    flex-flow: column;
+    align-items: flex-start
+}
+
+.file-icon {
+    flex-shrink: 0;
+}
+
+.filename {
+    font-weight: 700;
+    color: #333;
+}
+
+.filesize {
+    font-size: 0.75rem;
+    color: #888;
+}
+
+.remove-file {
+    font-size: 1.2rem;
+    cursor: pointer;
+    color: #999;
+    padding: 0 8px;
+    transition: color 0.2s ease;
+}
+
+    .remove-file:hover {
+        color: #e74c3c;
+    }
