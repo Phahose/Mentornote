@@ -8,10 +8,12 @@
 
 body {
     font-family: "Bruno Ace", sans-serif;
-   /* font-family: 'Segoe UI', sans-serif;*/
+    /* font-family: 'Segoe UI', sans-serif;*/
     background-color: #1a1a1a;
     padding: 0;
-    margin: 0
+    margin: 0;
+    height: 100vh;
+    background-color: #e1e6ed;
 }
 .nav{
     list-style: none;
@@ -175,6 +177,7 @@ body {
 .func-nav-body {
     display: flex;
     width: 100%;
+    min-height: fit-content;
 }
 .func-navigation {
     width: 15%;
@@ -306,10 +309,10 @@ body {
 .f-home-controller {
     width: 100vw;
     height: 100vh;
-    min-height: inherit;
     display: flex;
     justify-content: center;
     align-items: center;
+    background-color: #e1e6ed;
 }
 
 .flashcard{
@@ -319,9 +322,9 @@ body {
 .func-holder {
     width: 100%;
 }
-.fg{
+.fg {
     padding: 1rem;
-    width: 100%;
+    width: 70%;
 }
 .flashcard-container {
     width: 70%;
@@ -346,7 +349,11 @@ body {
         display: block; /* only active one shows */
     }
 
-    .flashcard:hover {
+/*    .flashcard:hover {
+        transform: rotateY(180deg);
+    }
+*/
+    .flashcard.flipped {
         transform: rotateY(180deg);
     }
 
@@ -357,7 +364,7 @@ body {
     left: 0;
     width: 100%;
     height: 100%;
-    background-color: #18191c;
+    background-color: #e1e6ed;
     display: flex;
     flex-flow: column;
     align-items: center;
@@ -409,6 +416,7 @@ body {
     padding-top: 2rem;
     align-items: center;
     height: 100vh;
+    min-height: fit-content;
     max-width: 100vw;
     margin: auto;
     width: 100%;
