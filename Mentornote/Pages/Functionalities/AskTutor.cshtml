@@ -1,0 +1,34 @@
+﻿@page
+@model Mentornote.Pages.Functionalities.Ask_TutorModel
+@{
+    Layout = "Navigation";
+}
+<div class="fg">
+    <div class="tutor-container">
+        <h1 class="page-title">AI Tutor</h1>
+        <p class="page-subtext">Ask questions and get instant help on your study materials.</p>
+
+        <div class="chat-container">
+            <!-- Bot Message -->
+            <div class="message-row bot">
+                <div class="bot-icon">
+                    🎓
+                </div>
+                <div class="message-bubble">
+                    Hi! I'm ready to answer questions about "<strong>Chemistry</strong>". What would you like to know?
+                </div>
+            </div>
+
+         
+        </div>
+    </div>
+        <form method="post" class="chat-input-area">
+            @Html.AntiForgeryToken() <!-- Required for Razor Pages -->
+        <input type="text" name="UserQuestion" class="chat-input" placeholder="Type your question here..." required />
+            <button class="send-btn">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="#ffffff" viewBox="0 0 24 24">
+                    <path d="M2.01 21L23 12 2.01 3v7l15 2-15 2z" />
+                </svg>
+            </button>
+        </form>
+</div>
