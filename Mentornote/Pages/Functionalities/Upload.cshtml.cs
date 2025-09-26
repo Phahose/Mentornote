@@ -18,6 +18,7 @@ namespace Mentornote.Pages.Functionalities
         public IFormFile UploadedNote { get; set; }
         public User NewUser { get; set; } = new User();
         public string Email { get; set; } = string.Empty;
+        public string Status { get; set; } = string.Empty;
         public List<FlashcardSet> FlashcardSets { get; set; } = new();
         public CardsServices flashcardService = new();
 
@@ -53,7 +54,7 @@ namespace Mentornote.Pages.Functionalities
 
             if (!string.IsNullOrEmpty(Submit))
             {
-                if (Submit == "Upload")
+                if (Submit == "Create Study Materials")
                 {
                     if (UploadedNote != null && UploadedNote.Length > 0)
                     {
@@ -61,7 +62,17 @@ namespace Mentornote.Pages.Functionalities
                         {
                             File = UploadedNote
                         };
-                        _flashCardsController.GenerateFromPdf(notesDto, NewUser.Id).GetAwaiter().GetResult();
+                       var status = _flashCardsController.GenerateFromPdf(notesDto, NewUser.Id).GetAwaiter().GetResult();
+                        if (status.ToString().Contains("BadRequest"))
+                        {
+                            Status = "Error";
+                            OnGet();
+                            return Page();
+                        }
+                        else if (status.ToString().Contains("OkObjectResult"))
+                        {
+                            Status = "Success";
+                        }
                     }
                     OnGet();
                     return Page();

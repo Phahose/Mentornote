@@ -1,0 +1,86 @@
+﻿@page
+@model Mentornote.Pages.PreviewModel
+@{
+    Layout = "Navigation";
+}
+<div class="fg">
+    <!-- Header Section -->
+    <div class="header">
+        <a href="~/Start" class="back-btn">&larr;</a>
+        <div>
+            <h1>@Model.FlashcardSets[0].Title</h1>
+            <span class="module-info">
+                <span class="created-date">Created @Model.FlashcardSets[0].CreatedAt.ToString("dd-MM-yyyy")</span>
+                <a href="#" class="view-original">View Original</a>
+            </span>
+        </div>   
+    </div>
+
+    <div class="main-content">
+        <!-- Study Tools Section -->
+        <div class="study-tools">
+            <h2>Study Tools</h2>
+            <p class="subtitle">Choose how you want to study this material</p>
+
+            <a href="/Functionalities/FlashCards?flashcardSetId=@Model.FlashcardSets[0].Id" class="tool-card flashcard-tool">
+                <div>
+                    <img src="https://img.icons8.com/ios-filled/50/FFFFFF/graduation-cap.png" alt="Logo" class="logo" />
+                    <div>
+                        <h3>Study Flashcards</h3>
+                        <p>@Model.FlashcardSets[0].Flashcards.Count cards available</p>
+                    </div>
+                </div>
+                <span class="arrow">&rarr;</span>
+            </a>
+
+            <a href="#" class="tool-card ai-tutor">
+                <div>
+                    <img src="https://img.icons8.com/ios-filled/24/FFFFFF/chat.png" />
+                    <div>
+                        <h3>Ask AI Tutor</h3>
+                        <p>Get instant help and answers</p>
+                    </div>
+                </div>             
+                <span class="arrow">&rarr;</span>
+            </a>
+
+            <a href="#" class="tool-card exam">
+                <div>
+                    <img src="https://img.icons8.com/ios-filled/24/FFFFFF/test-passed.png" />
+                    <div>
+                        <h3>Take Practice Exam</h3>
+                        <p>Test your knowledge</p>
+                    </div>
+                </div>            
+                <span class="arrow">&rarr;</span>
+            </a>
+        </div>
+
+        <!-- Right Side Panel -->
+        <div class="right-panel">
+            <!-- Progress Box -->
+            <div class="progress-box">
+                <h3>Study Progress</h3>
+                <p>Flashcards Studied <strong>0%</strong></p>
+                <div class="progress-stats">
+                    <div>
+                        <span class="count purple">@Model.FlashcardSets[0].Flashcards.Count</span><br />
+                        <span>Total Cards</span>
+                    </div>
+                    <div>
+                        <span class="count orange">0</span><br />
+                        <span>Exams Taken</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Summary Section -->
+    <div class="summary-box">
+        <h3>Summary</h3>
+        <p>
+            Nicholas Ekwom is a multifaceted individual characterized by a blend of creativity, analytical skills, and emotional intelligence. He approaches tasks with a senior developer mindset, focusing on understanding systems and improving processes while also prioritizing storytelling and audience engagement in his creative endeavors. Ekwom balances high personal standards with self-care and adaptability, demonstrating wisdom beyond his years.
+        </p>
+    </div>
+</div>

@@ -4,7 +4,16 @@
     Layout = "Navigation";
 }
 <div class="fg">
-    <h1>Flashcards</h1>
+    <div class="header">
+        <a href="/Preview?flashcardSetId=@Model.FlashcardSets[0].Id" class="back-btn">&larr;</a>
+        <div>
+            <h1>FlashCards</h1>
+            <span class="module-info">
+                <span class="created-date">Created Sep 21, 2025</span>
+                <a href="#" class="view-original">View Original</a>
+            </span>
+        </div>
+    </div>
     <div class="flashcard-container">
         @for (int i = 0; i < Model.FlashcardSets.First().Flashcards.Count; i++)
         {

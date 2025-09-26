@@ -6,10 +6,27 @@
 <div class="startpagecont">
     <div class="upload-container">
 
-        <form class="upload-form" method="post" enctype="multipart/form-data" onsubmit="return showLoadingBar();">
+    <form class="upload-form" method="post" enctype="multipart/form-data" onsubmit="return showLoadingBar();">
             @Html.AntiForgeryToken() <!-- Required for Razor Pages -->
         <h2>Add Study Materials</h2>
 
+        @if (Model.Status == "Success")
+        {
+           <div class="success-message">
+               <p>
+                    <strong style="color: green;">&#10003; Study Meterials Created Successfully!</strong>
+               </p>
+           </div>
+        }
+
+        @if (Model.Status == "Error")
+        {
+           <div class="error-message">
+               <p>
+                    <strong style="color: red;">&#10007; Error uploading file. Please try again.</strong>
+               </p>
+           </div>
+        }
 
         <div class="tab-buttons">
             <button type="button" id="fileTab" class="active tab-button" onclick="showTab('files')">
@@ -55,7 +72,7 @@
         </div>
         <div id="selectedFilesContainer" class="selected-files-container"></div>
 
-        <input type="submit" name="Sumbit" class="upload-button" value="Create Study Materials"/>
+        <input type="submit" name="Submit" value="Create Study Materials" class="upload-button" />
     </form>
 </div>
 </div>
