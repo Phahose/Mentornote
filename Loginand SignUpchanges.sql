@@ -97,3 +97,68 @@ DELETE FROM FlashcardSets
 
 ALTER TABLE Flashcards
 ALTER COLUMN Title nvarchar(max) NULL;
+
+--Other functionalities
+CREATE TABLE Notes (
+    Id INT PRIMARY KEY IDENTITY,
+    UserId INT NOT NULL,
+    Title NVARCHAR(255),
+    FilePath NVARCHAR(MAX), -- Where the uploaded file is stored
+    UploadedAt DATETIME2 NOT NULL DEFAULT GETDATE(),
+    FOREIGN KEY (UserId) REFERENCES Users(Id)
+);
+
+
+
+CREATE TABLE NoteSummaries (
+    Id INT PRIMARY KEY IDENTITY(1,1),
+    UploadedNoteId INT NOT NULL,
+    SummaryText NVARCHAR(MAX) NOT NULL,
+    GeneratedAt DATETIME2 NOT NULL DEFAULT GETDATE(),
+
+    CONSTRAINT FK_NoteSummaries_UploadedNotes FOREIGN KEY (UploadedNoteId) REFERENCES Notes(Id)
+);
+
+
+CREATE TABLE TutorMessages (
+    Id INT PRIMARY KEY IDENTITY,
+    NoteId INT NOT NULL,
+    UserId INT NOT NULL,
+    Message TEXT NOT NULL,
+    Response TEXT NOT NULL,
+    CreatedAt DATETIME2 NOT NULL DEFAULT GETDATE(),
+    FOREIGN KEY (UserId) REFERENCES Users(Id),
+    FOREIGN KEY (NoteId) REFERENCES Notes(Id)
+);
+
+-- PRACTICE EXAMS
+CREATE TABLE PracticeExams (
+    Id INT PRIMARY KEY IDENTITY(1,1),
+    NoteId INT NOT NULL,
+    UserId NVARCHAR(450) NOT NULL,
+    Title NVARCHAR(255) NOT NULL,
+    Score INT, -- Out of 100 or raw score depending on your logic
+    TotalQuestions INT,
+    CompletedAt DATETIME,
+    CreatedAt DATETIME NOT NULL DEFAULT GETDATE(),
+    FOREIGN KEY (NoteId) REFERENCES Notes(Id)
+);
+
+-- PRACTICE EXAM QUESTIONS
+CREATE TABLE PracticeExamQuestions (
+    Id INT PRIMARY KEY IDENTITY(1,1),
+    PracticeExamId INT NOT NULL,
+    QuestionText NVARCHAR(MAX) NOT NULL,
+    AnswerText NVARCHAR(MAX), -- for short/long answer or correct MCQ answer
+    QuestionType NVARCHAR(50) NOT NULL, -- e.g., 'MultipleChoice', 'ShortAnswer'
+    FOREIGN KEY (PracticeExamId) REFERENCES PracticeExams(Id)
+);
+
+-- PRACTICE EXAM QUESTION CHOICES (only used for multiple choice questions)
+CREATE TABLE PracticeQuestionChoices (
+    Id INT PRIMARY KEY IDENTITY(1,1),
+    PracticeExamQuestionId INT NOT NULL,
+    ChoiceText NVARCHAR(MAX) NOT NULL,
+    IsCorrect BIT NOT NULL DEFAULT 0,
+    FOREIGN KEY (PracticeExamQuestionId) REFERENCES PracticeExamQuestions(Id)
+);
