@@ -19,8 +19,11 @@ namespace Mentornote.Pages.Functionalities
         public User NewUser { get; set; } = new User();
         public string Email { get; set; } = string.Empty;
         public string Status { get; set; } = string.Empty;
+        [BindProperty]
+        public string Title { get; set; } = string.Empty;
         public List<FlashcardSet> FlashcardSets { get; set; } = new();
         public CardsServices flashcardService = new();
+        public NotesSummaryService notesSummaryService;
 
         public UploadModel(FlashCardsController flashCardsController)
         {
@@ -62,7 +65,7 @@ namespace Mentornote.Pages.Functionalities
                         {
                             File = UploadedNote
                         };
-                       var status = _flashCardsController.GenerateFromPdf(notesDto, NewUser.Id).GetAwaiter().GetResult();
+                        var status = _flashCardsController.GenerateFromPdf(notesDto, NewUser.Id, Title).GetAwaiter().GetResult();
                         if (status.ToString().Contains("BadRequest"))
                         {
                             Status = "Error";

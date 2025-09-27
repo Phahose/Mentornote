@@ -23,7 +23,8 @@ namespace Mentornote.Pages.Shared
         public User NewUser { get; set; } = new User();
         public string Email { get; set; } = string.Empty;
         public List<FlashcardSet> FlashcardSets { get; set; } = new();
-        public CardsServices flashcardService = new();
+        public List<Note> NotesList { get; set; } = new();
+        public CardsServices cardservices = new();
 
         public StartModel(FlashCardsController flashCardsController)
         {
@@ -46,7 +47,8 @@ namespace Mentornote.Pages.Shared
             }
             UsersService usersService = new();
             NewUser = usersService.GetUserByEmail(Email);
-            FlashcardSets = flashcardService.GetUserFlashcards(NewUser.Id);
+            FlashcardSets = cardservices.GetUserFlashcards(NewUser.Id);
+            NotesList = cardservices.GetUserNotes(NewUser.Id);
         }
 
         public IActionResult OnPost() 
@@ -67,36 +69,22 @@ namespace Mentornote.Pages.Shared
                     id = int.Parse(split[1]);
                 }
                
-                if (Submit == "Upload")
-                {
-                    if (UploadedNote != null && UploadedNote.Length > 0)
-                    {
-                        var notesDto = new Mentornote.DTOs.NotesDto
-                        {
-                            File = UploadedNote
-                        };
-                        _flashCardsController.GenerateFromPdf(notesDto, NewUser.Id).GetAwaiter().GetResult();
-                    }
-                    OnGet();
-                    return Page();
-                }
-                if (Submit == "Go")
-                {
-                    HttpContext.Session.SetInt32("FlashCardSetID", FlashCardSetId);
-                    return RedirectToPage("~/Functionalities/FlashCards");
-                }
                 if (action == "Delete")
                 {
-                    _flashCardsController.DeleteFlashcardSet(id);
+                    _flashCardsController.DeleteNote(id, NewUser.Id);
                 }
                 if (action == "Rename")
                 {
                     string titleKey = $"NewTitle-{id}";
+
+                    List<Note> notes = cardservices.GetUserNotes(NewUser.Id);
+
+                    Note updatingNote = notes.Where(n => n.Id == id).FirstOrDefault();
                     var newTitle = Request.Form[titleKey];
 
                     if (!string.IsNullOrEmpty(newTitle))
                     {
-                        _flashCardsController.UpdateFlashcardSetTitle(id, newTitle);
+                        _flashCardsController.UpdateNotetitle(updatingNote, newTitle);
                     }
                 }
                 OnGet();

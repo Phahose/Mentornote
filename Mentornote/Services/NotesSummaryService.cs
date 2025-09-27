@@ -20,7 +20,7 @@ namespace Mentornote.Services
             _config = config;
         }
 
-        public async Task<string> GenerateSummaryAsync(string noteContent)
+        public async Task<string> GenerateSummaryAsync(string noteContent, int noteId)
         {
             var prompt = $"Summarize the following content:\n\n{noteContent}";
 
@@ -49,8 +49,31 @@ namespace Mentornote.Services
 
                 var responseContentString = await response.Content.ReadAsStringAsync();
                 var responseContent = JsonSerializer.Deserialize<OpenAIResponse>(responseContentString);
+                CardsServices cardsServices = new();
+                string summary;
 
-                return responseContent?.choices?[0]?.message?.content ?? "No summary generated.";
+                if (responseContent != null &&
+                    responseContent.choices != null &&
+                    responseContent.choices.Length > 0 &&
+                    responseContent.choices[0].message != null &&
+                    responseContent.choices[0].message.content != null)
+                {
+                    summary = responseContent.choices[0].message.content;
+                    NoteSummary noteSummary = new()
+                    {
+                        NoteId = noteId,
+                        SummaryText = summary
+                    };
+                    cardsServices.AddNoteSummary(noteSummary);
+                    
+                }
+                else
+                {
+                    summary = "No summary generated.";
+                }
+
+
+                return summary;
             }
             catch (Exception ex)
             {

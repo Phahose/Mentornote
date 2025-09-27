@@ -88,7 +88,7 @@
             @Html.AntiForgeryToken() <!-- Required for Razor Pages -->
             <div class="notes-cards-container">
                 <p class="cont-head">Recent Activity </p>
-                @foreach (var flashcardset in @Model.FlashcardSets)
+                @foreach (var note in @Model.NotesList)
                 {
                     <div class="note-card">
                         <div class="note-left">
@@ -96,14 +96,14 @@
                                 <img src="https://img.icons8.com/ios-filled/20/3b82f6/book.png" alt="Book Icon" />
                             </div>
                             <div class="note-text">
-                                <strong>@flashcardset.Title</strong>
-                                <p class="timestamp">@flashcardset.UserId</p>
+                                <strong>@note.Title</strong>
+                                <p class="timestamp">@note.UserId</p>
                             </div>
                         </div>
 
                         <div class="note-right">
                            @*  <a href="/Functionalities/FlashCards?flashcardSetId=@flashcardset.Id" class="tag note-tag">View Card</a> *@
-                            <a href="/Preview?flashcardSetId=@flashcardset.Id" class="tag note-tag">View Card</a>
+                            <a href="/Preview?noteId=@note.Id" class="tag note-tag">View Card</a>
 
                             <svg onmouseover="togglePopup(this)" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="black" viewBox="0 0 24 24" class="kebab-img">
                                 <circle cx="12" cy="5" r="2" />
@@ -112,13 +112,13 @@
                             </svg>
 
                             <div class="popup-menu hidden">
-                                <button type="submit" name="Submit" value="Rename-@flashcardset.Id" class="popup-btn">
+                                <button type="submit" name="Submit" value="Rename-@note.Id" class="popup-btn">
                                     <svg xmlns="http://www.w3.org/2000/svg" class="popup-icon" viewBox="0 0 24 24" width="16" height="16" fill="currentColor">
                                         <path d="M4 21h4.586L20.293 9.293a1 1 0 0 0 0-1.414l-4.172-4.172a1 1 0 0 0-1.414 0L4 15.586V21zM5.414 17L15 7.414l1.586 1.586L7 18.586H5.414V17z" />
                                     </svg>
                                     Edit Title                    
                                 </button>
-                                <button type="submit" name="Submit" value="Delete-@flashcardset.Id" class="popup-btn">
+                                <button type="submit" name="Submit" value="Delete-@note.Id" class="popup-btn">
                                     <svg xmlns="http://www.w3.org/2000/svg" class="popup-icon" viewBox="0 0 24 24" width="16" height="16" fill="currentColor">
                                         <path d="M6 7h12v13a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2V7zm3 3v7h2v-7H9zm4 0v7h2v-7h-2z" />
                                         <path d="M18 4h-3.5l-1-1h-3l-1 1H6v2h12V4z" />
@@ -131,7 +131,7 @@
                     </div>
 
                 }
-                @if (Model.FlashcardSets.Count == 0)
+                @if (Model.NotesList.Count == 0)
                 {                 
                     <p class="empty-list">You have no Notes Yet Lets Make Some!!</p>
                 }

@@ -162,3 +162,60 @@ CREATE TABLE PracticeQuestionChoices (
     IsCorrect BIT NOT NULL DEFAULT 0,
     FOREIGN KEY (PracticeExamQuestionId) REFERENCES PracticeExamQuestions(Id)
 );
+
+CREATE PROCEDURE AddNote
+	@UserId INT,
+    @Title NVARCHAR(255),
+    @FilePath NVARCHAR(MAX)
+AS
+BEGIN
+    SET NOCOUNT ON;
+
+    INSERT INTO Notes (UserId, Title, FilePath, UploadedAt)
+    VALUES (@UserId, @Title, @FilePath, SYSDATETIME());
+END;
+
+CREATE PROCEDURE DeleteNote
+    @NoteId INT
+AS
+BEGIN
+    SET NOCOUNT ON;
+
+    DELETE FROM dbo.Notes
+    WHERE Id = @NoteId;
+END
+
+
+CREATE PROCEDURE GetNotes
+	@UserId INT 
+AS 
+BEGIN
+SET NOCOUNT ON;
+	  SELECT 
+	   Id,
+	   UserId,
+	   Title,
+	   FilePath,
+	   UploadedAt
+	   FROM Notes WHERE UserId = @UserId
+END
+
+
+DROP Procedure GetNotes
+
+CREATE PROCEDURE spUpdateNote
+    @NoteId INT,
+    @UserId INT,
+    @Title NVARCHAR(255),
+    @FilePath NVARCHAR(500),
+AS
+BEGIN
+    SET NOCOUNT ON;
+
+    UPDATE Notes
+    SET
+        Title = @Title,
+        FilePath = @FilePath
+    WHERE
+        Id = @NoteId AND UserId = @UserId;
+END;

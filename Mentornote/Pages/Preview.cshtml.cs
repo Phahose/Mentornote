@@ -14,9 +14,9 @@ namespace Mentornote.Pages
         public List<FlashcardSet> FlashcardSets { get; set; } = new();
         public List<Flashcard> Flashcards { get; set; } = new();
         public CardsServices flashcardService = new();
-        public void OnGet(int flashcardSetId)
+        public void OnGet(int noteId)
         {
-            HttpContext.Session.SetInt32("SelectedFlashcardSetId", flashcardSetId);
+            HttpContext.Session.SetInt32("SelectedNoteId", noteId);
             Email = HttpContext.Session.GetString("Email")!;
             if (string.IsNullOrEmpty(Email))
             {
@@ -27,10 +27,10 @@ namespace Mentornote.Pages
             NewUser = usersService.GetUserByEmail(Email);
             FlashcardSets = flashcardService.GetUserFlashcards(NewUser.Id);
 
-            HttpContext.Session.SetInt32("SelectedFlashcardSetId", flashcardSetId);
+            HttpContext.Session.SetInt32("SelectedNoteId", noteId);
 
             FlashcardSets = FlashcardSets
-                .Where(f => f.Id == flashcardSetId)
+                .Where(f => f.UserId == NewUser.Id)
                 .ToList();
         }
     }

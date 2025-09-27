@@ -16,12 +16,11 @@ namespace Mentornote.Models
         public DateTime UploadedAt { get; set; } = DateTime.UtcNow;
 
         // Foreign key to User
-        public string UserId { get; set; }
+        public int UserId { get; set; }
 
         // Navigation properties
         public ICollection<FlashcardSet> FlashcardSets { get; set; }
         public ICollection<NoteSummary> Summaries { get; set; }
-/*        public ICollection<PracticeExam> PracticeExams { get; set; }
-        public ICollection<TutorQuestion> TutorQuestions { get; set; }*/
+
     }
 }
