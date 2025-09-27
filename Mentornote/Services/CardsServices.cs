@@ -213,10 +213,10 @@ namespace Mentornote.Services
 
                 if (reader.HasRows)
                 {
-                    Note note = new();
-
                     while (reader.Read())
                     {
+                        Note note = new();
+
                         note.Id = (int)reader["Id"];
                         note.UserId = (int)reader["UserId"];
                         note.Title = (string)reader["Title"];
@@ -300,7 +300,7 @@ namespace Mentornote.Services
 
                     SqlParameter noteIdParameter = new SqlParameter
                     {
-                        ParameterName = "@UserId",
+                        ParameterName = "@UploadedNoteId",
                         SqlDbType = SqlDbType.Int,
                         Direction = ParameterDirection.Input,
                         SqlValue = noteSummary.NoteId
@@ -329,6 +329,49 @@ namespace Mentornote.Services
                 Console.WriteLine(ex.Message);
                 return ex.Message;
             }
+        }
+
+        public NoteSummary GetUserNotesSummary(int noteId)
+        {
+            NoteSummary notesummary = new();
+            using (SqlConnection mentornoteConnection = new SqlConnection(connectionString))
+            {
+                mentornoteConnection.Open();
+
+                SqlCommand getFlashcards = new SqlCommand
+                {
+                    CommandType = CommandType.StoredProcedure,
+                    Connection = mentornoteConnection,
+                    CommandText = "GetNotesSummary"
+                };
+
+                SqlParameter noteIdParameter = new SqlParameter
+                {
+                    ParameterName = "@NoteId",
+                    SqlDbType = SqlDbType.Int,
+                    Direction = ParameterDirection.Input,
+                    SqlValue = noteId
+                };
+
+                getFlashcards.Parameters.Add(noteIdParameter);
+
+                SqlDataReader reader = getFlashcards.ExecuteReader();
+
+                if (reader.HasRows)
+                {
+                    while (reader.Read())
+                    {
+                        notesummary.Id = (int)reader["Id"];
+                        notesummary.NoteId = (int)reader["UploadedNoteId"];
+                        notesummary.SummaryText = (string)reader["SummaryText"];
+                        notesummary.CreatedAt = (DateTime)reader["GeneratedAt"];
+                    }
+                }
+
+                reader.Close();
+            }
+
+            return notesummary;
         }
     }
 }

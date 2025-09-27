@@ -11,7 +11,7 @@
             <h1>@Model.FlashcardSets[0].Title</h1>
             <span class="module-info">
                 <span class="created-date">Created @Model.FlashcardSets[0].CreatedAt.ToString("dd-MM-yyyy")</span>
-                <a href="#" class="view-original">View Original</a>
+                <a href="@Model.Note.FilePath" target="_blank" class="view-original">View Original</a>
             </span>
         </div>   
     </div>
@@ -80,7 +80,7 @@
     <div class="summary-box">
         <h3>Summary</h3>
         <p>
-            Nicholas Ekwom is a multifaceted individual characterized by a blend of creativity, analytical skills, and emotional intelligence. He approaches tasks with a senior developer mindset, focusing on understanding systems and improving processes while also prioritizing storytelling and audience engagement in his creative endeavors. Ekwom balances high personal standards with self-care and adaptability, demonstrating wisdom beyond his years.
+            @Model.noteSummary.SummaryText
         </p>
     </div>
 </div>

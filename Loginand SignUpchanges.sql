@@ -166,13 +166,17 @@ CREATE TABLE PracticeQuestionChoices (
 CREATE PROCEDURE AddNote
 	@UserId INT,
     @Title NVARCHAR(255),
-    @FilePath NVARCHAR(MAX)
+    @FilePath NVARCHAR(MAX),
+	@NewNoteId INT OUTPUT
 AS
 BEGIN
     SET NOCOUNT ON;
 
     INSERT INTO Notes (UserId, Title, FilePath, UploadedAt)
     VALUES (@UserId, @Title, @FilePath, SYSDATETIME());
+
+	-- Get the ID of the inserted note
+    SET @NewNoteId = SCOPE_IDENTITY()
 END;
 
 CREATE PROCEDURE DeleteNote
@@ -201,21 +205,42 @@ SET NOCOUNT ON;
 END
 
 
-DROP Procedure GetNotes
+Exec   GetNotes 1
 
-CREATE PROCEDURE spUpdateNote
+CREATE PROCEDURE UpdateNote
     @NoteId INT,
     @UserId INT,
-    @Title NVARCHAR(255),
-    @FilePath NVARCHAR(500),
+    @Title NVARCHAR(255)
 AS
 BEGIN
     SET NOCOUNT ON;
 
     UPDATE Notes
     SET
-        Title = @Title,
-        FilePath = @FilePath
+        Title = @Title
     WHERE
         Id = @NoteId AND UserId = @UserId;
 END;
+
+CREATE PROCEDURE AddNoteSummary
+    @UploadedNoteId INT,
+    @SummaryText NVARCHAR(MAX)
+AS
+BEGIN
+    INSERT INTO dbo.NoteSummaries (UploadedNoteId, SummaryText, GeneratedAt)
+    VALUES (@UploadedNoteId, @SummaryText, SYSDATETIME())
+END
+
+
+CREATE PROCEDURE GetNotesSummary
+	@NoteId INT 
+AS 
+BEGIN
+SET NOCOUNT ON;
+	  SELECT 
+	   Id,
+	   UploadedNoteId,
+	   SummaryText,
+	   GeneratedAt
+	   FROM NoteSummaries WHERE UploadedNoteId = @NoteId
+END
