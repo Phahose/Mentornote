@@ -12,6 +12,7 @@ namespace Mentornote.Models
         [JsonPropertyName("title")]
         public string Title { get; set; } = string.Empty;
         public int FlashcardSetId { get; set; }
+        public int NoteId { get; set; }
       //  public FlashcardSet FlashcardSet { get; set; } = new();
     }
 }

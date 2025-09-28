@@ -19,7 +19,7 @@ namespace Mentornote.Services
             _config = config;
         }
 
-        public async Task<List<Flashcard>> GenerateFromNotes(string notes)
+        public async Task<List<Flashcard>> GenerateFromNotes(string notes, int noteId)
         {
             var allFlashcards = new List<Flashcard>();
             var chunks = ChunkText(notes, 1500); // You can tweak 1500 depending on what works
@@ -28,7 +28,7 @@ namespace Mentornote.Services
             {
                 try
                 {
-                    var flashcardsFromChunk = await GenerateFlashcardsFromChunk(chunk);
+                    var flashcardsFromChunk = await GenerateFlashcardsFromChunk(chunk, noteId);
                     allFlashcards.AddRange(flashcardsFromChunk);
                 }
                 catch (Exception ex)
@@ -41,7 +41,7 @@ namespace Mentornote.Services
             return allFlashcards;
         }
 
-        private async Task<List<Flashcard>> GenerateFlashcardsFromChunk(string notesChunk)
+        private async Task<List<Flashcard>> GenerateFlashcardsFromChunk(string notesChunk, int noteId)
         {
             var apiKey = _config["OpenAI:ApiKey"].Trim();
             var prompt = $"Generate flashcards from these notes and also a title based on the notes. The title should be 2 words max:\n{notesChunk}\n\nReturn JSON array with 'title', 'question', and 'answer'.";
@@ -73,7 +73,7 @@ namespace Mentornote.Services
 
                 response.EnsureSuccessStatusCode();
                 var json = await response.Content.ReadAsStringAsync();
-                return ParseResponse(json);
+                return ParseResponse(json, noteId);
             }
 
             throw new Exception("Failed after multiple attempts due to rate limiting.");
@@ -97,11 +97,12 @@ namespace Mentornote.Services
             {
                 Title = title,
                 UserId = userId,
-                Flashcards = cards
+                Flashcards = cards,
+                NoteId = cards.FirstOrDefault().NoteId
             };
         }
 
-        private List<Flashcard> ParseResponse(string json)
+        private List<Flashcard> ParseResponse(string json, int noteId)
         {
             using var doc = JsonDocument.Parse(json);
 
@@ -119,7 +120,8 @@ namespace Mentornote.Services
             {
                 Front = fc.Front,
                 Back = fc.Back,
-                Title = fc.Title
+                Title = fc.Title,
+                NoteId = noteId
             }).ToList();
         }
 

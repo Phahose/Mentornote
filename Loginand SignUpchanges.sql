@@ -49,6 +49,10 @@ CREATE TABLE Flashcards (
     FOREIGN KEY (FlashcardSetId) REFERENCES FlashcardSets(Id)
 );
 
+
+ALTER TABLE Flashcards
+ADD NoteId INT NULL;
+
 CREATE PROCEDURE GetUserByEmail
     @Email NVARCHAR(255)
 AS
@@ -68,6 +72,7 @@ BEGIN
 END;
 
 
+
 CREATE PROCEDURE GetUserFlashcards
     @UserId INT
 AS
@@ -82,7 +87,8 @@ BEGIN
 		fcs.UserId,
         f.Id AS FlashcardId,
         f.Front,
-        f.Back
+        f.Back,
+		f.NoteId
     FROM dbo.FlashcardSets fcs
     INNER JOIN dbo.Flashcards f 
         ON fcs.Id = f.FlashcardSetId
@@ -95,8 +101,8 @@ Drop Procedure GetUserFlashcards
 
 DELETE FROM FlashcardSets
 
-ALTER TABLE Flashcards
-ALTER COLUMN Title nvarchar(max) NULL;
+ALTER TABLE FlashcardSets
+Drop COLUMN NoteId;
 
 --Other functionalities
 CREATE TABLE Notes (
@@ -185,10 +191,14 @@ AS
 BEGIN
     SET NOCOUNT ON;
 
+	DELETE FROM NoteSummaries WHERE UploadedNoteId = @NoteId
+	DELETE FROM Flashcards WHERE NoteId = @NoteId
     DELETE FROM dbo.Notes
     WHERE Id = @NoteId;
 END
 
+
+DROP PROCEDURE DeleteNote
 
 CREATE PROCEDURE GetNotes
 	@UserId INT 

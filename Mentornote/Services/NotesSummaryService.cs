@@ -22,65 +22,92 @@ namespace Mentornote.Services
 
         public async Task<string> GenerateSummaryAsync(string noteContent, int noteId)
         {
-            var prompt = $"Summarize the following content:\n\n{noteContent}";
+            var chunks = ChunkText(noteContent, 1500);
+            var allSummaries = new List<string>();
+            var apiKey = _config["OpenAI:ApiKey"].Trim();
 
-            var requestBody = new
+            foreach (var chunk in chunks)
             {
-                model = "gpt-4",
-                messages = new[]
+                try
                 {
-                new { role = "user", content = prompt }
-            },
-                max_tokens = 300
-            };
+                    var prompt = $"Summarize the following content and structure it using markdown with clear sections, bullet points, and bolded titles:\n\n{chunk}";
 
-            try
-            {
-                var apiKey = _config["OpenAI:ApiKey"];
-                var requestJson = JsonSerializer.Serialize(requestBody);
-                var request = new HttpRequestMessage(HttpMethod.Post, "https://api.openai.com/v1/chat/completions");
-                request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", apiKey);
-                request.Content = new StringContent(requestJson, Encoding.UTF8, "application/json");
-
-                var response = await _httpClient.SendAsync(request);
-
-                if (!response.IsSuccessStatusCode)
-                    return $"Error: {response.StatusCode} - {await response.Content.ReadAsStringAsync()}";
-
-                var responseContentString = await response.Content.ReadAsStringAsync();
-                var responseContent = JsonSerializer.Deserialize<OpenAIResponse>(responseContentString);
-                CardsServices cardsServices = new();
-                string summary;
-
-                if (responseContent != null &&
-                    responseContent.choices != null &&
-                    responseContent.choices.Length > 0 &&
-                    responseContent.choices[0].message != null &&
-                    responseContent.choices[0].message.content != null)
-                {
-                    summary = responseContent.choices[0].message.content;
-                    NoteSummary noteSummary = new()
+                    var requestBody = new
                     {
-                        NoteId = noteId,
-                        SummaryText = summary
+                        model = "gpt-4",
+                        messages = new[]
+                        {
+                            new { role = "user", content = prompt }
+                        },
+                        max_tokens = 300
                     };
-                    cardsServices.AddNoteSummary(noteSummary);
-                    
+
+                    var requestJson = JsonSerializer.Serialize(requestBody);
+                    var request = new HttpRequestMessage(HttpMethod.Post, "https://api.openai.com/v1/chat/completions");
+                    request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", apiKey);
+                    request.Content = new StringContent(requestJson, Encoding.UTF8, "application/json");
+
+                    var response = await _httpClient.SendAsync(request);
+
+                    if (!response.IsSuccessStatusCode)
+                    {
+                        Console.WriteLine($"OpenAI API Error: {response.StatusCode} - {await response.Content.ReadAsStringAsync()}");
+                        continue;
+                    }
+
+                    var responseContentString = await response.Content.ReadAsStringAsync();
+                    var responseContent = JsonSerializer.Deserialize<OpenAIResponse>(responseContentString);
+
+                    if (responseContent?.choices?.Length > 0 &&
+                        responseContent.choices[0]?.message?.content != null)
+                    {
+                        var summary = responseContent.choices[0].message.content.Trim();
+                        allSummaries.Add(summary);
+                    }
+                    else
+                    {
+                        Console.WriteLine("No valid summary generated from OpenAI.");
+                        continue;
+                    }
                 }
-                else
+                catch (Exception ex)
                 {
-                    summary = "No summary generated.";
+                    Console.WriteLine($"Error processing chunk: {ex.Message}");
+                    continue;
                 }
-
-
-                return summary;
             }
-            catch (Exception ex)
+
+            if (allSummaries.Count == 0)
+                return "Summary generation failed for all chunks.";
+
+            // Combine all summaries
+            var finalSummary = string.Join("\n\n", allSummaries);
+
+            // Save to DB
+            CardsServices cardsServices = new();
+            NoteSummary noteSummary = new()
             {
-                return $"Exception occurred while generating summary: {ex.Message}";
+                NoteId = noteId,
+                SummaryText = finalSummary
+            };
+            cardsServices.AddNoteSummary(noteSummary);
+
+            return finalSummary;
+        }
+
+        List<string> ChunkText(string fullText, int maxChunkSize = 1500)
+        {
+            var chunks = new List<string>();
+            for (int i = 0; i < fullText.Length; i += maxChunkSize)
+            {
+                var chunk = fullText.Substring(i, Math.Min(maxChunkSize, fullText.Length - i));
+                chunks.Add(chunk);
             }
+            return chunks;
         }
     }
+
+    
     public class OpenAIResponse
     {
         public Choice[] choices { get; set; }

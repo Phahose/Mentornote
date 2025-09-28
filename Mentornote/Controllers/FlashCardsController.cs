@@ -47,7 +47,7 @@ namespace Mentornote.Controllers
 
             var text = ExtractText(request.File.OpenReadStream());
 
-            var cards = await _flashcardService.GenerateFromNotes(text);
+            var cards = await _flashcardService.GenerateFromNotes(text, noteId);
             var summary = await _notesSummaryService.GenerateSummaryAsync(text, noteId);
             var set = _flashcardService.CreateFlashcardSet(title, userId, cards);
             _context.FlashcardSets.Add(set);

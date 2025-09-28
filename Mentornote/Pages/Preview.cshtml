@@ -8,7 +8,7 @@
     <div class="header">
         <a href="~/Start" class="back-btn">&larr;</a>
         <div>
-            <h1>@Model.FlashcardSets[0].Title</h1>
+            <h1>@Model.Note.Title</h1>
             <span class="module-info">
                 <span class="created-date">Created @Model.FlashcardSets[0].CreatedAt.ToString("dd-MM-yyyy")</span>
                 <a href="@Model.Note.FilePath" target="_blank" class="view-original">View Original</a>
@@ -80,7 +80,7 @@
     <div class="summary-box">
         <h3>Summary</h3>
         <p>
-            @Model.noteSummary.SummaryText
+           @Html.Raw(Model.HtmlSummary)
         </p>
     </div>
 </div>

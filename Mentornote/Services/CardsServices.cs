@@ -62,6 +62,7 @@ namespace Mentornote.Services
                         //set.Source = (string)reader["Source"];
                         set.Flashcards = new List<Flashcard>();
                         set.UserId = (int)reader["UserId"];
+                        set.NoteId = reader["NoteId"] == DBNull.Value ? 0 : (int)reader["NoteId"];
                         flashcardSetMap.Add(flashcardSetId, set);
                         flashcardSets.Add(set);
                     }
@@ -71,7 +72,9 @@ namespace Mentornote.Services
                     {
                         Id = (int)reader["FlashcardId"],
                         Front = (string)reader["Front"],
-                        Back = (string)reader["Back"]
+                        Back = (string)reader["Back"],
+                        NoteId = reader["NoteId"] == DBNull.Value ? 0 : (int)reader["NoteId"]
+
                     };
 
                     flashcardSetMap[flashcardSetId].Flashcards.Add(flashcard);
