@@ -1,3 +1,4 @@
+#nullable disable
 using Mentornote.Models;
 using Mentornote.Services;
 using Microsoft.AspNetCore.Mvc;
@@ -14,6 +15,8 @@ namespace Mentornote.Pages.Functionalities
         public List<FlashcardSet> FlashcardSets { get; set; } = new();
         public List<Flashcard> Flashcards { get; set; } = new();
         public CardsServices flashcardService = new();
+        public List<Note> NotesList { get; set; } = new();
+        public Note Note = new();
         public void OnGet(int flashcardSetId)
         {
             HttpContext.Session.SetInt32("SelectedFlashcardSetId", flashcardSetId);
@@ -32,6 +35,11 @@ namespace Mentornote.Pages.Functionalities
             FlashcardSets = FlashcardSets
                 .Where(f => f.Id == flashcardSetId)
                 .ToList();
+
+            NotesList = flashcardService.GetUserNotes(NewUser.Id);
+            Note = NotesList.Where(n => n.Id == FlashcardSets[0].NoteId).FirstOrDefault();
+
+            HttpContext.Session.SetInt32("SelectedNoteId", FlashcardSets[0].NoteId);
         }
     }
 }

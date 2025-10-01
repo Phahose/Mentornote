@@ -52,6 +52,11 @@ namespace Mentornote.Pages.Functionalities
             NewUser = usersService.GetUserByEmail(Email);
 
             NotesList = flashcardService.GetUserNotes(NewUser.Id);
+
+            FlashcardSets = flashcardService.GetUserFlashcards(NewUser.Id);
+            FlashcardSets = FlashcardSets
+               .Where(f => f.NoteId == noteId)
+               .ToList();
             Note = NotesList.Where(n => n.Id == noteId).FirstOrDefault();
 
             HttpContext.Session.SetInt32("SelectedNoteId", noteId);
