@@ -194,6 +194,8 @@ BEGIN
 	DELETE FROM NoteSummaries WHERE UploadedNoteId = @NoteId
 	DELETE FROM Flashcards WHERE NoteId = @NoteId
 	DELETE FROM FlashcardSets WHERE NoteId = @NoteId
+	DELETE FROM NoteEmbeddings WHERE NoteId = @NoteId
+	DELETE FROM TutorMessages WHERE NoteId = @NoteId
     DELETE FROM dbo.Notes
     WHERE Id = @NoteId;
 END
@@ -255,3 +257,90 @@ SET NOCOUNT ON;
 	   GeneratedAt
 	   FROM NoteSummaries WHERE UploadedNoteId = @NoteId
 END
+
+
+-- 1. Create Table: NoteEmbeddings
+CREATE TABLE NoteEmbeddings (
+    Id INT PRIMARY KEY IDENTITY(1,1),
+    NoteId INT NOT NULL,
+    ChunkText NVARCHAR(MAX) NOT NULL,
+    EmbeddingJson NVARCHAR(MAX) NOT NULL,
+    ChunkIndex INT NOT NULL,
+    CreatedAt DATETIME DEFAULT GETDATE(),
+    FOREIGN KEY (NoteId) REFERENCES Notes(Id) 
+);
+
+-- 2. Stored Procedure: Add a Chunk + Embedding
+CREATE PROCEDURE AddNoteEmbedding
+    @NoteId INT,
+    @ChunkText NVARCHAR(MAX),
+    @EmbeddingJson NVARCHAR(MAX),
+    @ChunkIndex INT
+AS
+BEGIN
+    INSERT INTO NoteEmbeddings (NoteId, ChunkText, EmbeddingJson, ChunkIndex)
+    VALUES (@NoteId, @ChunkText, @EmbeddingJson, @ChunkIndex);
+END;
+
+-- 3. Stored Procedure: Get All Embeddings for a Note
+CREATE PROCEDURE GetNoteEmbeddingsByNoteId
+    @NoteId INT
+AS
+BEGIN
+    SELECT ChunkText, EmbeddingJson, ChunkIndex
+    FROM NoteEmbeddings
+    WHERE NoteId = @NoteId
+    ORDER BY ChunkIndex;
+END;
+
+-- 4. Stored Procedure: Delete All Embeddings for a Note
+CREATE PROCEDURE DeleteNoteEmbeddingsByNoteId
+    @NoteId INT
+AS
+BEGIN
+    DELETE FROM NoteEmbeddings
+    WHERE NoteId = @NoteId;
+END;
+
+-- 5. Stored Procedure: Get Specific Chunk (Optional)
+CREATE PROCEDURE GetNoteEmbeddingByChunkIndex
+    @NoteId INT,
+    @ChunkIndex INT
+AS
+BEGIN
+    SELECT * FROM NoteEmbeddings
+    WHERE NoteId = @NoteId AND ChunkIndex = @ChunkIndex;
+END;
+
+-- 6. Stored Procedure: Delete One Chunk (Optional)
+CREATE PROCEDURE DeleteNoteEmbeddingByChunkIndex
+    @NoteId INT,
+    @ChunkIndex INT
+AS
+BEGIN
+    DELETE FROM NoteEmbeddings
+    WHERE NoteId = @NoteId AND ChunkIndex = @ChunkIndex;
+END;
+
+
+CREATE PROCEDURE AddTutorMessage
+    @NoteId INT,
+    @UserId INT,
+    @Message NVARCHAR(MAX),
+    @Response NVARCHAR(MAX)
+AS
+BEGIN
+    INSERT INTO TutorMessages (NoteId, UserId, Message, Response, CreatedAt)
+    VALUES (@NoteId, @UserId, @Message, @Response, GETDATE());
+END;
+
+CREATE PROCEDURE GetTutorMessagesByNoteId
+    @NoteId INT,
+    @UserId INT
+AS
+BEGIN
+    SELECT Message, Response, CreatedAt
+    FROM TutorMessages
+    WHERE NoteId = @NoteId AND UserId = @UserId
+    ORDER BY CreatedAt;
+END;
