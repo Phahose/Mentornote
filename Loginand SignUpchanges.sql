@@ -102,7 +102,7 @@ Drop Procedure GetUserFlashcards
 DELETE FROM FlashcardSets
 
 ALTER TABLE FlashcardSets
-Drop COLUMN NoteId;
+Add  NoteId nvarchar(max) NULL;
 
 --Other functionalities
 CREATE TABLE Notes (
@@ -193,6 +193,7 @@ BEGIN
 
 	DELETE FROM NoteSummaries WHERE UploadedNoteId = @NoteId
 	DELETE FROM Flashcards WHERE NoteId = @NoteId
+	DELETE FROM FlashcardSets WHERE NoteId = @NoteId
     DELETE FROM dbo.Notes
     WHERE Id = @NoteId;
 END

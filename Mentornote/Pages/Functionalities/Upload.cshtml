@@ -1,9 +1,15 @@
 ﻿@page
 @model Mentornote.Pages.Functionalities.UploadModel
 @{
-    Layout = "Navigation";
+    Layout = "_Layout";
 }
 <div class="startpagecont">
+    <div class="header">
+        <a href="~/Start" class="back-btn">&larr;</a>
+        <div>
+            <h1>FlashCards</h1>
+        </div>
+    </div>
     <div class="upload-container">
 
     <form class="upload-form" method="post" enctype="multipart/form-data" onsubmit="return showLoadingBar();">

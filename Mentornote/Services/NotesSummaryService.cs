@@ -25,9 +25,11 @@ namespace Mentornote.Services
             var chunks = ChunkText(noteContent, 1500);
             var allSummaries = new List<string>();
             var apiKey = _config["OpenAI:ApiKey"].Trim();
+            int chunkIndex = 0;
 
             foreach (var chunk in chunks)
             {
+                chunkIndex++;
                 try
                 {
                     var prompt = $"Summarize the following content and structure it using markdown with clear sections, bullet points, and bolded titles:\n\n{chunk}";
@@ -69,6 +71,11 @@ namespace Mentornote.Services
                         Console.WriteLine("No valid summary generated from OpenAI.");
                         continue;
                     }
+
+                    // --- Embedding for the same chunk ---
+                    await GenerateEmbeddingAsync(chunk, noteId, chunkIndex);
+
+                   
                 }
                 catch (Exception ex)
                 {
@@ -94,6 +101,52 @@ namespace Mentornote.Services
 
             return finalSummary;
         }
+
+        public async Task GenerateEmbeddingAsync(string chunk, int noteId, int chunkIndex)
+        {
+            try
+            {
+                var apiKey = _config["OpenAI:ApiKey"].Trim();
+
+                var requestBody = new
+                {
+                    input = chunk,
+                    model = "text-embedding-3-small"
+                };
+
+                var requestJson = JsonSerializer.Serialize(requestBody);
+                var request = new HttpRequestMessage(HttpMethod.Post, "https://api.openai.com/v1/embeddings");
+                request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", apiKey);
+                request.Content = new StringContent(requestJson, Encoding.UTF8, "application/json");
+
+                var response = await _httpClient.SendAsync(request);
+
+                if (response.IsSuccessStatusCode)
+                {
+                    var embeddingResult = await response.Content.ReadAsStringAsync();
+
+                    NoteEmbedding noteEmbedding = new()
+                    {
+                        NoteId = noteId,
+                        ChunkText = chunk,
+                        EmbeddingJson = embeddingResult,
+                        ChunkIndex = chunkIndex
+                    };
+
+                    CardsServices cardsServices = new();
+                    cardsServices.AddNoteEmbedding(noteEmbedding);
+                }
+                else
+                {
+                    Console.WriteLine($"OpenAI Embedding API Error: {response.StatusCode}");
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error generating embedding: {ex.Message}");
+            }
+        }
+
 
         List<string> ChunkText(string fullText, int maxChunkSize = 1500)
         {

@@ -15,10 +15,31 @@
                     🎓
                 </div>
                 <div class="message-bubble">
-                    Hi! I'm ready to answer questions about "<strong>Chemistry</strong>". What would you like to know?
+                    Hi! I'm ready to answer questions about "<strong>@Model.Note.Title</strong>". What would you like to know?
                 </div>
             </div>
 
+                <!-- Chat History -->
+                @if (Model.TutorMessages != null && Model.TutorMessages.Any())
+                {
+                    foreach (var msg in Model.TutorMessages)
+                    {
+                        <!-- User Message -->
+                        <div class="message-row user">
+                            <div class="message-bubble user-bubble">
+                                @msg.Message
+                            </div>
+                        </div>
+
+                        <!-- Bot Response -->
+                        <div class="message-row bot">
+                            <div class="bot-icon">🎓</div>
+                            <div class="message-bubble">
+                                @Html.Raw(Markdig.Markdown.ToHtml(msg.Response))
+                            </div>
+                        </div>
+                    }
+                }
          
         </div>
     </div>

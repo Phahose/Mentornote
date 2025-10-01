@@ -8,16 +8,15 @@ using Microsoft.VisualStudio.Web.CodeGenerators.Mvc.Templates.BlazorIdentity.Pag
 using static Azure.Core.HttpHeader;
 using Markdig;
 
-namespace Mentornote.Pages
+namespace Mentornote.Pages.Functionalities
 {
-    public class PreviewModel : PageModel
+    public class SummaryModel : PageModel
     {
         public User NewUser { get; set; } = new User();
         public string Email { get; set; } = string.Empty;
-        public List<FlashcardSet> FlashcardSets { get; set; } = new();
-        public List<Flashcard> Flashcards { get; set; } = new();
         public CardsServices flashcardService = new();
         public NoteSummary noteSummary = new();
+        public List<FlashcardSet> FlashcardSets { get; set; } = new();
         public string HtmlSummary { get; set; } = string.Empty;
         public Note Note = new();
         public List<Note> NotesList { get; set; } = new();
@@ -25,7 +24,7 @@ namespace Mentornote.Pages
         {
             HttpContext.Session.SetInt32("SelectedNoteId", noteId);
             noteSummary = flashcardService.GetUserNotesSummary(noteId);
-           
+
             HtmlSummary = flashcardService.ConvertMarkdownToHtml(noteSummary.SummaryText);
 
             Email = HttpContext.Session.GetString("Email")!;
@@ -43,11 +42,9 @@ namespace Mentornote.Pages
 
             HttpContext.Session.SetInt32("SelectedNoteId", noteId);
 
-            FlashcardSets = FlashcardSets
-                .Where(f => f.NoteId == noteId)
-                .ToList();
+           
         }
 
-       
+
     }
 }

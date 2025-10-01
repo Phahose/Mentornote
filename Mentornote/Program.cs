@@ -40,6 +40,7 @@ namespace Mentornote
             builder.Services.AddScoped<AuthController>();
             builder.Services.AddScoped<CardsServices>();
             builder.Services.AddScoped<NotesSummaryService>();
+            builder.Services.AddScoped<TutorServices>();
             builder.Services.AddHttpContextAccessor();
  /*           builder.Services.AddAuthentication(options =>
             {

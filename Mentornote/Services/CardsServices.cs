@@ -1,4 +1,5 @@
 ﻿using Elfie.Serialization;
+using Markdig;
 using Mentornote.Models;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.CodeAnalysis.Elfie.Diagnostics;
@@ -376,5 +377,241 @@ namespace Mentornote.Services
 
             return notesummary;
         }
+
+        public string AddNoteEmbedding(NoteEmbedding noteEmbedding)
+        {
+            try
+            {
+                using SqlConnection mentornoteConnection = new SqlConnection(connectionString);
+                {
+                    mentornoteConnection.Open();
+
+                    SqlCommand addEmbedding = new SqlCommand
+                    {
+                        CommandType = CommandType.StoredProcedure,
+                        Connection = mentornoteConnection,
+                        CommandText = "AddNoteEmbedding"
+                    };
+
+                    addEmbedding.Parameters.Add(new SqlParameter
+                    {
+                        ParameterName = "@NoteId",
+                        SqlDbType = SqlDbType.Int,
+                        Direction = ParameterDirection.Input,
+                        SqlValue = noteEmbedding.NoteId
+                    });
+
+                    addEmbedding.Parameters.Add(new SqlParameter
+                    {
+                        ParameterName = "@ChunkText",
+                        SqlDbType = SqlDbType.NVarChar,
+                        Direction = ParameterDirection.Input,
+                        SqlValue = noteEmbedding.ChunkText
+                    });
+
+                    addEmbedding.Parameters.Add(new SqlParameter
+                    {
+                        ParameterName = "@EmbeddingJson",
+                        SqlDbType = SqlDbType.NVarChar,
+                        Direction = ParameterDirection.Input,
+                        SqlValue = noteEmbedding.EmbeddingJson
+                    });
+
+                    addEmbedding.Parameters.Add(new SqlParameter
+                    {
+                        ParameterName = "@ChunkIndex",
+                        SqlDbType = SqlDbType.Int,
+                        Direction = ParameterDirection.Input,
+                        SqlValue = noteEmbedding.ChunkIndex
+                    });
+
+                    addEmbedding.ExecuteNonQuery();
+                    mentornoteConnection.Close();
+                }
+
+                return "success";
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex.Message);
+                return ex.Message;
+            }
+        }
+
+        public List<NoteEmbedding> GetNoteEmbeddingsByNoteId(int noteId)
+        {
+            var embeddings = new List<NoteEmbedding>();
+
+            try
+            {
+                using SqlConnection mentornoteConnection = new SqlConnection(connectionString);
+                {
+                    mentornoteConnection.Open();
+
+                    SqlCommand cmd = new SqlCommand
+                    {
+                        CommandType = CommandType.StoredProcedure,
+                        Connection = mentornoteConnection,
+                        CommandText = "GetNoteEmbeddingsByNoteId"
+                    };
+
+                    cmd.Parameters.Add(new SqlParameter
+                    {
+                        ParameterName = "@NoteId",
+                        SqlDbType = SqlDbType.Int,
+                        Direction = ParameterDirection.Input,
+                        SqlValue = noteId
+                    });
+
+                    using var reader = cmd.ExecuteReader();
+                    while (reader.Read())
+                    {
+                        var noteEmbedding = new NoteEmbedding
+                        {
+                            NoteId = noteId,
+                            ChunkText = reader["ChunkText"].ToString(),
+                            EmbeddingJson = reader["EmbeddingJson"].ToString(),
+                            ChunkIndex = Convert.ToInt32(reader["ChunkIndex"])
+                        };
+
+                        embeddings.Add(noteEmbedding);
+                    }
+
+                    mentornoteConnection.Close();
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error retrieving embeddings: {ex.Message}");
+            }
+
+            return embeddings;
+        }
+
+        public string AddTutorMessage(TutorMessage tutorMessage)
+        {
+            try
+            {
+                using SqlConnection conn = new SqlConnection(connectionString);
+                {
+                    conn.Open();
+
+                    SqlCommand cmd = new SqlCommand
+                    {
+                        CommandType = CommandType.StoredProcedure,
+                        Connection = conn,
+                        CommandText = "AddTutorMessage" // Stored procedure name
+                    };
+
+                    cmd.Parameters.Add(new SqlParameter
+                    {
+                        ParameterName = "@NoteId",
+                        SqlDbType = SqlDbType.Int,
+                        Direction = ParameterDirection.Input,
+                        SqlValue = tutorMessage.NoteId
+                    });
+
+                    cmd.Parameters.Add(new SqlParameter
+                    {
+                        ParameterName = "@UserId",
+                        SqlDbType = SqlDbType.Int,
+                        Direction = ParameterDirection.Input,
+                        SqlValue = tutorMessage.UserId
+                    });
+
+                    cmd.Parameters.Add(new SqlParameter
+                    {
+                        ParameterName = "@Message",
+                        SqlDbType = SqlDbType.NVarChar,
+                        Direction = ParameterDirection.Input,
+                        SqlValue = tutorMessage.Message
+                    });
+
+                    cmd.Parameters.Add(new SqlParameter
+                    {
+                        ParameterName = "@Response",
+                        SqlDbType = SqlDbType.NVarChar,
+                        Direction = ParameterDirection.Input,
+                        SqlValue = tutorMessage.Response
+                    });
+
+                    cmd.ExecuteNonQuery();
+                    conn.Close();
+                }
+
+                return "success";
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex.Message);
+                return ex.Message;
+            }
+        }
+
+        public List<TutorMessage> GetTutorMessages(int noteId, int userId)
+        {
+            var messages = new List<TutorMessage>();
+
+            try
+            {
+                using SqlConnection conn = new SqlConnection(connectionString);
+                {
+                    conn.Open();
+
+                    SqlCommand cmd = new SqlCommand
+                    {
+                        CommandType = CommandType.StoredProcedure,
+                        Connection = conn,
+                        CommandText = "GetTutorMessagesByNoteId" // Your stored proc
+                    };
+
+                    cmd.Parameters.Add(new SqlParameter
+                    {
+                        ParameterName = "@NoteId",
+                        SqlDbType = SqlDbType.Int,
+                        Direction = ParameterDirection.Input,
+                        SqlValue = noteId
+                    });
+
+                    cmd.Parameters.Add(new SqlParameter
+                    {
+                        ParameterName = "@UserId",
+                        SqlDbType = SqlDbType.Int,
+                        Direction = ParameterDirection.Input,
+                        SqlValue = userId
+                    });
+
+                    using var reader = cmd.ExecuteReader();
+                    while (reader.Read())
+                    {
+                        messages.Add(new TutorMessage
+                        {
+                            NoteId = noteId,
+                            UserId = userId,
+                            Message = reader["Message"].ToString(),
+                            Response = reader["Response"].ToString(),
+                            CreatedAt = Convert.ToDateTime(reader["CreatedAt"])
+                        });
+                    }
+
+                    conn.Close();
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex.Message);
+            }
+
+            return messages;
+        }
+
+
+        public string ConvertMarkdownToHtml(string markdown)
+        {
+            var html = Markdown.ToHtml(markdown);
+            return html;
+        }
     }
+    
+
 }

@@ -1,0 +1,24 @@
+﻿@page
+@model Mentornote.Pages.Functionalities.SummaryModel
+@{
+    Layout = "Navigation";
+}
+<div class="fg">
+    <div class="header">
+        <a href="/Preview?noteId=@Model.Note.Id" class="back-btn">&larr;</a>
+        <div>
+            <h1>Summary</h1>
+            <span class="module-info">
+                <span class="created-date">Created @Model.Note.UploadedAt.ToString("dd-MM-yyyy")</span>
+                <a href="@Model.Note.FilePath" target="_blank" class="view-original">View Original</a>
+            </span>
+        </div>   
+    </div>
+    <div class="summary-main-content">
+        <div class="summary-summary-box">
+            <p>
+                @Html.Raw(Model.HtmlSummary)
+            </p>
+        </div>
+    </div>
+</div>

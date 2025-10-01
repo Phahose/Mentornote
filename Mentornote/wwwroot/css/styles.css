@@ -326,6 +326,7 @@ body {
     padding: 1rem;
     width: 70%;
     height:fit-content;
+    max-height:100vh;
 }
 .flashcard-container {
     width: 70%;
@@ -1064,12 +1065,14 @@ body {
     background: #f0f4fb;
     padding: 1.5rem;
     border-radius: 10px;
-    height: 100%;
+    height: 60vh;
     min-height: 300px;
+    margin-bottom: 0rem;
     box-shadow: 0 8px 16px rgba(0, 0, 0, 0.05);
+    overflow-y: scroll;
 }
-.tutor-container{
-    height: 60vh
+.tutor-container {
+    height:fit-content;
 }
 
 /* Message Row */
@@ -1102,16 +1105,20 @@ body {
     font-size: 15px;
     color: #333;
 }
+.user-bubble{
+    background-color: mediumpurple;
+    color:white;
+    margin-left:auto;
+}
 
 .chat-input-area {
+    background: #f0f4fb;
     display: flex;
-    margin-top: 2rem;
-    background: white;
     border-radius: 8px;
     padding: 0.5rem;
     border: 1px solid #d3dce6;
     box-shadow: 0 2px 5px rgba(0, 0, 0, 0.03);
-    width: 90%;
+    width: 98%;
     margin-left: auto;
     margin-right: auto;
 }
@@ -1305,7 +1312,7 @@ body {
 }
 
 .summary-box {
-    max-width: 65%;
+    max-width: 68%;
     background-color: white;
     padding: 1rem;
     margin-left: 1rem;
@@ -1315,3 +1322,19 @@ body {
     font-size: 0.8rem;
     color: gray;
 }
+
+/*Summary*/
+.summary-summary-box {
+    background-color: white;
+    padding: 1rem;
+    margin: 1rem;
+    width: 90%;
+    height: 80vh;
+    overflow-y: scroll;
+    border-radius: 2rem;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.03);
+}
+.summary-summary-box {
+    font-size: 0.8rem;
+}
+
