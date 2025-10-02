@@ -217,6 +217,23 @@ SET NOCOUNT ON;
 	   FROM Notes WHERE UserId = @UserId
 END
 
+CREATE PROCEDURE GetNoteById
+    @NoteId INT,
+    @UserId INT
+AS
+BEGIN
+    SET NOCOUNT ON;
+
+    SELECT 
+        Id,
+        UserId,
+        Title,
+        FilePath,
+        UploadedAt
+    FROM Notes
+    WHERE Id = @NoteId AND UserId = @UserId;
+END
+
 
 Exec   GetNotes 1
 
@@ -344,3 +361,79 @@ BEGIN
     WHERE NoteId = @NoteId AND UserId = @UserId
     ORDER BY CreatedAt;
 END;
+
+
+CREATE PROCEDURE CreatePracticeExam
+    @NoteId INT,
+    @UserId NVARCHAR(450),
+    @Title NVARCHAR(255),
+    @TotalQuestions INT
+AS
+BEGIN
+    INSERT INTO PracticeExams (NoteId, UserId, Title, Score, TotalQuestions, CreatedAt)
+    VALUES (@NoteId, @UserId, @Title, 0, @TotalQuestions, GETDATE());
+
+    SELECT SCOPE_IDENTITY() AS ExamId;
+END
+
+
+CREATE PROCEDURE AddPracticeExamQuestion
+    @PracticeExamId INT,
+    @QuestionText NVARCHAR(MAX),
+    @AnswerText NVARCHAR(MAX),
+    @QuestionType NVARCHAR(50)
+AS
+BEGIN
+    INSERT INTO PracticeExamQuestions (PracticeExamId, QuestionText, AnswerText, QuestionType)
+    VALUES (@PracticeExamId, @QuestionText, @AnswerText, @QuestionType);
+
+    SELECT SCOPE_IDENTITY() AS QuestionId;
+END
+
+CREATE PROCEDURE AddPracticeQuestionChoice
+    @PracticeExamQuestionId INT,
+    @ChoiceText NVARCHAR(MAX),
+    @IsCorrect BIT
+AS
+BEGIN
+    INSERT INTO PracticeQuestionChoices (PracticeExamQuestionId, ChoiceText, IsCorrect)
+    VALUES (@PracticeExamQuestionId, @ChoiceText, @IsCorrect);
+END
+
+CREATE PROCEDURE GetPracticeExamWithQuestions
+     @NoteId INT
+AS
+BEGIN
+    SET NOCOUNT ON;
+
+    -- Get the exam linked to this note
+    SELECT * 
+    FROM PracticeExams
+    WHERE NoteId = @NoteId;
+
+    -- Get the questions for that exam
+    SELECT q.* 
+    FROM PracticeExamQuestions q
+    INNER JOIN PracticeExams e ON e.Id = q.PracticeExamId
+    WHERE e.NoteId = @NoteId;
+
+    -- Get the choices for those questions
+    SELECT c.* 
+    FROM PracticeQuestionChoices c
+    INNER JOIN PracticeExamQuestions q ON q.Id = c.PracticeExamQuestionId
+    INNER JOIN PracticeExams e ON e.Id = q.PracticeExamId
+    WHERE e.NoteId = @NoteId;
+END
+
+DROP PROCEDURE GetPracticeExamWithQuestions
+
+CREATE PROCEDURE CompletePracticeExam
+    @ExamId INT,
+    @Score INT
+AS
+BEGIN
+    UPDATE PracticeExams
+    SET Score = @Score,
+        CompletedAt = GETDATE()
+    WHERE Id = @ExamId;
+END

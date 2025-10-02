@@ -34,13 +34,15 @@ namespace Mentornote
             builder.Services.AddSwaggerGen();
             builder.Services.AddHttpClient();
             builder.Services.AddRazorPages();
-            builder.Services.AddSession(); 
+            builder.Services.AddSession();
+            builder.Services.AddSignalR();
             builder.Services.AddScoped<FlashcardService>();
             builder.Services.AddScoped<FlashCardsController>();
             builder.Services.AddScoped<AuthController>();
             builder.Services.AddScoped<CardsServices>();
             builder.Services.AddScoped<NotesSummaryService>();
             builder.Services.AddScoped<TutorServices>();
+            builder.Services.AddScoped<TestServices>();
             builder.Services.AddHttpContextAccessor();
  /*           builder.Services.AddAuthentication(options =>
             {
@@ -83,6 +85,8 @@ namespace Mentornote
             app.UseHttpsRedirection();
 
             app.UseStaticFiles();
+
+            app.MapHub<ProcessingHub>("/processingHub");
 
             app.UseRouting();
 

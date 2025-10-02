@@ -237,6 +237,61 @@ namespace Mentornote.Services
             return NoteList;
         }
 
+        public Note GetNoteById(int noteId, int userId)
+        {
+            Note note = new();
+
+            using (SqlConnection mentornoteConnection = new SqlConnection(connectionString))
+            {
+                mentornoteConnection.Open();
+
+                SqlCommand getNote = new SqlCommand
+                {
+                    CommandType = CommandType.StoredProcedure,
+                    Connection = mentornoteConnection,
+                    CommandText = "GetNoteById"
+                };
+
+                SqlParameter noteIdParameter = new SqlParameter
+                {
+                    ParameterName = "@NoteId",
+                    SqlDbType = SqlDbType.Int,
+                    Direction = ParameterDirection.Input,
+                    SqlValue = noteId
+                };
+
+                SqlParameter userIdParameter = new SqlParameter
+                {
+                    ParameterName = "@UserId",
+                    SqlDbType = SqlDbType.Int,
+                    Direction = ParameterDirection.Input,
+                    SqlValue = userId
+                };
+
+                getNote.Parameters.Add(noteIdParameter);
+                getNote.Parameters.Add(userIdParameter);
+
+                SqlDataReader reader = getNote.ExecuteReader();
+
+                if (reader.HasRows && reader.Read())
+                {
+                    note = new Note
+                    {
+                        Id = (int)reader["Id"],
+                        UserId = (int)reader["UserId"],
+                        Title = (string)reader["Title"],
+                        FilePath = (string)reader["FilePath"],
+                        UploadedAt = (DateTime)reader["UploadedAt"]
+                    };
+                }
+
+                reader.Close();
+            }
+
+            return note;
+        }
+
+
         public bool UpdateNote(Note note, string title)
         {
             try
@@ -604,6 +659,323 @@ namespace Mentornote.Services
 
             return messages;
         }
+
+        public int AddTest(Test test)
+        {
+            try
+            {
+                int testId;
+                using SqlConnection connection = new SqlConnection(connectionString);
+                {
+                    connection.Open();
+
+                    SqlCommand addTest = new SqlCommand
+                    {
+                        CommandType = CommandType.StoredProcedure,
+                        Connection = connection,
+                        CommandText = "AddPracticeExam"
+                    };
+
+                    SqlParameter noteIdParam = new SqlParameter
+                    {
+                        ParameterName = "@NoteId",
+                        SqlDbType = SqlDbType.Int,
+                        Direction = ParameterDirection.Input,
+                        SqlValue = test.NoteId
+                    };
+
+                    SqlParameter userIdParam = new SqlParameter
+                    {
+                        ParameterName = "@UserId",
+                        SqlDbType = SqlDbType.NVarChar,
+                        Size = 450,
+                        Direction = ParameterDirection.Input,
+                        SqlValue = test.UserId
+                    };
+
+                    SqlParameter titleParam = new SqlParameter
+                    {
+                        ParameterName = "@Title",
+                        SqlDbType = SqlDbType.NVarChar,
+                        Size = 255,
+                        Direction = ParameterDirection.Input,
+                        SqlValue = test.Title
+                    };
+
+                    SqlParameter totalQuestionsParam = new SqlParameter
+                    {
+                        ParameterName = "@TotalQuestions",
+                        SqlDbType = SqlDbType.Int,
+                        Direction = ParameterDirection.Input,
+                        SqlValue = test.TotalQuestions
+                    };
+
+                    // Output param
+                    var outputIdParam = new SqlParameter("@NewExamId", SqlDbType.Int)
+                    {
+                        Direction = ParameterDirection.Output
+                    };
+
+                    addTest.Parameters.Add(noteIdParam);
+                    addTest.Parameters.Add(userIdParam);
+                    addTest.Parameters.Add(titleParam);
+                    addTest.Parameters.Add(totalQuestionsParam);
+                    addTest.Parameters.Add(outputIdParam);
+
+                    addTest.ExecuteNonQuery();
+                    connection.Close();
+
+                    testId = (int)outputIdParam.Value;
+                }
+
+                return testId;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex.Message);
+                return 0;
+            }
+        }
+
+        public int AddTestQuestion(TestQuestion question)
+        {
+            try
+            {
+                int questionId;
+                using SqlConnection connection = new SqlConnection(connectionString);
+                {
+                    connection.Open();
+
+                    SqlCommand addQuestion = new SqlCommand
+                    {
+                        CommandType = CommandType.StoredProcedure,
+                        Connection = connection,
+                        CommandText = "AddPracticeExamQuestion" // DB procedure name
+                    };
+
+                    SqlParameter examIdParam = new SqlParameter
+                    {
+                        ParameterName = "@PracticeExamId",
+                        SqlDbType = SqlDbType.Int,
+                        Direction = ParameterDirection.Input,
+                        SqlValue = question.TestId
+                    };
+
+                    SqlParameter questionTextParam = new SqlParameter
+                    {
+                        ParameterName = "@QuestionText",
+                        SqlDbType = SqlDbType.NVarChar,
+                        Direction = ParameterDirection.Input,
+                        SqlValue = question.QuestionText
+                    };
+
+                    SqlParameter answerTextParam = new SqlParameter
+                    {
+                        ParameterName = "@AnswerText",
+                        SqlDbType = SqlDbType.NVarChar,
+                        Direction = ParameterDirection.Input,
+                        SqlValue = question.AnswerText
+                    };
+
+                    SqlParameter questionTypeParam = new SqlParameter
+                    {
+                        ParameterName = "@QuestionType",
+                        SqlDbType = SqlDbType.NVarChar,
+                        Size = 50,
+                        Direction = ParameterDirection.Input,
+                        SqlValue = question.QuestionType
+                    };
+
+                    // Output param
+                    var outputIdParam = new SqlParameter("@NewQuestionId", SqlDbType.Int)
+                    {
+                        Direction = ParameterDirection.Output
+                    };
+
+                    addQuestion.Parameters.Add(examIdParam);
+                    addQuestion.Parameters.Add(questionTextParam);
+                    addQuestion.Parameters.Add(answerTextParam);
+                    addQuestion.Parameters.Add(questionTypeParam);
+                    addQuestion.Parameters.Add(outputIdParam);
+
+                    addQuestion.ExecuteNonQuery();
+                    connection.Close();
+
+                    questionId = (int)outputIdParam.Value;
+                }
+
+                return questionId;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex.Message);
+                return 0;
+            }
+        }
+
+        public int AddTestQuestionChoice(TestQuestionChoice choice)
+        {
+            try
+            {
+                int choiceId;
+                using SqlConnection connection = new SqlConnection(connectionString);
+                {
+                    connection.Open();
+
+                    SqlCommand addChoice = new SqlCommand
+                    {
+                        CommandType = CommandType.StoredProcedure,
+                        Connection = connection,
+                        CommandText = "AddPracticeQuestionChoice" // DB procedure name
+                    };
+
+                    SqlParameter questionIdParam = new SqlParameter
+                    {
+                        ParameterName = "@PracticeExamQuestionId",
+                        SqlDbType = SqlDbType.Int,
+                        Direction = ParameterDirection.Input,
+                        SqlValue = choice.TestQuestionId
+                    };
+
+                    SqlParameter choiceTextParam = new SqlParameter
+                    {
+                        ParameterName = "@ChoiceText",
+                        SqlDbType = SqlDbType.NVarChar,
+                        Direction = ParameterDirection.Input,
+                        SqlValue = choice.ChoiceText
+                    };
+
+                    SqlParameter isCorrectParam = new SqlParameter
+                    {
+                        ParameterName = "@IsCorrect",
+                        SqlDbType = SqlDbType.Bit,
+                        Direction = ParameterDirection.Input,
+                        SqlValue = choice.IsCorrect
+                    };
+
+                    // Output param
+                    var outputIdParam = new SqlParameter("@NewChoiceId", SqlDbType.Int)
+                    {
+                        Direction = ParameterDirection.Output
+                    };
+
+                    addChoice.Parameters.Add(questionIdParam);
+                    addChoice.Parameters.Add(choiceTextParam);
+                    addChoice.Parameters.Add(isCorrectParam);
+                    addChoice.Parameters.Add(outputIdParam);
+
+                    addChoice.ExecuteNonQuery();
+                    connection.Close();
+
+                    choiceId = (int)outputIdParam.Value;
+                }
+
+                return choiceId;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex.Message);
+                return 0;
+            }
+        }
+
+        public List<Test>? GetTestsWithQuestions(int noteId)
+        {
+            List<Test> tests = new();
+
+            using (SqlConnection connection = new SqlConnection(connectionString))
+            {
+                connection.Open();
+
+                SqlCommand cmd = new SqlCommand("GetPracticeExamWithQuestions", connection)
+                {
+                    CommandType = CommandType.StoredProcedure
+                };
+
+                cmd.Parameters.Add(new SqlParameter
+                {
+                    ParameterName = "@NoteId",
+                    SqlDbType = SqlDbType.Int,
+                    Direction = ParameterDirection.Input,
+                    SqlValue = noteId
+                });
+
+                using (SqlDataReader reader = cmd.ExecuteReader())
+                {
+                    // --- First result set: Exams ---
+                    while (reader.HasRows && reader.Read())
+                    {
+                        var test = new Test
+                        {
+                            Id = (int)reader["Id"],
+                            NoteId = (int)reader["NoteId"],
+                            UserId = reader["UserId"].ToString(),
+                            Title = reader["Title"].ToString(),
+                            Score = (int)reader["Score"],
+                            TotalQuestions = (int)reader["TotalQuestions"],
+                            CreatedAt = (DateTime)reader["CreatedAt"],
+                            CompletedAt = reader["CompletedAt"] == DBNull.Value ? null : (DateTime?)reader["CompletedAt"],
+                            Questions = new List<TestQuestion>()
+                        };
+
+                        tests.Add(test);
+                    }
+
+
+                    if(tests.Count > 0 && tests != null)
+                    {
+                        // --- Second result set: Questions ---
+                        if (reader.NextResult() && reader.HasRows)
+                        {
+                            var questionLookup = new Dictionary<int, TestQuestion>();
+
+                            while (reader.Read())
+                            {
+                                var question = new TestQuestion
+                                {
+                                    Id = (int)reader["Id"],
+                                    TestId = (int)reader["PracticeExamId"],
+                                    QuestionText = reader["QuestionText"].ToString(),
+                                    AnswerText = reader["AnswerText"].ToString(),
+                                    QuestionType = reader["QuestionType"].ToString(),
+                                    Choices = new List<TestQuestionChoice>()
+                                };
+
+                                // Attach to correct exam
+                                var parentTest = tests.FirstOrDefault(t => t.Id == question.TestId);
+                                parentTest?.Questions.Add(question);
+
+                                questionLookup[question.Id] = question;
+                            }
+
+                            // --- Third result set: Choices ---
+                            if (reader.NextResult() && reader.HasRows)
+                            {
+                                while (reader.Read())
+                                {
+                                    var choice = new TestQuestionChoice
+                                    {
+                                        Id = (int)reader["Id"],
+                                        TestQuestionId = (int)reader["PracticeExamQuestionId"],
+                                        ChoiceText = reader["ChoiceText"].ToString(),
+                                        IsCorrect = (bool)reader["IsCorrect"]
+                                    };
+
+                                    if (questionLookup.ContainsKey(choice.TestQuestionId))
+                                    {
+                                        questionLookup[choice.TestQuestionId].Choices.Add(choice);
+                                    }
+                                }
+                            }
+                        }
+                    }
+                   
+                }
+            }
+
+            return tests;
+        }
+
 
 
         public string ConvertMarkdownToHtml(string markdown)

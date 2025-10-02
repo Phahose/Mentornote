@@ -5,27 +5,25 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.VisualStudio.Web.CodeGenerators.Mvc.Templates.BlazorIdentity.Pages.Manage;
-using static Azure.Core.HttpHeader;
-using Markdig;
 
 namespace Mentornote.Pages.Functionalities
 {
-    public class SummaryModel : PageModel
+    public class PracticeTestModel : PageModel
     {
         public User NewUser { get; set; } = new User();
         public string Email { get; set; } = string.Empty;
-        public CardsServices cardServices = new();
-        public NoteSummary noteSummary = new();
         public List<FlashcardSet> FlashcardSets { get; set; } = new();
-        public string HtmlSummary { get; set; } = string.Empty;
-        public Note Note = new();
+        public List<Flashcard> Flashcards { get; set; } = new();
+        public CardsServices cardService = new();
+        public TestServices testService = new();
         public List<Note> NotesList { get; set; } = new();
+        public Note Note = new();
+        public List<Test> Tests { get; set; } = new();
+
+
         public void OnGet(int noteId)
         {
             HttpContext.Session.SetInt32("SelectedNoteId", noteId);
-            noteSummary = cardServices.GetUserNotesSummary(noteId);
-
-            HtmlSummary = cardServices.ConvertMarkdownToHtml(noteSummary.SummaryText);
 
             Email = HttpContext.Session.GetString("Email")!;
             if (string.IsNullOrEmpty(Email))
@@ -34,18 +32,26 @@ namespace Mentornote.Pages.Functionalities
                 return;
             }
             UsersService usersService = new();
-            NewUser = usersService.GetUserByEmail(Email);
-            FlashcardSets = cardServices.GetUserFlashcards(NewUser.Id);
 
-            //NotesList = cardServices.GetUserNotes(NewUser.Id);
-            //Note = NotesList.Where(n => n.Id == noteId).FirstOrDefault();
-            Note = cardServices.GetNoteById(noteId, NewUser.Id);
+            NewUser = usersService.GetUserByEmail(Email);
+
+            FlashcardSets = cardService.GetUserFlashcards(NewUser.Id);
+            FlashcardSets = FlashcardSets
+               .Where(f => f.NoteId == noteId)
+               .ToList();
+
+            Note = cardService.GetNoteById(noteId, NewUser.Id);
+
+            // Get all tests for the note
+         /*   Tests = cardService.GetTestsWithQuestions(noteId);
+
+            if (Tests.Count == 0)
+            {
+                testService.CreateTestQuestion(noteId, NewUser.Id).Wait();
+            }*/
+
 
             HttpContext.Session.SetInt32("SelectedNoteId", noteId);
-
-           
         }
-
-
     }
 }

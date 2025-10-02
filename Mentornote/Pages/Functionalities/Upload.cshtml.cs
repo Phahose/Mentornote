@@ -5,6 +5,7 @@ using Mentornote.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
+using Microsoft.AspNetCore.SignalR;
 using Microsoft.VisualStudio.Web.CodeGenerators.Mvc.Templates.BlazorIdentity.Pages.Manage;
 
 namespace Mentornote.Pages.Functionalities
@@ -25,9 +26,11 @@ namespace Mentornote.Pages.Functionalities
         public CardsServices flashcardService = new();
         public NotesSummaryService notesSummaryService;
 
-        public UploadModel(FlashCardsController flashCardsController)
+        private readonly IHubContext<ProcessingHub> _hub;
+        public UploadModel(FlashCardsController flashCardsController, IHubContext<ProcessingHub> hub)
         {
             _flashCardsController = flashCardsController;
+            _hub = hub;
         }
 
         public void OnGet()
@@ -49,11 +52,15 @@ namespace Mentornote.Pages.Functionalities
             FlashcardSets = flashcardService.GetUserFlashcards(NewUser.Id);
         }
 
-        public IActionResult OnPost()
+        public async Task<IActionResult> OnPost()
         {
+
+            
             Email = HttpContext.Session.GetString("Email")!;
             UsersService usersService = new();
             NewUser = usersService.GetUserByEmail(Email);
+           // await _hub.Clients.User(NewUser.FirstName).SendAsync("ReceiveProgress", "Shiii IDEK sources...", 1);
+
 
             if (!string.IsNullOrEmpty(Submit))
             {

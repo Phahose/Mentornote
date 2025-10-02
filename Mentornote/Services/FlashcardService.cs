@@ -22,13 +22,15 @@ namespace Mentornote.Services
         public async Task<List<Flashcard>> GenerateFromNotes(string notes, int noteId)
         {
             var allFlashcards = new List<Flashcard>();
-            var chunks = ChunkText(notes, 1500); // You can tweak 1500 depending on what works
+            Helpers helper = new Helpers();
+            var chunks = helper.ChunkText(notes, 1500); // You can tweak 1500 depending on what works
 
             foreach (var chunk in chunks)
             {
                 try
                 {
-                    var flashcardsFromChunk = await GenerateFlashcardsFromChunk(chunk, noteId);
+                    //var flashcardsFromChunk = await GenerateFlashcardsFromChunk(chunk, noteId);
+                    var flashcardsFromChunk = await GenerateFakeFlashcardsFromChunk(chunk, noteId);
                     allFlashcards.AddRange(flashcardsFromChunk);
                 }
                 catch (Exception ex)
@@ -79,17 +81,38 @@ namespace Mentornote.Services
             throw new Exception("Failed after multiple attempts due to rate limiting.");
         }
 
-        List<string> ChunkText(string fullText, int maxChunkSize = 1500)
-        {
-            var chunks = new List<string>();
-            for (int i = 0; i < fullText.Length; i += maxChunkSize)
-            {
-                var chunk = fullText.Substring(i, Math.Min(maxChunkSize, fullText.Length - i));
-                chunks.Add(chunk);
-            }
-            return chunks;
-        }
 
+        private async Task<List<Flashcard>> GenerateFakeFlashcardsFromChunk(string notesChunk, int noteId)
+        {
+            // Simulate delay so it feels like "processing"
+            await Task.Delay(300);
+
+            // Return hard-coded example flashcards
+            return new List<Flashcard>
+            {
+                new Flashcard
+                {
+                    NoteId = noteId,
+                    Title = "Physics",
+                    Front = "What is Newton's First Law?",
+                    Back = "An object will remain at rest or in uniform motion unless acted upon by an external force."
+                },
+                new Flashcard
+                {
+                    NoteId = noteId,
+                    Title = "Physics",
+                    Front = "What is kinetic energy?",
+                    Back = "The energy an object possesses due to its motion."
+                },
+                new Flashcard
+                {
+                    NoteId = noteId,
+                    Title = "Physics",
+                    Front = "What is potential energy?",
+                    Back = "Stored energy based on an object's position or state."
+                }
+            };
+        }
 
         public FlashcardSet CreateFlashcardSet(string title, int userId, List<Flashcard> cards)
         {

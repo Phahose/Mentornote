@@ -102,6 +102,41 @@ namespace Mentornote.Services
             return finalSummary;
         }
 
+        public async Task<string> GenerateFakeSummaryAsync(string noteContent, int noteId)
+        {
+            // Simulate work so UI doesn’t instantly return
+            await Task.Delay(300);
+
+            // Instead of actually chunking + sending to AI,
+            // we’ll just fake a "summary" with static markdown content.
+            var dummySummary =
+             @"# Summary of Notes
+
+            **Main Idea**
+            - This is a mock summary of your uploaded notes.
+            - In development mode, no AI call is made.
+
+            **Key Points**
+            - Point 1: Example content from your notes.
+            - Point 2: Another important piece of information.
+            - Point 3: Supporting detail to test markdown rendering.
+
+            **Conclusion**
+            - This summary is hard-coded and used only for testing.";
+
+            // Save to DB like the real method would
+            CardsServices cardsServices = new();
+            NoteSummary noteSummary = new()
+            {
+                NoteId = noteId,
+                SummaryText = dummySummary
+            };
+            cardsServices.AddNoteSummary(noteSummary);
+
+            return dummySummary;
+        }
+
+
         public async Task GenerateEmbeddingAsync(string chunk, int noteId, int chunkIndex)
         {
             try

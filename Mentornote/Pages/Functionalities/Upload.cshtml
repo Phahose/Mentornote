@@ -1,7 +1,7 @@
 ﻿@page
 @model Mentornote.Pages.Functionalities.UploadModel
 @{
-    Layout = "_Layout";
+    Layout = "StartNav";
 }
 <div class="startpagecont">
     <div class="header">
@@ -11,79 +11,96 @@
         </div>
     </div>
     <div class="upload-container">
+        <form class="upload-form" method="post" enctype="multipart/form-data" onsubmit="return showLoadingBar();">
+                @Html.AntiForgeryToken() <!-- Required for Razor Pages -->
+            <h2>Add Study Materials</h2>
 
-    <form class="upload-form" method="post" enctype="multipart/form-data" onsubmit="return showLoadingBar();">
-            @Html.AntiForgeryToken() <!-- Required for Razor Pages -->
-        <h2>Add Study Materials</h2>
+            @if (Model.Status == "Success")
+            {
+               <div class="success-message">
+                   <p>
+                        <strong style="color: green;">&#10003; Study Meterials Created Successfully!</strong>
+                   </p>
+               </div>
+            }
 
-        @if (Model.Status == "Success")
-        {
-           <div class="success-message">
-               <p>
-                    <strong style="color: green;">&#10003; Study Meterials Created Successfully!</strong>
-               </p>
-           </div>
-        }
+            @if (Model.Status == "Error")
+            {
+               <div class="error-message">
+                   <p>
+                        <strong style="color: red;">&#10007; Error uploading file. Please try again.</strong>
+                   </p>
+               </div>
+            }
 
-        @if (Model.Status == "Error")
-        {
-           <div class="error-message">
-               <p>
-                    <strong style="color: red;">&#10007; Error uploading file. Please try again.</strong>
-               </p>
-           </div>
-        }
+            <div class="tab-buttons">
+                <button type="button" id="fileTab" class="active tab-button" onclick="showTab('files')">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="popup-icon" viewBox="0 0 24 24" width="16" height="16" fill="grey">
+                            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8l-6-6zM13 9V3.5L18.5 9H13z" />
+                        </svg>
+                        Files
+                 </button>
+                <button type="button" id="videoTab" class="tab-button" onclick="showTab('videos')">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="popup-icon" viewBox="0 0 24 24" width="16" height="16" fill="grey">
+                            <path d="M17 10.5V7a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-3.5l4 4v-11l-4 4z" />
+                        </svg>
+                    Video Links
+                </button>
+            </div>
 
-        <div class="tab-buttons">
-            <button type="button" id="fileTab" class="active tab-button" onclick="showTab('files')">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="popup-icon" viewBox="0 0 24 24" width="16" height="16" fill="grey">
-                        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8l-6-6zM13 9V3.5L18.5 9H13z" />
-                    </svg>
-                    Files
-             </button>
-            <button type="button" id="videoTab" class="tab-button" onclick="showTab('videos')">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="popup-icon" viewBox="0 0 24 24" width="16" height="16" fill="grey">
-                        <path d="M17 10.5V7a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-3.5l4 4v-11l-4 4z" />
-                    </svg>
-                Video Links
-            </button>
-        </div>
+            <input type="text" name="Title" placeholder="Enter a title for your study materials..." class="title-input" required />
 
-        <input type="text" name="Title" placeholder="Enter a title for your study materials..." class="title-input" required />
-
-        <!-- Wrap your files section in a container with id="files" -->
-        <div id="files" class="tab-content">
-            <div class="file-upload-container" onclick="document.getElementById('fileInput').click()">
-                <div class="file-upload-box">
-                    <img class="upload-icon" src="https://cdn-icons-png.flaticon.com/512/337/337946.png" alt="Upload" />
-                    <p class="upload-title">Drop your files here</p>
-                    <p class="upload-subtitle">or click to browse your device</p>
-                    <div class="upload-types">
-                        <span>PDF</span>
-                        <span>Images</span>
-                        <span>Text</span>
+            <!-- Wrap your files section in a container with id="files" -->
+            <div id="files" class="tab-content">
+                <div class="file-upload-container" onclick="document.getElementById('fileInput').click()">
+                    <div class="file-upload-box">
+                        <img class="upload-icon" src="https://cdn-icons-png.flaticon.com/512/337/337946.png" alt="Upload" />
+                        <p class="upload-title">Drop your files here</p>
+                        <p class="upload-subtitle">or click to browse your device</p>
+                        <div class="upload-types">
+                            <span>PDF</span>
+                            <span>Images</span>
+                            <span>Text</span>
+                        </div>
                     </div>
                 </div>
+                <input type="file" name="UploadedNote" required id="fileInput" style="display: none;" />
             </div>
-            <input type="file" name="UploadedNote" required id="fileInput" style="display: none;" />
-        </div>
 
 
-        <div id="videos" class="tab-content hidden">
-            <div class="video-url-group">
-                <input type="text" placeholder="Paste YouTube, Vimeo, or other video URL..." />
-                <button type="button">+</button>
+            <div id="videos" class="tab-content hidden">
+                <div class="video-url-group">
+                    <input type="text" placeholder="Paste YouTube, Vimeo, or other video URL..." />
+                    <button type="button">+</button>
+                </div>
+                <i class="fas fa-link"></i>
+                <p>Add video links<br>YouTube, Vimeo, and other educational videos</p>
             </div>
-            <i class="fas fa-link"></i>
-            <p>Add video links<br>YouTube, Vimeo, and other educational videos</p>
+            <div id="selectedFilesContainer" class="selected-files-container"></div>
+
+            <input type="submit" name="Submit" value="Create Study Materials" class="upload-button" />
+        </form>
+
+        <!-- Processing Box -->
+        <div id="processingBox" class="processing-box hidden">
+            <h2>Processing Your Materials</h2>
+            <p id="progressStatus">Starting...</p>
+            <ul>
+                <li id="step1">⬜ Process content sources</li>
+                <li id="step2">⬜ Extract key information</li>
+                <li id="step3">⬜ Generate flashcards</li>
+                <li id="step4">⬜ Save to your library</li>
+            </ul>
+            <div id="progressBarWrapper">
+                <div id="progressBar"></div>
+            </div>
         </div>
-        <div id="selectedFilesContainer" class="selected-files-container"></div>
-
-        <input type="submit" name="Submit" value="Create Study Materials" class="upload-button" />
-    </form>
-</div>
+    </div>
+   
 </div>
 
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/microsoft-signalr/7.0.5/signalr.min.js"></script>
 <script>
     function showTab(tab) {
     const fileTab = document.getElementById('fileTab');
@@ -144,17 +161,35 @@
     }
 
     //Loading animation
+         function showLoadingBar() {
+        // Show the processing box
+        document.getElementById("processingBox").classList.remove("hidden");
 
-      function showLoadingBar() {
-        console.log('Blaawskcm')
-        const overlay = document.getElementById("overlay");
-        if (overlay) {
-            console.log('founfff')
-            overlay.style.display = 'flex';
-        } else {
-            console.log("Overlay not found");
-        }
-        return true;
+        // Reset progress
+        document.getElementById("progressBar").style.width = "0%";
+        document.getElementById("progressStatus").innerText = "Starting...";
+        ["step1","step2","step3","step4"].forEach(s => {
+            document.getElementById(s).innerHTML = "⬜ " + document.getElementById(s).innerText.slice(2);
+        });
+
+
+        return true; // let form submit
     }
 
+    function updateStep(step, msg) {
+        document.getElementById("progressStatus").innerText = msg;
+        document.getElementById("step" + step).innerHTML = "✅ " + document.getElementById("step" + step).innerText.slice(2);
+        document.getElementById("progressBar").style.width = (step * 25) + "%";
+    }
+
+    // Message Sendings 
+    const connection = new signalR.HubConnectionBuilder()
+        .withUrl("/processingHub")
+        .build();
+
+    connection.on("ReceiveProgress", (message, step) => {
+        updateStep(step, message); 
+    });
+
+    connection.start().catch(err => console.error(err));
 </script>

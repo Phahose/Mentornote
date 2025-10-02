@@ -7,6 +7,7 @@ using Mentornote.Models;
 using Mentornote.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
 using System.Security.Claims;
 using System.Text;
@@ -24,14 +25,16 @@ namespace Mentornote.Controllers
         private readonly FlashcardService _flashcardService;
         private readonly NotesSummaryService _notesSummaryService;
         private readonly CardsServices _cardServices;
+        private readonly IHubContext<ProcessingHub> _hub;
         public List<string> ErrorList;
 
-        public FlashCardsController(ApplicationDbContext context, FlashcardService flashcardService, CardsServices cardsServices, NotesSummaryService notesSummaryService)
+        public FlashCardsController(ApplicationDbContext context, FlashcardService flashcardService, CardsServices cardsServices, NotesSummaryService notesSummaryService, IHubContext<ProcessingHub> hub)
         {
             _context = context;
             _flashcardService = flashcardService;
             _cardServices = cardsServices;
             _notesSummaryService = notesSummaryService;
+            _hub = hub;
         }
 
 
@@ -39,16 +42,23 @@ namespace Mentornote.Controllers
         [RequestSizeLimit(10_000_000)] // optional: limit upload size to ~10MB
         public async Task<IActionResult> GenerateFromPdf([FromForm] NotesDto request, int id, string title)
         {
+            await _hub.Clients.All.SendAsync("ReceiveProgress", "Extracting Your notes...", 1);
             if (request.File == null || request.File.Length == 0)
                 return BadRequest("No file uploaded.");
 
             var userId = id;
             int noteId = AddNote(new Note(), userId, request, title);
+            
+            Helpers helpers = new Helpers();
 
-            var text = ExtractText(request.File.OpenReadStream());
+            var text = helpers.ExtractText(request.File.OpenReadStream());
 
+            await _hub.Clients.All.SendAsync("ReceiveProgress", "Making your FlashCards...", 2);
             var cards = await _flashcardService.GenerateFromNotes(text, noteId);
-            var summary = await _notesSummaryService.GenerateSummaryAsync(text, noteId);
+            await _hub.Clients.All.SendAsync("ReceiveProgress", "Summaizing Your Notes...", 3);
+           // var summary = await _notesSummaryService.GenerateSummaryAsync(text, noteId);
+            var summary = await _notesSummaryService.GenerateFakeSummaryAsync(text, noteId);
+            await _hub.Clients.All.SendAsync("ReceiveProgress", "Finalizing...", 4);
             var set = _flashcardService.CreateFlashcardSet(title, userId, cards);
             _context.FlashcardSets.Add(set);
             await _context.SaveChangesAsync();
@@ -152,17 +162,5 @@ namespace Mentornote.Controllers
             _cardServices.UpdateNote(note, newTitle);    
         }
 
-        public string ExtractText(Stream pdfStream)
-        {
-            using var pdf = PdfDocument.Open(pdfStream);
-            var sb = new StringBuilder();
-
-            foreach (var page in pdf.GetPages())
-            {
-                sb.AppendLine(page.Text);
-            }
-
-            return sb.ToString();
-        }
     }
 }

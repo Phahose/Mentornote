@@ -1,0 +1,42 @@
+﻿@page
+@model Mentornote.Pages.Functionalities.PracticeTestModel
+@{
+    Layout = "Navigation";
+}
+<div class="fg">
+    <div class="header">
+        <a href="/Preview?noteId=@Model.Note.Id" class="back-btn">&larr;</a>
+        <div>
+            <h1>Practice Exam</h1>
+            <span class="module-info">
+                <span class="created-date">Created @Model.FlashcardSets[0].CreatedAt</span>
+            </span>
+        </div>
+    </div>
+    <div class="test-container">
+        <div class="test">
+            <p>What is The Phenom Named Nicholas Called In Maduguri</p>
+            <div class="options">
+                <div class="left-side-options">
+                    <button class="option-btn option-a">A. The Phenom</button>
+                    <button class="option-btn option-b">B. The Phenom Named Nicholas</button>
+                </div>
+                <div class="right-side-options">
+                    <button class="option-btn option-c">C. The Phenom Named Nicholas Called In Maduguri</button>
+                    <button class="option-btn option-d">D. The Phenom Named Nicholas Called In Maduguri By Everyone</button>
+                </div>
+            </div>
+            <div class="feedback feedback-correct">
+                ✅ Correct!
+            </div>
+          @*   <div class="feedback feedback-wrong">
+                ❌ Wrong!
+            </div> *@
+        </div>
+       
+    </div>
+    <div class="controls">
+        <button id="prev-btn" class="prev-btn">Previous</button>
+        <button id="next-btn" class="next-btn">Next</button>
+    </div>
+</div>
