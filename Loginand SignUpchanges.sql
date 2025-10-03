@@ -197,7 +197,8 @@ BEGIN
 	DELETE FROM NoteEmbeddings WHERE NoteId = @NoteId
 	DELETE FROM TutorMessages WHERE NoteId = @NoteId
     DELETE FROM dbo.Notes
-    WHERE Id = @NoteId;
+    WHERE Id = @NoteId
+	Exec DeletePracticeExamByNote @NoteId;
 END
 
 
@@ -363,42 +364,55 @@ BEGIN
 END;
 
 
-CREATE PROCEDURE CreatePracticeExam
+CREATE PROCEDURE AddPracticeExam
     @NoteId INT,
     @UserId NVARCHAR(450),
     @Title NVARCHAR(255),
-    @TotalQuestions INT
+    @TotalQuestions INT,
+	@NewExamId INT OUTPUT
 AS
 BEGIN
     INSERT INTO PracticeExams (NoteId, UserId, Title, Score, TotalQuestions, CreatedAt)
     VALUES (@NoteId, @UserId, @Title, 0, @TotalQuestions, GETDATE());
 
-    SELECT SCOPE_IDENTITY() AS ExamId;
+    SET @NewExamId = SCOPE_IDENTITY() ;
 END
 
+
+Drop Procedure CreatePracticeExam
 
 CREATE PROCEDURE AddPracticeExamQuestion
     @PracticeExamId INT,
     @QuestionText NVARCHAR(MAX),
     @AnswerText NVARCHAR(MAX),
-    @QuestionType NVARCHAR(50)
+    @QuestionType NVARCHAR(50),
+	@NewQuestionId INT OUTPUT
 AS
 BEGIN
     INSERT INTO PracticeExamQuestions (PracticeExamId, QuestionText, AnswerText, QuestionType)
     VALUES (@PracticeExamId, @QuestionText, @AnswerText, @QuestionType);
 
-    SELECT SCOPE_IDENTITY() AS QuestionId;
+    SET @NewQuestionId = SCOPE_IDENTITY();
 END
+
+Drop Procedure AddPracticeExamQuestion
 
 CREATE PROCEDURE AddPracticeQuestionChoice
     @PracticeExamQuestionId INT,
     @ChoiceText NVARCHAR(MAX),
-    @IsCorrect BIT
+    @IsCorrect BIT,
+	@NewChoiceId INT OUTPUT
 AS
 BEGIN
     INSERT INTO PracticeQuestionChoices (PracticeExamQuestionId, ChoiceText, IsCorrect)
     VALUES (@PracticeExamQuestionId, @ChoiceText, @IsCorrect);
+
+	SET @NewChoiceId = SCOPE_IDENTITY();
 END
+
+Drop Procedure AddPracticeQuestionChoice
+
+
 
 CREATE PROCEDURE GetPracticeExamWithQuestions
      @NoteId INT
@@ -437,3 +451,71 @@ BEGIN
         CompletedAt = GETDATE()
     WHERE Id = @ExamId;
 END
+
+
+CREATE PROCEDURE DeletePracticeExam
+    @PracticeExamId INT
+AS
+BEGIN
+    SET NOCOUNT ON;
+
+    BEGIN TRY
+        BEGIN TRANSACTION;
+
+        -- Step 1: Delete Choices for Questions under this exam
+        DELETE FROM PracticeQuestionChoices
+        WHERE PracticeExamQuestionId IN (
+            SELECT Id FROM PracticeExamQuestions WHERE PracticeExamId = @PracticeExamId
+        );
+
+        -- Step 2: Delete Questions under this exam
+        DELETE FROM PracticeExamQuestions
+        WHERE PracticeExamId = @PracticeExamId;
+
+        -- Step 3: Delete the exam itself
+        DELETE FROM PracticeExams
+        WHERE Id = @PracticeExamId;
+
+        COMMIT TRANSACTION;
+    END TRY
+    BEGIN CATCH
+        ROLLBACK TRANSACTION;
+        THROW;
+    END CATCH
+END;
+
+CREATE PROCEDURE DeletePracticeExamByNote
+    @NoteId INT
+AS
+BEGIN
+    SET NOCOUNT ON;
+
+    BEGIN TRY
+        BEGIN TRANSACTION;
+
+        -- Step 1: Delete choices for all questions belonging to exams tied to this note
+        DELETE FROM PracticeQuestionChoices
+        WHERE PracticeExamQuestionId IN (
+            SELECT q.Id
+            FROM PracticeExamQuestions q
+            INNER JOIN PracticeExams e ON q.PracticeExamId = e.Id
+            WHERE e.NoteId = @NoteId
+        );
+
+        -- Step 2: Delete questions for exams tied to this note
+        DELETE FROM PracticeExamQuestions
+        WHERE PracticeExamId IN (
+            SELECT Id FROM PracticeExams WHERE NoteId = @NoteId
+        );
+
+        -- Step 3: Delete the exams themselves
+        DELETE FROM PracticeExams
+        WHERE NoteId = @NoteId;
+
+        COMMIT TRANSACTION;
+    END TRY
+    BEGIN CATCH
+        ROLLBACK TRANSACTION;
+        THROW;
+    END CATCH
+END;

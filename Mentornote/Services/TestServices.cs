@@ -15,33 +15,52 @@ namespace Mentornote.Services
         private readonly IConfiguration _config;
 
 
+        public TestServices(HttpClient httpClient, IConfiguration config)
+        {
+            _httpClient = httpClient;
+            _config = config;
+        }
 
-
-        public async Task<List<TestQuestion>> CreateTestQuestion(int noteId, int userId)
+        public async Task<bool> CreateTestQuestion(int noteId, int userId)
         {
             CardsServices cardsServices = new();
             Helpers helpers = new();
 
-  
             Note activenote = cardsServices.GetNoteById(noteId, userId);
             if (activenote == null) throw new Exception("Note not found.");
 
-            string filePath = activenote.FilePath;
-            if (!File.Exists(filePath)) throw new FileNotFoundException("PDF not found at: " + filePath);
 
+            //Find the File 
+            string filePath = activenote.FilePath;
+            var physicalPath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", filePath.Replace('/', Path.DirectorySeparatorChar));
+
+            if (!File.Exists(physicalPath))
+                throw new FileNotFoundException("PDF not found at: " + physicalPath);
+
+            //xtract the Test from File
             string text;
-            using (FileStream fs = new FileStream(filePath, FileMode.Open, FileAccess.Read))
+            using (FileStream fs = new FileStream(physicalPath, FileMode.Open, FileAccess.Read))
             {
                 text = helpers.ExtractText(fs);
             }
 
+            //Create The Test
+            Test test = new() 
+            {
+                NoteId = noteId,
+                UserId = userId.ToString(),
+                Title = activenote.Title + " Test",
+                TotalQuestions = 0
+            };
            
+            int testId = cardsServices.AddTest(test);
+
+
+            //Chunk Text
             var chunks = helpers.ChunkText(text);
 
 
-            Test test = new();
-            List<TestQuestion> questions = new();
-
+        
             foreach (var chunk in chunks)
             {
                 try
@@ -49,12 +68,7 @@ namespace Mentornote.Services
                     List<TestQuestion> questionsFromChunk = await GenerateQuestionsFromChunkAsync(chunk);
 
                     // Save Questions to DB
-                    test.NoteId = noteId;
-                    test.UserId = userId.ToString();
-                    test.Title = activenote.Title + " Test";
-                    test.TotalQuestions = questionsFromChunk.Count;
-
-                    int testId = cardsServices.AddTest(test);  
+                   
                     test.Id = testId;
 
                     foreach (TestQuestion q in questionsFromChunk)
@@ -76,7 +90,7 @@ namespace Mentornote.Services
                     continue; // skip this one and keep going;
                 }
             }
-            return questions;
+            return true;
         }
 
         public async Task<List<TestQuestion>> GenerateQuestionsFromChunkAsync(string chunk)

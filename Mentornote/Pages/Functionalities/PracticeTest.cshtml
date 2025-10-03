@@ -14,29 +14,58 @@
         </div>
     </div>
     <div class="test-container">
-        <div class="test">
-            <p>What is The Phenom Named Nicholas Called In Maduguri</p>
-            <div class="options">
-                <div class="left-side-options">
-                    <button class="option-btn option-a">A. The Phenom</button>
-                    <button class="option-btn option-b">B. The Phenom Named Nicholas</button>
+        <form method="post" action="/SubmitExam">
+            <!-- Question Block -->
+            @for (int i = 0; i < Model.ActiveTest.Questions.Count; i++)
+            {
+                <div class="exam-question @(i == 0 ? "active" : "")" data-index="@i">
+                    <div class="exam-progress">
+                        Question <span id="current-question">@(i+1)</span> of <span id="total-questions">@Model.ActiveTest.Questions.Count</span>
+                    </div>
+                    <p>@Model.ActiveTest.Questions[i].QuestionText</p>
+                    <div class="exam-options">
+                        @foreach (var option in @Model.ActiveTest.Questions[i].Choices)
+                        {
+                            <label class="option">
+                                <input type="radio" name="q@i" value="@option.ChoiceText">
+                                <span>@option.ChoiceText</span>
+                                <span>@option.IsCorrect</span>
+                            </label>
+                        }
+                    </div>
                 </div>
-                <div class="right-side-options">
-                    <button class="option-btn option-c">C. The Phenom Named Nicholas Called In Maduguri</button>
-                    <button class="option-btn option-d">D. The Phenom Named Nicholas Called In Maduguri By Everyone</button>
-                </div>
+            }
+
+            <div class="exam-navigation">
+                <button type="submit" class="submit-btn">Submit Answer</button>
+                <button type="submit" class="submit-test-btn">Submit Test</button>
             </div>
-            <div class="feedback feedback-correct">
-                ✅ Correct!
-            </div>
-          @*   <div class="feedback feedback-wrong">
-                ❌ Wrong!
-            </div> *@
-        </div>
+        </form>
        
     </div>
     <div class="controls">
-        <button id="prev-btn" class="prev-btn">Previous</button>
-        <button id="next-btn" class="next-btn">Next</button>
+        <button id="prevquestion-btn" class="prev-btn">Previous</button>
+        <button id="nextquestion-btn" class="next-btn">Next</button>
     </div>
 </div>
+
+<script>
+       let currentIndex = 0;
+    const questions = document.querySelectorAll(".exam-question");
+
+    document.getElementById("nextquestion-btn").addEventListener("click", (e) => {
+        e.preventDefault(); // prevent form submit
+        questions[currentIndex].classList.remove("active");
+        currentIndex = (currentIndex + 1) % questions.length;
+        questions[currentIndex].classList.add("active");
+    });
+
+    document.getElementById("prevquestion-btn").addEventListener("click", (e) => {
+        e.preventDefault();
+        questions[currentIndex].classList.remove("active");
+        currentIndex = (currentIndex - 1 + questions.length) % questions.length;
+        questions[currentIndex].classList.add("active");
+    });
+
+
+</script>

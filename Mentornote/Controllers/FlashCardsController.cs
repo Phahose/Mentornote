@@ -24,17 +24,19 @@ namespace Mentornote.Controllers
         private readonly ApplicationDbContext _context;
         private readonly FlashcardService _flashcardService;
         private readonly NotesSummaryService _notesSummaryService;
+        private readonly TestServices _testServices;
         private readonly CardsServices _cardServices;
         private readonly IHubContext<ProcessingHub> _hub;
         public List<string> ErrorList;
 
-        public FlashCardsController(ApplicationDbContext context, FlashcardService flashcardService, CardsServices cardsServices, NotesSummaryService notesSummaryService, IHubContext<ProcessingHub> hub)
+        public FlashCardsController(ApplicationDbContext context, FlashcardService flashcardService, CardsServices cardsServices, NotesSummaryService notesSummaryService, IHubContext<ProcessingHub> hub, TestServices testServices)
         {
             _context = context;
             _flashcardService = flashcardService;
             _cardServices = cardsServices;
             _notesSummaryService = notesSummaryService;
             _hub = hub;
+            _testServices = testServices;
         }
 
 
