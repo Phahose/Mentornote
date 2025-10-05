@@ -56,7 +56,7 @@ namespace Mentornote.Pages.Functionalities
 
             // Get all tests for the note
             Tests = cardService.GetTestsWithQuestions(noteId);
-            ActiveTest = Tests.FirstOrDefault();
+            ActiveTest = Tests.Last();
 
 
             if (Tests.Count == 0)
@@ -73,12 +73,21 @@ namespace Mentornote.Pages.Functionalities
             // Get all tests for the note
             int noteId = HttpContext.Session.GetInt32("SelectedNoteId") ?? 0;
             Tests = cardService.GetTestsWithQuestions(noteId);
-            ActiveTest = Tests.FirstOrDefault();
+            ActiveTest = Tests.Last();
+            Email = HttpContext.Session.GetString("Email")!;
+            UsersService usersService = new();
+
             Score = 0;
 
             if (Submit == "Retake Test")
             {
                 Score = -1;
+            }
+            else if(Submit == "Make New Test")
+            {
+                 NewUser = usersService.GetUserByEmail(Email);
+                _testServices.CreateTestQuestion(noteId, NewUser.Id).Wait();
+                 Score = -1;
             }
             else if (!string.IsNullOrEmpty(UserResponses))
             {
