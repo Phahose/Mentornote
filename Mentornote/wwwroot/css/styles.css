@@ -15,15 +15,20 @@ body {
     height: 100vh;
     background-color: #e1e6ed;
 }
-.nav{
+.index-body {
+    background-color: #212224;
+    min-height: 100vh;
+}
+.nav {
     list-style: none;
     display: flex;
     justify-content: space-between;
     width: 80%;
-    margin:auto;
+    margin: auto;
     color: white;
     padding: 2rem;
 }
+
 .logo{
     width: 7rem;
     height: 4rem;
@@ -32,10 +37,9 @@ body {
     padding: 2rem;
     display: flex;
     justify-content: space-between;
-    width: 70%;
     max-width: 90rem;
-    min-width: 75rem;
-    color:white;
+    width: 90%;
+    color:white;;
     margin-left: auto;
     margin-right:auto;
 }
@@ -54,7 +58,7 @@ body {
     box-shadow: 4px 4px 40px 10px #a8328b
 }
 .videocontainer video {
-    width: 50rem;
+    width: 100%;
     height: 100%;
     object-fit: cover;
     max-width: 50rem;
@@ -178,9 +182,10 @@ body {
     display: flex;
     width: 100%;
     min-height: fit-content;
+    padding: 0;
 }
 .func-navigation {
-    width: 15%;
+    width: 20%;
     height: inherit;
     align-items: center;
     background-color: white;
@@ -240,6 +245,7 @@ body {
     .nav-links a {
         text-decoration: none;
         color: black;
+        font-size: 0.6rem;
     }
 
 .nav-item,
@@ -315,8 +321,7 @@ body {
     width: 100vw;
     height: 100vh;
     display: flex;
-    justify-content: center;
-/*    align-items: center;*/
+    flex-flow: column;
     background-color: #e1e6ed;
 }
 
@@ -329,9 +334,11 @@ body {
 }
 .fg {
     padding: 1rem;
-    width: 70%;
+    width: 90%;
     height:fit-content;
     max-height:100vh;
+    margin-left: auto;
+    margin-top: 5rem;
 }
 .flashcard-container {
     width: 70%;
@@ -356,10 +363,7 @@ body {
         display: block; /* only active one shows */
     }
 
-/*    .flashcard:hover {
-        transform: rotateY(180deg);
-    }
-*/
+
     .flashcard.flipped {
         transform: rotateY(180deg);
     }
@@ -451,7 +455,6 @@ body {
     margin: 1rem;
     padding: 1rem;
     width: 20%;
-    max-width: 18%;
     height: 6rem;
     box-shadow: 0 6px 15px rgba(0, 0, 0, 0.2);
     border-radius: 0.5rem;
@@ -596,7 +599,7 @@ body {
 .start-con-holder{
     margin-left: auto;
     margin-right: auto;
-    width: 80%;
+    width: 76%;
     display: flex;
     justify-content: space-between;
 
@@ -636,12 +639,11 @@ body {
 }
 
 .notes-form {
-    /* background-color: white;*/
     background: linear-gradient(135deg, #979bd1, #d5f0df);
     width: 60%;
     height:fit-content;
     max-height: 40rem;
-    max-width: 70%;
+ /*   max-width: 70%;*/
     border-radius: 0.5rem;
     box-shadow: 0 6px 15px rgba(0, 0, 0, 0.2);
     border-radius: 0.5rem;
@@ -1394,7 +1396,8 @@ body {
 
 /*Practice Exam*/
 .test-container {
-
+    width: 60%;
+    margin: auto;
 }
 
 .exam-progress {
@@ -1404,14 +1407,42 @@ body {
 }
 
 .exam-question {
-    width: 100%;
+    width: inherit;
     margin: 2rem auto;
     padding: 2rem;
     border: 2px solid mediumpurple;
     border-radius: 1rem;
     box-shadow: 0 8px 24px rgba(0,0,0,0.15);
     display: none; /* hidden by default */
+    background-color: #e1e6ed;
 }
+
+.result {
+    width: inherit;
+    margin: 2rem auto;
+    padding: 2rem;
+    border: 2px solid mediumpurple;
+    border-radius: 1rem;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.15);
+    background-color: #e1e6ed;
+}
+    .result p {
+        font-size: 1.25rem;
+        font-weight: bold;
+        margin-bottom: 1rem;
+        margin-left: auto;
+        margin-right: auto;
+        width: fit-content;
+    }
+
+    .result .passedspan {
+        color: green;
+        font-size: 2rem;
+    }
+    .result .failedspan {
+        color: red;
+        font-size: 2rem;
+    }
 
     .exam-question.active {
         display: block; /* only show the active one */
@@ -1460,7 +1491,7 @@ body {
 
     /* Checked effect */
     .option input[type="radio"]:checked + span {
-        background: #5a52d6;
+        background: green;
         color: white;
         padding: 0.5rem 0.75rem;
         border-radius: 6px;
@@ -1501,3 +1532,194 @@ body {
 }
 
 
+/*header Styling */
+.header {
+    background-color: white;
+    max-width: 100%;
+    width: 100vw;
+    height: 3rem;
+    margin-top: 0;
+    padding: 1rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position:fixed;
+}
+
+    .header a {
+        margin-left: 3rem
+    }
+
+    .header h1 {
+        font-size: 1.2rem;
+    }
+
+    .header div {
+        width: 70%;
+        display: flex;
+    }
+
+#menu-btn {
+    display: none;
+}
+
+    #menu-btn:hover {
+        background-color: mediumpurple;
+    }
+   
+
+/* Tablet (up to 1024px wide) */
+@media (max-width: 1024px) {
+    /*Navigation*/
+    .func-navigation{
+        width: 50%;
+    }
+    .brand h1{
+        font-size: 1rem;
+    }
+
+    .brand .logo {
+        width: 16px;
+        height: 16px;
+    }
+
+    /*Tablet Start Page*/
+    .func-navigation{
+        
+    }
+    .fun-cards {
+        display: flex;
+        flex-flow: column;
+        width: 76%;
+        margin: auto;
+    }
+
+    .fun-card{
+        width: 95%;
+        margin-left: auto;
+        height: 5rem;
+    }
+
+    .start-con-holder {
+        display: flex;
+        flex-flow: column;
+        flex-direction: column-reverse;
+    }
+    .start-form{
+        width: 100%;
+        margin-bottom: 2rem;
+    }
+    .notes-form{
+        width: 100%;
+        margin-bottom: 2rem;
+    }
+   
+    /*Tablet Preview Page */
+    .main-content{
+        flex-flow: column;
+       flex-direction: column-reverse
+    }
+    .study-tools{
+        width: 90%;
+    }
+
+    .summary-box{
+        display: none;
+    }
+
+    /*FlashCards*/
+    .flashcard-container{
+        width: 100%;
+    }
+
+    /*Practice Exam*/
+    .test-container{
+        width: 90%;
+    }
+    .exam-question {
+        font-size: 1rem;
+    }
+        .exam-question p {
+            font-size: 1rem;
+        }
+}
+
+/* Mobile (up to 768px wide) */
+@media (max-width: 768px) {
+    .header{
+        background-color: white;
+        max-width: 100%;
+        max-width: 100vw;
+        margin-bottom: auto;
+        margin-top: 0;
+        padding: 1rem;
+        display:flex;
+        align-items:center;
+        justify-content:center;
+    }
+    .header a{
+        margin-left: 3rem
+    }
+    .header h1{
+        font-size: 1.2rem;
+    }
+    .header div{
+        width: 70%;
+        display: flex;
+    }
+    #menu-btn {
+        margin-left: auto;
+        background-color: white;
+        border: none;
+        cursor: pointer;
+        font-size: 2rem;
+        border-radius: 0.5rem;
+        transition: 0.35s ease;
+        display:  block;
+    }
+    #menu-btn:hover{
+        background-color: mediumpurple;
+    }
+   
+
+/*Practice test Mobile */
+    .fg {
+        margin-top: 0;
+        margin-bottom: auto;
+    }
+
+    .test-container{
+        margin:auto;
+        margin-bottom: auto;
+    }
+    
+    .exam-question {
+        font-size: 1rem;
+        max-width: 100%;
+    }
+    .exam-question p {
+        font-size: 1rem;
+    }
+
+    .submit-btn, .submit-test-btn {
+        padding: 0.75rem 1rem;
+    }
+   
+
+    /*Navigation*/
+ 
+
+    .func-navigation {
+        position: fixed;
+        left: -270px; 
+        z-index: 2000; 
+        transition: left 0.35s ease; 
+    }
+
+    .func-navigation.active {
+        left: 0;
+    }
+    .f-home-controller {
+        flex-flow: column;
+    }
+}

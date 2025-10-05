@@ -3,18 +3,20 @@
 @{
     Layout = "Navigation";
 }
-<div class="fg">
-    <!-- Header Section -->
-    <div class="header">
-        <a href="~/Start" class="back-btn">&larr;</a>
-        <div>
+<div class="header">
+    <div>
+        <section>
             <h1>@Model.Note.Title</h1>
             <span class="module-info">
                 <span class="created-date">Created @Model.FlashcardSets[0].CreatedAt.ToString("dd-MM-yyyy")</span>
                 <a href="@Model.Note.FilePath" target="_blank" class="view-original">View Original</a>
             </span>
-        </div>   
+        </section>
+        
+        <button id="menu-btn" class="menu-btn">☰</button>
     </div>
+</div>
+<div class="fg">
 
     <div class="main-content">
         <!-- Study Tools Section -->

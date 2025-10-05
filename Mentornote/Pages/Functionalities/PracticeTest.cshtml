@@ -3,43 +3,66 @@
 @{
     Layout = "Navigation";
 }
-<div class="fg">
-    <div class="header">
-        <a href="/Preview?noteId=@Model.Note.Id" class="back-btn">&larr;</a>
-        <div>
-            <h1>Practice Exam</h1>
-            <span class="module-info">
-                <span class="created-date">Created @Model.FlashcardSets[0].CreatedAt</span>
-            </span>
-        </div>
+<div class="header">
+    <div>
+        <h1>Practice Exam</h1>
+        <button id="menu-btn" class="menu-btn">☰</button>
     </div>
+</div>
+<div class="fg">
     <div class="test-container">
-        <form method="post" action="/SubmitExam">
+        <form method="post" id="examForm">
+            @Html.AntiForgeryToken()
             <!-- Question Block -->
-            @for (int i = 0; i < Model.ActiveTest.Questions.Count; i++)
+            @if (Model.Score >= 0)
             {
-                <div class="exam-question @(i == 0 ? "active" : "")" data-index="@i">
-                    <div class="exam-progress">
-                        Question <span id="current-question">@(i+1)</span> of <span id="total-questions">@Model.ActiveTest.Questions.Count</span>
-                    </div>
-                    <p>@Model.ActiveTest.Questions[i].QuestionText</p>
-                    <div class="exam-options">
-                        @foreach (var option in @Model.ActiveTest.Questions[i].Choices)
-                        {
-                            <label class="option">
-                                <input type="radio" name="q@i" value="@option.ChoiceText">
-                                <span>@option.ChoiceText</span>
-                                <span>@option.IsCorrect</span>
-                            </label>
-                        }
+                <div class="result">
+                    @if (Model.Score >= 50)
+                    {
+                        <p>Nice You Scored <span class="passedspan"> @Model.Score %</span></p>
+                    }
+                    else
+                    {
+                        <p>Damn you Scored <span class="failedspan"> @Model.Score %</span></p>
+                    }
+
+                   
+                    <div class="exam-navigation">
+                        <input type="submit" class="submit-btn" name="Submit" value="Make New Test" />
+                        <input type="submit"  name="Submit" value="Retake Test"/>
                     </div>
                 </div>
             }
+            else
+            {
+                @for (int i = 0; i < Model.ActiveTest.Questions.Count; i++)
+                {
+                    <input type="hidden" name="CurrentQuestion" value="@Model.ActiveTest.Questions[i].Id" />
+                    <div class="exam-question @(i == 0 ? "active" : "")" data-index="@i">
+                        <div class="exam-progress">
+                            Question <span id="current-question">@(i + 1)</span> of <span id="total-questions">@Model.ActiveTest.Questions.Count</span>
+                        </div>
+                        <p>@Model.ActiveTest.Questions[i].QuestionText</p>
+                        <div class="exam-options">
+                            @foreach (var option in @Model.ActiveTest.Questions[i].Choices)
+                            {
+                                <label class="option">
+                                    <input type="radio" name="q(@i)" value="@option.ChoiceText" data-optionid="@option.Id">
+                                    <span>@option.ChoiceText</span>
+                                </label>
+                            }
+                        </div>
+                        <div class="exam-navigation">
+                            <button class="submit-btn" id="submit-question">Submit Answer</button>
+                            <button type="submit" class="submit-test-btn">Submit Test</button>
+                        </div>
+                    </div>
+                }
+            }
 
-            <div class="exam-navigation">
-                <button type="submit" class="submit-btn">Submit Answer</button>
-                <button type="submit" class="submit-test-btn">Submit Test</button>
-            </div>
+
+            <input type="hidden" id="UserResponses" name="UserResponses" />
+
         </form>
        
     </div>
@@ -66,6 +89,96 @@
         currentIndex = (currentIndex - 1 + questions.length) % questions.length;
         questions[currentIndex].classList.add("active");
     });
+
+    const menuBtn = document.getElementById('menu-btn');
+    const sideNav = document.getElementById('func-navigation');
+
+    menuBtn.addEventListener('click', () => {
+      sideNav.classList.toggle('active');
+    });
+
+    // Optional: close nav when clicking outside it
+    document.addEventListener('click', (e) => {
+      if (!sideNav.contains(e.target) && !menuBtn.contains(e.target)) {
+        sideNav.classList.remove('active');
+
+      }
+    });
+
+
+    // Grade Exam
+        // Create an empty list (array)
+    let userResponses = [];
+    const submitquestionbutton = document.getElementById("submit-question")
+
+
+
+    // --- SAVE ANSWERS ---
+     // Attach event listener to *all* submit-answer buttons, not just one
+     document.querySelectorAll(".submit-btn").forEach((btn) => {
+         btn.addEventListener("click", function (e) {
+             e.preventDefault();
+
+             // Find the current question container (the parent div)
+            const currentquestion = document.getElementsByName("CurrentQuestion")
+            const questionId = currentquestion[currentIndex].value;
+
+             const questionBlock = btn.closest(".exam-question");
+
+             // Find which option was selected for this question
+             const selected = questionBlock.querySelector(`input[type="radio"]:checked`);
+
+             if (!selected) {
+                 alert("Please select an answer before submitting.");
+                 return;
+             }
+
+             const selectedOptionId = selected.dataset.optionid;
+
+             const selectedOptionText = selected.value;
+
+             // Save the response
+             const existing = userResponses.find(r => r.questionId === questionId);
+
+             if (existing) {
+                existing.answer = selectedOptionText;
+                existing.optionId = selectedOptionId;
+             } else {
+                 // Add new response
+                 userResponses.push({
+                     questionId: parseInt(questionId),
+                     optionId: parseInt(selectedOptionId),
+                     answer: selectedOptionText
+                 });
+             }
+
+             console.log("Current Responses:", userResponses);
+
+             //  go to the next question automatically
+             questions[currentIndex].classList.remove("active");
+             currentIndex = (currentIndex + 1) % questions.length;
+             questions[currentIndex].classList.add("active");
+         });
+     });
+
+        const submitTestBtns = document.querySelectorAll(".submit-test-btn");
+
+        submitTestBtns.forEach(btn => {
+            btn.addEventListener("click", function (e) {
+            e.preventDefault();
+
+            // Put the responses into the hidden input as JSON
+            const hiddenInput = document.getElementById("UserResponses");
+            hiddenInput.value = JSON.stringify(userResponses);
+            const form = document.getElementById("examForm");
+
+
+            console.log("Submitting responses:", hiddenInput.value);
+
+            // Now submit the form normally to trigger OnPost()
+            form.submit();
+            });
+        });
 
 
 </script>

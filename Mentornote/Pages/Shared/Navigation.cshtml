@@ -10,7 +10,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Bruno+Ace&family=Michroma&family=Smooch+Sans:wght@100..900&display=swap" rel="stylesheet">
 </head>
 <body class="func-nav-body">
-    <nav class="func-navigation">
+    <nav class="func-navigation" id="func-navigation">
         <div class="brand">
             <img src="https://img.icons8.com/ios-filled/50/FFFFFF/graduation-cap.png" alt="Logo" class="logo" />
             <div class="brand-text">
@@ -26,6 +26,11 @@
                     <span class="icon bg-blue"><img src="https://img.icons8.com/?size=24&id=Yj5svDsC4jQA&format=png" /></span>
                      Dashboard
                 </a>
+                <a href="~/Preview?noteId=@Model.Note.Id" class="nav-item active">
+                    <span class="icon bg-blue"><img src="https://img.icons8.com/?size=24&id=Yj5svDsC4jQA&format=png" /></span>
+                     Back To Preview
+                </a>
+
                 <a href="~/Functionalities/Flashcards?flashcardSetId=@Model.FlashcardSets[0].Id" class="nav-item">
                     <span class="icon bg-purple"><img src="https://img.icons8.com/ios-filled/24/FFFFFF/flash-on.png" /></span>
                     Flashcards
@@ -66,5 +71,22 @@
     <div class="f-home-controller">
         @RenderBody()
     </div>
+
+    <script>
+             const menuBtn = document.getElementById('menu-btn');
+        const sideNav = document.getElementById('func-navigation');
+
+        menuBtn.addEventListener('click', () => {
+          sideNav.classList.toggle('active');
+        });
+
+        // Optional: close nav when clicking outside it
+        document.addEventListener('click', (e) => {
+          if (!sideNav.contains(e.target) && !menuBtn.contains(e.target)) {
+            sideNav.classList.remove('active');
+
+          }
+        });
+    </script>
 </body>
 </html>
