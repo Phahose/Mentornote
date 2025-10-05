@@ -1,18 +1,25 @@
 ﻿@page
 @model Mentornote.Pages.Shared.StartModel
 @{
-    // Layout = "Navigation";
-     Layout = "_Layout";
+    // Layout = "_Layout";
+    Layout = "StartNav";
 }
-<div class="startpagecont">
+<div class="header">
+    <div>
+        <section>
+            <h1>Dashboard</h1>
+        </section>
 
-    <h2>Welcome to MentorNote</h2>
+        <button id="menu-btn" class="menu-btn">☰</button>
+    </div>
+</div>
+<div class="startpagecont">
     <div class="fun-cards">
 
         <div class="fun-card">
             <div class="card-content">
                 <p class="card-title">Study Notes</p>
-                <h2>0</h2>
+                <h2>@Model.NotesList.Count</h2>
                 <p class="card-word">Uploaded Notes</p>
             </div>
             <span class="card-icon bg-blue"><img src="https://img.icons8.com/?size=24&id=Yj5svDsC4jQA&format=png" /></span>
@@ -20,27 +27,17 @@
 
         <div class="fun-card">
             <div class="card-content">
-                <p class="card-title">Study Notes</p>
-                <h2>0</h2>
+                <p class="card-title">FlashCards</p>
+                <h2>@Model.FlashcardSets.Count()</h2>
                 <p class="card-word">Generated Cards</p>
             </div>
             <span class="icon bg-purple"><img src="https://img.icons8.com/?size=24&id=Yj5svDsC4jQA&format=png" /></span>
         </div>
 
         <div class="fun-card">
-
             <div class="card-content">
-                <p class="card-title">Study Notes</p>
-                <h2>0</h2>
-                <p class="card-word">Keep it Going</p>
-            </div>
-            <span class="icon bg-green"><img src="https://img.icons8.com/?size=24&id=Yj5svDsC4jQA&format=png" /></span>
-        </div>
-
-        <div class="fun-card">
-            <div class="card-content">
-                <p class="card-title">Study Notes</p>
-                <h2>0</h2>
+                <p class="card-title">Study Streak</p>
+                <h2>7 days</h2>
                 <p class="card-word">Practice exams</p>
             </div>
             <span class="icon bg-orange"><img src="https://img.icons8.com/?size=24&id=Yj5svDsC4jQA&format=png" /></span>
@@ -59,27 +56,6 @@
                             <section>
                                 <p>Upload Notes</p>
                                 <p class="sub-text">Add new study materials</p>
-                            </section>
-                        </a>
-                        <a href="~/Functionalities/Upload">
-                            <img src="https://img.icons8.com/?size=24&id=86563&format=png" alt="Google" class="upload-logo" />
-                            <section>
-                                <p>Study Cards</p>
-                                <p class="sub-text">Review Flashcards</p>
-                            </section>     
-                        </a>
-                        <a href="~/Functionalities/AskTutor">
-                            <img src="https://img.icons8.com/?size=50&id=7859&format=png" alt="Google" class="upload-logo" />
-                            <section>
-                                <p>Ask AI Tutor</p>
-                                <p class="sub-text">Get Instant Help</p>
-                            </section>
-                        </a>
-                        <a href="~/Functionalities/Upload">
-                            <img src="https://img.icons8.com/?size=64&id=46520&format=png" alt="Google" class="upload-logo" />
-                            <section>
-                                <p>Take Exam</p>
-                                <p class="sub-text">Test Your knowledge</p>
                             </section>
                         </a>
                     </div>

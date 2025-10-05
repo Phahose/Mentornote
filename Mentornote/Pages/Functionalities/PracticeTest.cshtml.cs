@@ -27,7 +27,7 @@ namespace Mentornote.Pages.Functionalities
         public decimal Score { get; set; } = -1;
         [BindProperty]
         public string Submit { get; set; }
-
+        public List<UserResponse> UserAnswers { get; set; } = new();
         public PracticeTestModel(TestServices testServices)
         {
             _testServices = testServices;
@@ -91,6 +91,12 @@ namespace Mentornote.Pages.Functionalities
             }
             else if (!string.IsNullOrEmpty(UserResponses))
             {
+                if(UserResponses == "[]")
+                {
+                    Score = 0;
+                    OnGet(noteId);
+                    return Page();
+                }
                 var options = new JsonSerializerOptions
                 {
                     PropertyNameCaseInsensitive = true
@@ -107,12 +113,14 @@ namespace Mentornote.Pages.Functionalities
                     {
                         Score++;
                     }
-
+                    UserAnswers.Add(response);
                   
                 }
 
                 Score = Math.Round((Score * 100) / ActiveTest.Questions.Count, 2);
                 
+                var responsesJson = JsonSerializer.Serialize(responses);
+                HttpContext.Session.SetString("UserResponses", responsesJson);
 
             }
             OnGet(noteId);

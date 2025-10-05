@@ -17,6 +17,10 @@
             @if (Model.Score >= 0)
             {
                 <div class="result">
+                    <div class="exam-navigation">
+                        <input type="submit" name="Submit" value="Make New Test" />
+                        <input type="submit" name="Submit" value="Retake Test" />
+                    </div>
                     @if (Model.Score >= 50)
                     {
                         <p>Nice You Scored <span class="passedspan"> @Model.Score %</span></p>
@@ -25,12 +29,75 @@
                     {
                         <p>Damn you Scored <span class="failedspan"> @Model.Score %</span></p>
                     }
+                   
+
+                    @for (int i = 0; i < Model.ActiveTest.Questions.Count; i++)
+                    {
+                        var question = Model.ActiveTest.Questions[i];
+                        if (Model.UserAnswers.Count > 0)
+                        {
+                           
+                            var userResponse = Model.UserAnswers.Where(ans => ans.QuestionId == question.Id);
+
+                            <div class="review-question">
+                                <div class="exam-progress">
+                                    Question @(i + 1) of @Model.ActiveTest.Questions.Count
+                                </div>
+                                <p class="question-text">@question.QuestionText</p>
+
+                                <div class="exam-options">
+                                    @foreach (var option in question.Choices)
+                                    {
+                                        var isUserAnswer = userResponse != null && option.Id == userResponse.First().OptionId;
+                                        var isCorrect = option.IsCorrect;
+
+                                        string optionClass = isCorrect ? "correct-option"
+                                        : isUserAnswer && !isCorrect ? "wrong-option"
+                                        : "";
+
+                                        <label class="option @optionClass">
+                                            <input type="radio" disabled
+                                                   name="q@i"
+                                                   @(isUserAnswer ? "checked" : "") />
+                                            <span>@option.ChoiceText</span>
+                                        </label>
+                                    }
+                                </div>
+                            </div>
+                        }
+                        else
+                        {
+                          
+                            <div class="review-question">
+                                <div class="exam-progress">
+                                    Question @(i + 1) of @Model.ActiveTest.Questions.Count
+                                </div>
+                                <p class="question-text">@question.QuestionText</p>
+
+                                <div class="exam-options">
+                                    @foreach (var option in question.Choices)
+                                    {
+                                       
+                                        var isCorrect = option.IsCorrect;
+                                        string optionClass = "false-option";
+                                        if (isCorrect == true)
+                                        {
+                                            optionClass = "correct-option";
+                                        }
+                                        <label class="option @optionClass">
+                                            <input type="radio" disabled  name="q@i"/>
+                                            <span>@option.ChoiceText</span>
+                                        </label>
+                                    }
+                                </div>
+                            </div>
+                        }
+
+                        
+                    }
 
                    
-                    <div class="exam-navigation">
-                        <input type="submit"  name="Submit" value="Make New Test" />
-                        <input type="submit"  name="Submit" value="Retake Test"/>
-                    </div>
+                  
                 </div>
             }
             else
@@ -40,7 +107,8 @@
                     <input type="hidden" name="CurrentQuestion" value="@Model.ActiveTest.Questions[i].Id" />
                     <div class="exam-question @(i == 0 ? "active" : "")" data-index="@i">
                         <div class="exam-progress">
-                            Question <span id="current-question">@(i + 1)</span> of <span id="total-questions">@Model.ActiveTest.Questions.Count</span>
+                            <p>Question @(i + 1) of @Model.ActiveTest.Questions.Count</p>
+                            <button type="submit" class="submit-test-btn">End Quiz</button>
                         </div>
                         <p>@Model.ActiveTest.Questions[i].QuestionText</p>
                         <div class="exam-options">
@@ -53,8 +121,7 @@
                             }
                         </div>
                         <div class="exam-navigation">
-                            <button class="submit-btn" id="submit-question">Submit Answer</button>
-                            <button type="submit" class="submit-test-btn">Submit Test</button>
+                            <button class="submit-btn" id="submit-question">Submit Answer</button>    
                         </div>
                     </div>
                 }
@@ -66,10 +133,14 @@
         </form>
        
     </div>
-    <div class="controls">
-        <button id="prevquestion-btn" class="prev-btn">Previous</button>
-        <button id="nextquestion-btn" class="next-btn">Next</button>
-    </div>
+    @if (Model.Score < 0)
+    {
+        <div class="controls">
+            <button id="prevquestion-btn" class="prev-btn">Previous</button>
+            <button id="nextquestion-btn" class="next-btn">Next</button>
+        </div>
+    }
+   
 </div>
 
 <script>
