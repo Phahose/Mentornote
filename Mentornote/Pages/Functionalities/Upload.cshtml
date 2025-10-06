@@ -73,15 +73,15 @@
 
             <div id="videos" class="tab-content hidden">
                 <div class="video-url-group">
-                    <input type="text" placeholder="Paste YouTube, Vimeo, or other video URL..." />
-                    <button type="button">+</button>
+                    <input type="text" name="VideoLink" placeholder="Paste YouTube, Vimeo, or other video URL..." />
                 </div>
                 <i class="fas fa-link"></i>
                 <p>Add video links<br>YouTube, Vimeo, and other educational videos</p>
             </div>
             <div id="selectedFilesContainer" class="selected-files-container"></div>
 
-            <input type="submit" name="Submit" value="Create Study Materials" class="upload-button" />
+            <input type="submit" name="Submit" id="submitFile" value="Create Study Materials" class="upload-button" />
+            <input type="submit" name="Submit" id="submitVideo" value="Upload Link" class="upload-button hidden" />
         </form>
 
         <!-- Processing Box -->
@@ -110,18 +110,30 @@
     const videoTab = document.getElementById('videoTab');
     const files = document.getElementById('files');
     const videos = document.getElementById('videos');
+    const submitFile = document.getElementById('submitFile');
+    const submitVideo = document.getElementById('submitVideo');
+    const fileInput = document.getElementById('fileInput');
+    const videoInput = document.querySelector('input[name="VideoLink"]');
 
 
     if (tab === 'files') {
-    fileTab.classList.add('active');
-    videoTab.classList.remove('active');
-    files.classList.remove('hidden');
-    videos.classList.add('hidden');
+        fileInput.required = true;
+        videoInput.required = false;
+        fileTab.classList.add('active');
+        videoTab.classList.remove('active');
+        files.classList.remove('hidden');
+        videos.classList.add('hidden');
+        submitFile.classList.remove('hidden');
+        submitVideo.classList.add('hidden');
     } else {
-    fileTab.classList.remove('active');
-    videoTab.classList.add('active');
-    files.classList.add('hidden');
-    videos.classList.remove('hidden');
+        fileInput.required = false;
+        videoInput.required = true;
+        fileTab.classList.remove('active');
+        videoTab.classList.add('active');
+        files.classList.add('hidden');
+        videos.classList.remove('hidden');
+        submitVideo.classList.remove('hidden');
+        submitFile.classList.add('hidden');
     }
     }
 

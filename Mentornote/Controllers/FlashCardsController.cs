@@ -26,10 +26,11 @@ namespace Mentornote.Controllers
         private readonly NotesSummaryService _notesSummaryService;
         private readonly TestServices _testServices;
         private readonly CardsServices _cardServices;
+        private readonly Helpers _helpers;
         private readonly IHubContext<ProcessingHub> _hub;
         public List<string> ErrorList;
 
-        public FlashCardsController(ApplicationDbContext context, FlashcardService flashcardService, CardsServices cardsServices, NotesSummaryService notesSummaryService, IHubContext<ProcessingHub> hub, TestServices testServices)
+        public FlashCardsController(ApplicationDbContext context, FlashcardService flashcardService, CardsServices cardsServices, NotesSummaryService notesSummaryService, IHubContext<ProcessingHub> hub, TestServices testServices, Helpers helpers)
         {
             _context = context;
             _flashcardService = flashcardService;
@@ -37,28 +38,34 @@ namespace Mentornote.Controllers
             _notesSummaryService = notesSummaryService;
             _hub = hub;
             _testServices = testServices;
+            _helpers = helpers;
         }
 
 
         [HttpPost("generate-from-pdf")]
         [RequestSizeLimit(10_000_000)] // optional: limit upload size to ~10MB
-        public async Task<IActionResult> GenerateFromPdf([FromForm] NotesDto request, int id, string title)
+        public async Task<IActionResult> GenerateFromPdf(IFormFile request, int id, string title, string sourceUrl, string sourceType)
         {
             await _hub.Clients.All.SendAsync("ReceiveProgress", "Extracting Your notes...", 1);
-            if (request.File == null || request.File.Length == 0)
+            if (request == null || request.Length == 0)
                 return BadRequest("No file uploaded.");
 
             var userId = id;
-            int noteId = AddNote(new Note(), userId, request, title);
+            int noteId = AddNote(new Note(), userId, request, title, sourceUrl, sourceType);
             
-            Helpers helpers = new Helpers();
 
-            var text = helpers.ExtractText(request.File.OpenReadStream());
+            var text = _helpers.ExtractText(request);
 
             await _hub.Clients.All.SendAsync("ReceiveProgress", "Making your FlashCards...", 2);
+
             var cards = await _flashcardService.GenerateFromNotes(text, noteId);
+
             await _hub.Clients.All.SendAsync("ReceiveProgress", "Summaizing Your Notes...", 3);
+
+
            // var summary = await _notesSummaryService.GenerateSummaryAsync(text, noteId);
+
+
             var summary = await _notesSummaryService.GenerateFakeSummaryAsync(text, noteId);
             await _hub.Clients.All.SendAsync("ReceiveProgress", "Finalizing...", 4);
             var set = _flashcardService.CreateFlashcardSet(title, userId, cards);
@@ -70,17 +77,19 @@ namespace Mentornote.Controllers
 
 
 
-        public int AddNote(Note note,  int userId, [FromForm] NotesDto request, string title )
+        public int AddNote(Note note,  int userId, IFormFile request, string title, string sourceUrl, string sourceType)
         {
             try
             {
                 int noteId;
                 note = new Note
                 {
-                    FileName = request.File.FileName,
+                    FileName = request.FileName,
                     UserId = userId,
                     Title = title,
-                    FilePath = SaveNoteFileAsync(request.File).Result,
+                    SourceUrl = sourceUrl,
+                    SourceType = sourceType,
+                    FilePath = _helpers.SaveNoteFileAsync(request).Result,
                 };
                 noteId =  _cardServices.AddNote(note, userId);
 
@@ -93,28 +102,7 @@ namespace Mentornote.Controllers
             }
         }
 
-        public async Task<string> SaveNoteFileAsync(IFormFile uploadedNote)
-        {
-            if (uploadedNote == null || uploadedNote.Length == 0)
-                return null;
-
-            var uploadsFolder = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "uploads", "notes");
-
-            // Create folder if it doesn't exist
-            if (!Directory.Exists(uploadsFolder))
-                Directory.CreateDirectory(uploadsFolder);
-
-            var fileName = $"{Guid.NewGuid()}_{uploadedNote.FileName}";
-            var filePath = Path.Combine(uploadsFolder, fileName);
-
-            using (var stream = new FileStream(filePath, FileMode.Create))
-            {
-                await uploadedNote.CopyToAsync(stream);
-            }
-
-            // Return the relative path to store in DB
-            return Path.Combine("uploads", "notes", fileName).Replace("\\", "/");
-        }
+     
 
         public bool DeleteNote (int noteId, int userId)
         {

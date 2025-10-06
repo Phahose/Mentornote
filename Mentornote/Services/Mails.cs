@@ -8,7 +8,7 @@ namespace Mentornote.Services
     {
         private string password;
         private string smtpServer;
-        private int port;
+        //private int port;
         private string fromEmail;
         public string SendEmail(string toEmailAddress, string messageBody, string messageSubject)
         {
@@ -22,7 +22,7 @@ namespace Mentornote.Services
                     client.EnableSsl = true;
 
 
-                    client.Credentials = new NetworkCredential(fromEmail, password);  //Ezra
+                    client.Credentials = new NetworkCredential(fromEmail, password);  
 
 
                     // Create the email message

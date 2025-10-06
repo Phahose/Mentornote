@@ -1,0 +1,101 @@
+﻿@page
+@model Mentornote.Pages.Functionalities.SpeechCaptureModel
+@{
+    Layout = "StartNav";
+}
+
+<div class="fg">
+    <div class="speech-container">
+        <h1 class="page-title">Speech Capture</h1>
+        <p class="page-subtext">Record your lecture or voice note and get an instant summary.</p>
+
+        <div class="controls">
+            <button id="startBtn" class="btn">Start Recording</button>
+            <button id="stopBtn" class="btn" disabled>Stop Recording</button>
+            <button id="uploadBtn" class="btn" disabled>Upload Recording</button>
+        </div>
+
+        <audio id="audioPlayer" controls></audio>
+
+        <form id="uploadForm" method="post" enctype="multipart/form-data">
+            @Html.AntiForgeryToken() <!-- Required for Razor Pages -->
+            <input type="hidden" name="userId" value="@Model.NewUser.Id" />
+            <input type="file" id="audioFile" name="UploadedAudio" hidden />
+            <input type="hidden" name="durationSeconds" id="durationField" />
+        </form>
+
+        <div id="statusBox" class="status-box"></div>
+
+        @if (Model.ActiveTranscript != null)
+        {
+            <div class="summary-section" id="summarySection" >
+                <h2>AI Summary</h2>
+                <p id="summaryText">@Model.ActiveTranscript.SummaryText</p>
+                <canvas id="summaryChart"></canvas>
+            </div>
+        }
+      
+    </div>
+   
+</div>
+
+
+<script>
+    let mediaRecorder;
+    let audioChunks = [];
+    let audioBlob;
+    let duration = 0;
+    let timerInterval;
+
+    const startBtn = document.getElementById("startBtn");
+    const stopBtn = document.getElementById("stopBtn");
+    const uploadBtn = document.getElementById("uploadBtn");
+    const statusBox = document.getElementById("statusBox");
+    const summarySection = document.getElementById("summarySection");
+    const summaryText = document.getElementById("summaryText");
+
+    startBtn.onclick = async () => {
+        const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+        mediaRecorder = new MediaRecorder(stream);
+        audioChunks = [];
+
+        mediaRecorder.start();
+        statusBox.innerText = "Recording...";
+        startBtn.disabled = true;
+        stopBtn.disabled = false;
+
+        duration = 0;
+        timerInterval = setInterval(() => duration++, 1000);
+
+        mediaRecorder.ondataavailable = e => audioChunks.push(e.data);
+    };
+
+    stopBtn.onclick = () => {
+        mediaRecorder.stop();
+        clearInterval(timerInterval);
+        statusBox.innerText = "Recording stopped. Click Upload to Begin Processing";
+
+        mediaRecorder.onstop = () => {
+            audioBlob = new Blob(audioChunks, { type: 'audio/webm' });
+            const url = URL.createObjectURL(audioBlob);
+            document.getElementById("audioPlayer").src = url;
+
+            const file = new File([audioBlob], "recording.webm", { type: "audio/webm" });
+            const dt = new DataTransfer();
+            dt.items.add(file);
+            document.getElementById("audioFile").files = dt.files;
+
+            document.getElementById("durationField").value = duration;
+            uploadBtn.disabled = false;
+        };
+
+        startBtn.disabled = false;
+        stopBtn.disabled = true;
+    };
+
+    uploadBtn.onclick = () => {
+        uploadBtn.disabled = true;
+        statusBox.innerText = "Uploading & Processing...";
+        document.getElementById("uploadForm").submit();
+    };
+</script>

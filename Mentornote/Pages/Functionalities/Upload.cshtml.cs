@@ -1,5 +1,6 @@
 #nullable disable
 using Mentornote.Controllers;
+using Mentornote.DTOs;
 using Mentornote.Models;
 using Mentornote.Services;
 using Microsoft.AspNetCore.Authorization;
@@ -13,6 +14,8 @@ namespace Mentornote.Pages.Functionalities
     public class UploadModel : PageModel
     {
         private readonly FlashCardsController _flashCardsController;
+        private readonly YouTubeVideoService _youTubeService;
+        private readonly Helpers _helpers;
         [BindProperty]
         public string Submit { get; set; } = string.Empty;
         [BindProperty]
@@ -25,12 +28,16 @@ namespace Mentornote.Pages.Functionalities
         public List<FlashcardSet> FlashcardSets { get; set; } = new();
         public CardsServices flashcardService = new();
         public NotesSummaryService notesSummaryService;
+        [BindProperty]
+        public string VideoLink { get; set; } 
 
         private readonly IHubContext<ProcessingHub> _hub;
-        public UploadModel(FlashCardsController flashCardsController, IHubContext<ProcessingHub> hub)
+        public UploadModel(FlashCardsController flashCardsController, IHubContext<ProcessingHub> hub, YouTubeVideoService youTubeVideoService, Helpers helpers)
         {
             _flashCardsController = flashCardsController;
             _hub = hub;
+            _youTubeService = youTubeVideoService;
+            _helpers = helpers;
         }
 
         public void OnGet()
@@ -68,11 +75,7 @@ namespace Mentornote.Pages.Functionalities
                 {
                     if (UploadedNote != null && UploadedNote.Length > 0)
                     {
-                        var notesDto = new Mentornote.DTOs.NotesDto
-                        {
-                            File = UploadedNote
-                        };
-                        var status = _flashCardsController.GenerateFromPdf(notesDto, NewUser.Id, Title).GetAwaiter().GetResult();
+                        var status = _flashCardsController.GenerateFromPdf(UploadedNote, NewUser.Id, Title, null, "Note").GetAwaiter().GetResult();
                         if (status.ToString().Contains("BadRequest"))
                         {
                             Status = "Error";
@@ -87,6 +90,57 @@ namespace Mentornote.Pages.Functionalities
                     OnGet();
                     return Page();
                 }
+                else if (Submit == "Upload Link")
+                {
+                    if (string.IsNullOrEmpty(VideoLink))
+                    {
+                        ModelState.AddModelError("", "Please provide a YouTube link.");
+                        return Page();
+                    }
+
+                    try
+                    {
+                        // 1. Extract transcript and save
+                        var transcript = await _youTubeService.ExtractTranscriptAsync(VideoLink);
+
+                        // Save transcript as a text file
+                        var filePath = await _helpers.SaveNoteFileAsync(null, transcript);
+                        // 2. Create and save Note
+
+                        // Get the absolute path again
+                        var absolutePath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", filePath);
+
+                 
+                        using var stream = new FileStream(absolutePath, FileMode.Open, FileAccess.Read);
+
+                        IFormFile extractTextFile = new FormFile(stream, 0, stream.Length, null, Path.GetFileName(absolutePath))
+                        {
+                            Headers = new HeaderDictionary(),
+                            ContentType = "text/plain"
+                        };
+
+
+
+                        var status = _flashCardsController.GenerateFromPdf(extractTextFile, NewUser.Id, Title, VideoLink, "Video").GetAwaiter().GetResult();
+                        if (status.ToString().Contains("BadRequest"))
+                        {
+                            Status = "Error";
+                            OnGet();
+                            return Page();
+                        }
+                        else if (status.ToString().Contains("OkObjectResult"))
+                        {
+                            Status = "Success";
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        Console.WriteLine($"Error handling video upload: {ex.Message}");
+                        ModelState.AddModelError("", "Unable to extract transcript. Make sure the video has captions enabled.");
+                        return Page();
+                    }
+                }
+
             }
             return Page();
         }

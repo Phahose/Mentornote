@@ -39,7 +39,7 @@ body {
     justify-content: space-between;
     max-width: 90rem;
     width: 90%;
-    color:white;;
+    color:white;
     margin-left: auto;
     margin-right:auto;
 }
@@ -600,10 +600,9 @@ body {
 .start-con-holder{
     margin-left: auto;
     margin-right: auto;
-    width: 76%;
+    width: 80%;
     display: flex;
     justify-content: space-between;
-
 }
 .start-con-holder h2{
     margin:auto;
@@ -641,10 +640,10 @@ body {
 
 .notes-form {
     background: linear-gradient(135deg, #979bd1, #d5f0df);
-    width: 60%;
+    width: 80%;
     height:fit-content;
     max-height: 40rem;
- /*   max-width: 70%;*/
+    margin:auto;
     border-radius: 0.5rem;
     box-shadow: 0 6px 15px rgba(0, 0, 0, 0.2);
     border-radius: 0.5rem;
@@ -880,7 +879,8 @@ body {
     background: #f9fafb;
     padding: 2rem;
     text-align: center;
-    width: 40%;
+    width: 100%;
+    max-width: 20rem;
 }
 
 .upload-container{
@@ -1593,7 +1593,80 @@ body {
     #menu-btn:hover {
         background-color: mediumpurple;
     }
-   
+
+/*Speech Capture*/
+
+.speech-container {
+    max-width: 700px;
+    margin: 0 auto;
+    padding: 30px;
+    text-align: center;
+}
+
+.controls {
+    margin: 20px 0;
+}
+.speech-container {
+    max-width: 700px;
+    margin: 0 auto;
+    padding: 30px;
+    text-align: center;
+}
+
+.controls {
+    margin: 20px 0;
+}
+
+.btn {
+    padding: 10px 20px;
+    margin: 5px;
+    background-color: #4f46e5;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+}
+
+    .btn:disabled {
+        background-color: #9ca3af;
+        cursor: not-allowed;
+    }
+
+.status-box {
+    margin-top: 15px;
+    font-weight: bold;
+    color: red;
+}
+
+.summary-section {
+    margin-top: 30px;
+    text-align: left;
+}
+.btn {
+    padding: 10px 20px;
+    margin: 5px;
+    background-color: #4f46e5;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+}
+
+    .btn:disabled {
+        background-color: grey;
+        cursor: not-allowed;
+    }
+
+.status-box {
+    margin-top: 15px;
+    font-weight: bold;
+    color: #4b5563;
+}
+
+.summary-section {
+    margin-top: 30px;
+    text-align: left;
+}
 
 /* Tablet (up to 1024px wide) */
 @media (max-width: 1024px) {
@@ -1630,7 +1703,6 @@ body {
     .start-con-holder {
         display: flex;
         flex-flow: column;
-        flex-direction: column-reverse;
     }
     .start-form{
         width: 100%;
@@ -1669,6 +1741,13 @@ body {
         .exam-question p {
             font-size: 1rem;
         }
+
+    .upload-container{
+        flex-flow: column-reverse;
+    }
+    .processing-box{
+        margin-bottom: 2rem;
+    }
 }
 
 /* Mobile (up to 768px wide) */
@@ -1711,7 +1790,7 @@ body {
 
 /*Practice test Mobile */
     .fg {
-        margin-top: 0;
+        margin-top: 5rem;
         margin-bottom: auto;
     }
 

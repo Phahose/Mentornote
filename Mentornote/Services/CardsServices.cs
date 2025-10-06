@@ -127,15 +127,36 @@ namespace Mentornote.Services
                         SqlValue = note.FilePath
                     };
 
+                    SqlParameter SourceType = new SqlParameter
+                    {
+                        ParameterName = "@SourceType",
+                        SqlDbType = SqlDbType.NVarChar,
+                        Direction = ParameterDirection.Input,
+                        SqlValue = note.SourceType
+                    };
+
+                    SqlParameter SourceURL = new SqlParameter
+                    {
+                        ParameterName = "@SourceUrl",
+                        SqlDbType = SqlDbType.NVarChar,
+                        Direction = ParameterDirection.Input,
+                        SqlValue = note.SourceUrl
+                    };
+
+
                     // Output param to capture new Note ID
                     var outputIdParam = new SqlParameter("@NewNoteId", SqlDbType.Int)
                     {
                         Direction = ParameterDirection.Output
                     };
+
                     AddNote.Parameters.Add(outputIdParam);
                     AddNote.Parameters.Add(userIdParameter);
                     AddNote.Parameters.Add(titlePaarameter);
                     AddNote.Parameters.Add(filepath);
+                    AddNote.Parameters.Add(SourceType);
+                    AddNote.Parameters.Add(SourceURL);
+
                     AddNote.ExecuteNonQuery();
                     mentornoteConnection.Close();
 
@@ -976,6 +997,222 @@ namespace Mentornote.Services
             return tests;
         }
 
+        public bool AddSpeechCapture(SpeechCapture capture)
+        {
+            try
+            {
+                int captureId;
+
+                using SqlConnection connection = new SqlConnection(connectionString);
+                {
+                    connection.Open();
+
+                    SqlCommand addCapture = new SqlCommand
+                    {
+                        CommandType = CommandType.StoredProcedure,
+                        Connection = connection,
+                        CommandText = "AddSpeechCapture"
+                    };
+
+                    SqlParameter userIdParam = new SqlParameter
+                    {
+                        ParameterName = "@UserId",
+                        SqlDbType = SqlDbType.Int,
+                        Direction = ParameterDirection.Input,
+                        SqlValue = capture.UserId
+                    };
+
+                    SqlParameter transcriptFileParam = new SqlParameter
+                    {
+                        ParameterName = "@TranscriptFilePath",
+                        SqlDbType = SqlDbType.NVarChar,
+                        Direction = ParameterDirection.Input,
+                        SqlValue = capture.TranscriptFilePath
+                    };
+
+                    SqlParameter summaryTextParam = new SqlParameter
+                    {
+                        ParameterName = "@SummaryText",
+                        SqlDbType = SqlDbType.NVarChar,
+                        Direction = ParameterDirection.Input,
+                        SqlValue = capture.SummaryText
+                    };
+
+                    SqlParameter durationParam = new SqlParameter
+                    {
+                        ParameterName = "@DurationSeconds",
+                        SqlDbType = SqlDbType.Int,
+                        Direction = ParameterDirection.Input,
+                        SqlValue = capture.DurationSeconds
+                    };
+
+
+                    addCapture.Parameters.Add(userIdParam);
+                    addCapture.Parameters.Add(transcriptFileParam);
+                    addCapture.Parameters.Add(summaryTextParam);
+                    addCapture.Parameters.Add(durationParam);
+
+                    addCapture.ExecuteNonQuery();
+                    connection.Close();
+
+                    
+                }
+
+                return true;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex.Message);
+                return false;
+            }
+        }
+
+        public SpeechCapture GetSpeechCaptureById(int id)
+        {
+            SpeechCapture capture = new();
+
+            try
+            {
+                using SqlConnection connection = new SqlConnection(connectionString);
+                {
+                    connection.Open();
+
+                    SqlCommand getCapture = new SqlCommand
+                    {
+                        CommandType = CommandType.StoredProcedure,
+                        Connection = connection,
+                        CommandText = "GetSpeechCaptureById"
+                    };
+
+                    SqlParameter idParam = new SqlParameter
+                    {
+                        ParameterName = "@Id",
+                        SqlDbType = SqlDbType.Int,
+                        Direction = ParameterDirection.Input,
+                        SqlValue = id
+                    };
+
+                    getCapture.Parameters.Add(idParam);
+
+                    SqlDataReader reader = getCapture.ExecuteReader();
+
+                    if (reader.Read())
+                    {
+                        capture = new SpeechCapture
+                        {
+                            Id = Convert.ToInt32(reader["Id"]),
+                            UserId = Convert.ToInt32(reader["UserId"]),
+                            TranscriptFilePath = reader["TranscriptFilePath"].ToString(),
+                            SummaryText = reader["SummaryText"].ToString(),
+                            DurationSeconds = reader["DurationSeconds"] != DBNull.Value ? Convert.ToInt32(reader["DurationSeconds"]) : 0,
+                            CreatedAt = Convert.ToDateTime(reader["CreatedAt"])
+                        };
+                    }
+
+                    reader.Close();
+                    connection.Close();
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex.Message);
+            }
+
+            return capture;
+        }
+
+        public List<SpeechCapture> GetAllSpeechCaptures(int? userId = null)
+        {
+            List<SpeechCapture> captures = new List<SpeechCapture>();
+
+            try
+            {
+                using SqlConnection connection = new SqlConnection(connectionString);
+                {
+                    connection.Open();
+
+                    SqlCommand getAll = new SqlCommand
+                    {
+                        CommandType = CommandType.StoredProcedure,
+                        Connection = connection,
+                        CommandText = "GetAllSpeechCaptures"
+                    };
+
+                    SqlParameter userIdParam = new SqlParameter
+                    {
+                        ParameterName = "@UserId",
+                        SqlDbType = SqlDbType.Int,
+                        Direction = ParameterDirection.Input,
+                        SqlValue = userId.HasValue ? userId.Value : DBNull.Value
+                    };
+
+                    getAll.Parameters.Add(userIdParam);
+
+                    SqlDataReader reader = getAll.ExecuteReader();
+
+                    while (reader.Read())
+                    {
+                        SpeechCapture capture = new SpeechCapture
+                        {
+                            Id = Convert.ToInt32(reader["Id"]),
+                            UserId = Convert.ToInt32(reader["UserId"]),
+                            TranscriptFilePath = reader["TranscriptFilePath"].ToString(),
+                            SummaryText = reader["SummaryText"].ToString(),
+                            DurationSeconds = reader["DurationSeconds"] != DBNull.Value ? Convert.ToInt32(reader["DurationSeconds"]) : 0,
+                            CreatedAt = Convert.ToDateTime(reader["CreatedAt"])
+                        };
+                        captures.Add(capture);
+                    }
+
+                    reader.Close();
+                    connection.Close();
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex.Message);
+            }
+
+            return captures;
+        }
+
+        public bool DeleteSpeechCapture(int id)
+        {
+            try
+            {
+                using SqlConnection connection = new SqlConnection(connectionString);
+                {
+                    connection.Open();
+
+                    SqlCommand deleteCapture = new SqlCommand
+                    {
+                        CommandType = CommandType.StoredProcedure,
+                        Connection = connection,
+                        CommandText = "DeleteSpeechCapture"
+                    };
+
+                    SqlParameter idParam = new SqlParameter
+                    {
+                        ParameterName = "@Id",
+                        SqlDbType = SqlDbType.Int,
+                        Direction = ParameterDirection.Input,
+                        SqlValue = id
+                    };
+
+                    deleteCapture.Parameters.Add(idParam);
+
+                    int rowsAffected = deleteCapture.ExecuteNonQuery();
+                    connection.Close();
+
+                    return rowsAffected > 0;
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex.Message);
+                return false;
+            }
+        }
 
 
         public string ConvertMarkdownToHtml(string markdown)

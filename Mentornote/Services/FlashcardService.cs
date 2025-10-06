@@ -13,23 +13,24 @@ namespace Mentornote.Services
     {
         private readonly HttpClient _httpClient;
         private readonly IConfiguration _config;
-        public FlashcardService(HttpClient httpClient, IConfiguration config)
+        private readonly Helpers _helpers;
+        public FlashcardService(HttpClient httpClient, IConfiguration config, Helpers helpers)
         {
             _httpClient = httpClient;
             _config = config;
+            _helpers = helpers;
         }
 
         public async Task<List<Flashcard>> GenerateFromNotes(string notes, int noteId)
         {
             var allFlashcards = new List<Flashcard>();
-            Helpers helper = new Helpers();
-            var chunks = helper.ChunkText(notes, 1500); // You can tweak 1500 depending on what works
+            var chunks = _helpers.ChunkText(notes, 1500); // You can tweak 1500 depending on what works
 
             foreach (var chunk in chunks)
             {
                 try
                 {
-                    //var flashcardsFromChunk = await GenerateFlashcardsFromChunk(chunk, noteId);
+                   // var flashcardsFromChunk = await GenerateFlashcardsFromChunk(chunk, noteId);
                     var flashcardsFromChunk = await GenerateFakeFlashcardsFromChunk(chunk, noteId);
                     allFlashcards.AddRange(flashcardsFromChunk);
                 }

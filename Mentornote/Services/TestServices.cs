@@ -13,18 +13,20 @@ namespace Mentornote.Services
     {
         private readonly HttpClient _httpClient;
         private readonly IConfiguration _config;
+        private readonly Helpers _helpers;
 
 
-        public TestServices(HttpClient httpClient, IConfiguration config)
+        public TestServices(HttpClient httpClient, IConfiguration config, Helpers helpers)
         {
             _httpClient = httpClient;
             _config = config;
+            _helpers = helpers;
         }
 
         public async Task<bool> CreateTestQuestion(int noteId, int userId)
         {
             CardsServices cardsServices = new();
-            Helpers helpers = new();
+
 
             Note activenote = cardsServices.GetNoteById(noteId, userId);
             if (activenote == null) throw new Exception("Note not found.");
@@ -39,10 +41,11 @@ namespace Mentornote.Services
 
             //xtract the Test from File
             string text;
-            using (FileStream fs = new FileStream(physicalPath, FileMode.Open, FileAccess.Read))
-            {
-                text = helpers.ExtractText(fs);
-            }
+
+            using var fs = new FileStream(physicalPath, FileMode.Open, FileAccess.Read);
+            IFormFile fakeFormFile = new FormFile(fs, 0, fs.Length, "file", Path.GetFileName(physicalPath));
+
+            text = _helpers.ExtractText(fakeFormFile);
 
             //Create The Test
             Test test = new() 
@@ -57,7 +60,7 @@ namespace Mentornote.Services
 
 
             //Chunk Text
-            var chunks = helpers.ChunkText(text);
+            var chunks = _helpers.ChunkText(text);
 
 
         

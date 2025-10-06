@@ -43,6 +43,9 @@ namespace Mentornote
             builder.Services.AddScoped<NotesSummaryService>();
             builder.Services.AddScoped<TutorServices>();
             builder.Services.AddScoped<TestServices>();
+            builder.Services.AddScoped<YouTubeVideoService>();
+            builder.Services.AddScoped<SpeechCaptureServices>();
+            builder.Services.AddScoped<Helpers>();
             builder.Services.AddHttpContextAccessor();
  /*           builder.Services.AddAuthentication(options =>
             {

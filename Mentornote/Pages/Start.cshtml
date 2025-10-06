@@ -45,23 +45,6 @@
     </div>
 
     <div class="start-con-holder"> 
-        <form name="start-form" method="post" class="start-form" enctype="multipart/form-data" onsubmit="return showLoadingBar();">
-            @Html.AntiForgeryToken() <!-- Required for Razor Pages -->
-            <div class="startform">
-                <div class="quick-actions">
-                    <p>Quick Actions</p>
-                    <div class="actions">
-                        <a href="~/Functionalities/Upload">
-                            <img src="https://img.icons8.com/?size=24&id=88655&format=png" alt="Google" class="upload-logo" />
-                            <section>
-                                <p>Upload Notes</p>
-                                <p class="sub-text">Add new study materials</p>
-                            </section>
-                        </a>
-                    </div>
-                </div>
-            </div>
-        </form>
         <form name="Notesform" method="post" class="notes-form">
             @Html.AntiForgeryToken() <!-- Required for Razor Pages -->
             <div class="notes-cards-container">

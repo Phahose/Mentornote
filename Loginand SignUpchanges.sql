@@ -115,6 +115,8 @@ CREATE TABLE Notes (
 );
 
 
+ALTER TABLE Notes
+Add SourceURL nvarchar(max) NULL;
 
 CREATE TABLE NoteSummaries (
     Id INT PRIMARY KEY IDENTITY(1,1),
@@ -173,17 +175,21 @@ CREATE PROCEDURE AddNote
 	@UserId INT,
     @Title NVARCHAR(255),
     @FilePath NVARCHAR(MAX),
-	@NewNoteId INT OUTPUT
+	@NewNoteId INT OUTPUT,
+	@SourceType NVARCHAR(MAX),
+	@SourceUrl NVARCHAR(MAX)
 AS
 BEGIN
     SET NOCOUNT ON;
 
-    INSERT INTO Notes (UserId, Title, FilePath, UploadedAt)
-    VALUES (@UserId, @Title, @FilePath, SYSDATETIME());
+    INSERT INTO Notes (UserId, Title, FilePath, UploadedAt,SourceType,SourceURL)
+    VALUES (@UserId, @Title, @FilePath, SYSDATETIME(),@SourceType,@SourceUrl);
 
 	-- Get the ID of the inserted note
     SET @NewNoteId = SCOPE_IDENTITY()
 END;
+
+DROP PROCEDURE AddNote
 
 CREATE PROCEDURE DeleteNote
     @NoteId INT
@@ -519,3 +525,14 @@ BEGIN
         THROW;
     END CATCH
 END;
+
+
+CREATE TABLE SpeechCapture (
+    Id INT IDENTITY(1,1) PRIMARY KEY,
+    UserId INT NOT NULL,
+    TranscriptFilePath NVARCHAR(255) NOT NULL, 
+    SummaryText NVARCHAR(MAX) NOT NULL,      
+    DurationSeconds INT NULL,             
+    CreatedAt DATETIME DEFAULT GETDATE()       
+);
+

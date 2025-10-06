@@ -13,6 +13,8 @@ namespace Mentornote.Models
 
         public string FilePath { get; set; } 
 
+        public string SourceType { get; set; }
+        public string SourceUrl { get; set; }
         public DateTime UploadedAt { get; set; } = DateTime.UtcNow;
 
         // Foreign key to User
