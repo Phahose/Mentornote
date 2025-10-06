@@ -536,3 +536,65 @@ CREATE TABLE SpeechCapture (
     CreatedAt DATETIME DEFAULT GETDATE()       
 );
 
+CREATE PROCEDURE AddSpeechCapture
+    @UserId INT,
+    @TranscriptFilePath NVARCHAR(255),
+    @SummaryText NVARCHAR(MAX),
+    @DurationSeconds INT = NULL
+AS
+BEGIN
+    INSERT INTO SpeechCapture (UserId, TranscriptFilePath, SummaryText, DurationSeconds, CreatedAt)
+    VALUES (@UserId, @TranscriptFilePath, @SummaryText, @DurationSeconds, GETDATE());
+END
+
+
+CREATE PROCEDURE GetSpeechCaptureById
+    @Id INT
+AS
+BEGIN
+    SELECT 
+        Id,
+        UserId,
+        TranscriptFilePath,
+        SummaryText,
+        DurationSeconds,
+        CreatedAt
+    FROM SpeechCapture
+    WHERE Id = @Id;
+END
+
+
+CREATE PROCEDURE GetAllSpeechCaptures
+    @UserId INT = NULL
+AS
+BEGIN
+    IF @UserId IS NULL
+        SELECT 
+            Id,
+            UserId,
+            TranscriptFilePath,
+            SummaryText,
+            DurationSeconds,
+            CreatedAt
+        FROM SpeechCapture
+        ORDER BY CreatedAt DESC;
+    ELSE
+        SELECT 
+            Id,
+            UserId,
+            TranscriptFilePath,
+            SummaryText,
+            DurationSeconds,
+            CreatedAt
+        FROM SpeechCapture
+        WHERE UserId = @UserId
+        ORDER BY CreatedAt DESC;
+END
+
+CREATE PROCEDURE DeleteSpeechCapture
+    @Id INT
+AS
+BEGIN
+    DELETE FROM SpeechCapture
+    WHERE Id = @Id;
+END
