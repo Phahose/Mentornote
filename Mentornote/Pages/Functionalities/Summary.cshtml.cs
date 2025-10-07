@@ -12,6 +12,11 @@ namespace Mentornote.Pages.Functionalities
 {
     public class SummaryModel : PageModel
     {
+        private readonly Helpers _helpers;
+        public SummaryModel(Helpers helpers)
+        {
+            _helpers = helpers;
+        }
         public User NewUser { get; set; } = new User();
         public string Email { get; set; } = string.Empty;
         public CardsServices cardServices = new();
@@ -25,7 +30,7 @@ namespace Mentornote.Pages.Functionalities
             HttpContext.Session.SetInt32("SelectedNoteId", noteId);
             noteSummary = cardServices.GetUserNotesSummary(noteId);
 
-            HtmlSummary = cardServices.ConvertMarkdownToHtml(noteSummary.SummaryText);
+            HtmlSummary = _helpers.ConvertMarkdownToHtml(noteSummary.SummaryText);
 
             Email = HttpContext.Session.GetString("Email")!;
             if (string.IsNullOrEmpty(Email))

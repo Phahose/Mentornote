@@ -47,7 +47,7 @@ namespace Mentornote.Pages.Shared
             }
             UsersService usersService = new();
             NewUser = usersService.GetUserByEmail(Email);
-            FlashcardSets = cardservices.GetUserFlashcards(NewUser.Id);
+            //FlashcardSets = cardservices.GetUserFlashcards(NewUser.Id);
             NotesList = cardservices.GetUserNotes(NewUser.Id);
         }
 

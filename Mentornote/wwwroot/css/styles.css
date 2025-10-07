@@ -29,7 +29,7 @@ body {
     padding: 2rem;
 }
 
-.logo{
+.logo {
     width: 7rem;
     height: 4rem;
 }
@@ -181,16 +181,26 @@ body {
 .func-nav-body {
     display: flex;
     width: 100%;
-    min-height: fit-content;
+    height: 100vh;
     padding: 0;
+    align-items: stretch;
+    background-color: green
 }
+
 .func-navigation {
+    min-width: 19rem;
     width: 20%;
-    height: inherit;
     align-items: center;
     background-color: white;
     border: 1px solid lightgrey;
     padding: 2rem 2rem;
+}
+.f-home-controller {
+    width: 100vw;
+    overflow: auto;
+    display: flex;
+    flex-flow: column;
+    background-color: #e1e6ed;
 }
 
 .brand {
@@ -198,6 +208,7 @@ body {
     align-items: center;
     gap: 10px;
     margin-bottom: 30px;
+    text-decoration: none;
 }
 
     .brand .logo {
@@ -317,13 +328,7 @@ body {
 }
 
 /*End of Nav*/
-.f-home-controller {
-    width: 100vw;
-    height: 100vh;
-    display: flex;
-    flex-flow: column;
-    background-color: #e1e6ed;
-}
+
 
 .flashcard{
     height: 40rem;
@@ -674,7 +679,6 @@ body {
     background: inherit;
     border-radius: 12px;
     box-shadow: 0 1px 3px rgba(0,0,0,0.05);
-    width: inherit;
 }
 
 .note-left {
@@ -783,6 +787,7 @@ body {
     box-shadow: 0 0 10px #000;
     z-index: 99;
     transition: ease-in-out;
+    width: 6rem;
 }
 
 .popup-menu.hidden {
@@ -1613,8 +1618,8 @@ body {
     text-align: center;
 }
 
-.controls {
-    margin: 20px 0;
+.record-controls {
+    margin: 2rem auto
 }
 
 .btn {
@@ -1627,10 +1632,14 @@ body {
     cursor: pointer;
 }
 
-    .btn:disabled {
-        background-color: #9ca3af;
-        cursor: not-allowed;
-    }
+.start-btn {
+    background-color: green;
+}
+
+.btn:disabled {
+    background-color: #9ca3af;
+    cursor: not-allowed;
+}
 
 .status-box {
     margin-top: 15px;
@@ -1666,6 +1675,29 @@ body {
 .summary-section {
     margin-top: 30px;
     text-align: left;
+}
+
+audio{
+    width: 100%;
+}
+
+.record-title{
+    padding: 1rem;
+    border-radius: 0.5rem;
+    border: none;
+    margin: 0.5rem;
+    width: 70%;
+}
+/*Capture*/
+.capture-summary {
+    height: fit-content;
+    padding: 2rem;
+    padding-top: 6rem;
+    font-size: 16px;
+    font-family: Arial;
+    width: 60%;
+    margin-left: auto;
+    margin-right: auto;
 }
 
 /* Tablet (up to 1024px wide) */
@@ -1820,6 +1852,7 @@ body {
         left: -370px; 
         z-index: 2000; 
         transition: left 0.35s ease; 
+        min-height: 100vh;
     }
 
     .func-navigation.active {

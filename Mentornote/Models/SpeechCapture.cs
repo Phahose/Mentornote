@@ -9,6 +9,7 @@ namespace Mentornote.Models
         public string SummaryText { get; set; }
         public int DurationSeconds { get; set; }
         public DateTime CreatedAt { get; set; }
+        public string Title { get; set; }
     }
 
 }

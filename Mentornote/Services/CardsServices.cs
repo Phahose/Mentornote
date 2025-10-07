@@ -1001,7 +1001,6 @@ namespace Mentornote.Services
         {
             try
             {
-                int captureId;
 
                 using SqlConnection connection = new SqlConnection(connectionString);
                 {
@@ -1046,11 +1045,19 @@ namespace Mentornote.Services
                         SqlValue = capture.DurationSeconds
                     };
 
+                    SqlParameter titleParameter = new SqlParameter
+                    {
+                        ParameterName = "@Title",
+                        SqlDbType = SqlDbType.NVarChar,
+                        Direction = ParameterDirection.Input,
+                        SqlValue = capture.Title
+                    };
 
                     addCapture.Parameters.Add(userIdParam);
                     addCapture.Parameters.Add(transcriptFileParam);
                     addCapture.Parameters.Add(summaryTextParam);
                     addCapture.Parameters.Add(durationParam);
+                    addCapture.Parameters.Add(titleParameter);
 
                     addCapture.ExecuteNonQuery();
                     connection.Close();
@@ -1105,7 +1112,8 @@ namespace Mentornote.Services
                             TranscriptFilePath = reader["TranscriptFilePath"].ToString(),
                             SummaryText = reader["SummaryText"].ToString(),
                             DurationSeconds = reader["DurationSeconds"] != DBNull.Value ? Convert.ToInt32(reader["DurationSeconds"]) : 0,
-                            CreatedAt = Convert.ToDateTime(reader["CreatedAt"])
+                            CreatedAt = Convert.ToDateTime(reader["CreatedAt"]),
+                            Title = (string)reader["Title"]
                         };
                     }
 
@@ -1159,7 +1167,8 @@ namespace Mentornote.Services
                             TranscriptFilePath = reader["TranscriptFilePath"].ToString(),
                             SummaryText = reader["SummaryText"].ToString(),
                             DurationSeconds = reader["DurationSeconds"] != DBNull.Value ? Convert.ToInt32(reader["DurationSeconds"]) : 0,
-                            CreatedAt = Convert.ToDateTime(reader["CreatedAt"])
+                            CreatedAt = Convert.ToDateTime(reader["CreatedAt"]),
+                            Title = (string)reader["Title"]
                         };
                         captures.Add(capture);
                     }
@@ -1213,14 +1222,5 @@ namespace Mentornote.Services
                 return false;
             }
         }
-
-
-        public string ConvertMarkdownToHtml(string markdown)
-        {
-            var html = Markdown.ToHtml(markdown);
-            return html;
-        }
     }
-    
-
 }

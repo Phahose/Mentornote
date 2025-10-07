@@ -12,6 +12,12 @@ namespace Mentornote.Pages
 {
     public class PreviewModel : PageModel
     {
+        private readonly Helpers _helpers;
+
+        public PreviewModel(Helpers helpers)
+        {
+            _helpers = helpers;
+        }
         public User NewUser { get; set; } = new User();
         public string Email { get; set; } = string.Empty;
         public List<FlashcardSet> FlashcardSets { get; set; } = new();
@@ -26,7 +32,7 @@ namespace Mentornote.Pages
             HttpContext.Session.SetInt32("SelectedNoteId", noteId);
             noteSummary = flashcardService.GetUserNotesSummary(noteId);
            
-            HtmlSummary = flashcardService.ConvertMarkdownToHtml(noteSummary.SummaryText);
+            HtmlSummary = _helpers.ConvertMarkdownToHtml(noteSummary.SummaryText);
 
             Email = HttpContext.Session.GetString("Email")!;
             if (string.IsNullOrEmpty(Email))

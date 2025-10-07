@@ -37,6 +37,10 @@ namespace Mentornote.Pages.Functionalities
         public int DurationSeconds { get; set; }
         public List<SpeechCapture> Transcripts = new();
         public SpeechCapture ActiveTranscript = new();
+        [BindProperty]
+        public string Submit { get; set; } = string.Empty;
+        [BindProperty]
+        public string Title { get; set; } = string.Empty;
         public void OnGet()
         {
             if (!User.Identity.IsAuthenticated)
@@ -53,13 +57,29 @@ namespace Mentornote.Pages.Functionalities
             }
             UsersService usersService = new();
             NewUser = usersService.GetUserByEmail(Email);
-            FlashcardSets = flashcardService.GetUserFlashcards(NewUser.Id);
+           // FlashcardSets = flashcardService.GetUserFlashcards(NewUser.Id);
             Transcripts = flashcardService.GetAllSpeechCaptures(NewUser.Id);
             ActiveTranscript = Transcripts.FirstOrDefault();
         }
 
         public async Task<IActionResult> OnPost()
         {
+            string[] split;
+            var action = string.Empty;
+            var id = 0;
+            if (Submit.Contains('-'))
+            {
+                split = Submit.Split('-');
+                action = split[0];
+                id = int.Parse(split[1]);
+            }
+
+            if (action == "Delete")
+            {
+                flashcardService.DeleteSpeechCapture(id);
+                return Page();
+            }
+
             if (UploadedAudio == null || UploadedAudio.Length == 0)
             {
                 ModelState.AddModelError(string.Empty, "No audio file found.");
@@ -67,7 +87,7 @@ namespace Mentornote.Pages.Functionalities
             }
 
             // Save audio file locally
-            string uploadsFolder = Path.Combine(_env.WebRootPath, "uploads");
+            string uploadsFolder = Path.Combine(_env.WebRootPath, "uploads", "recordings");
             if (!Directory.Exists(uploadsFolder))
                 Directory.CreateDirectory(uploadsFolder);
 
@@ -100,6 +120,7 @@ namespace Mentornote.Pages.Functionalities
                 TranscriptFilePath = audioFilePath,
                 SummaryText = summarizedTranscripts,
                 DurationSeconds = DurationSeconds,
+                Title = string.IsNullOrEmpty(Title) ? "Untitled Capture" : Title,
             };
 
             flashcardService.AddSpeechCapture(capture);

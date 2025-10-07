@@ -1,0 +1,75 @@
+﻿@page
+@model Mentornote.Pages.Functionalities.CaptureModel
+@{
+    Layout = null;
+}
+<!DOCTYPE html>
+
+<html>
+<head>
+    <meta name="viewport" content="width=device-width" />
+    <title>@ViewBag.Title</title>
+    <link rel="stylesheet" href="~/css/styles.css" />
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Bruno+Ace&family=Michroma&family=Smooch+Sans:wght@100..900&display=swap" rel="stylesheet">
+</head>
+<body class="func-nav-body">
+    <nav class="func-navigation" id="func-navigation">
+        <a href="~/Start" class="brand">
+            <img src="https://img.icons8.com/ios-filled/50/FFFFFF/graduation-cap.png" alt="Logo" class="logo" />
+            <div class="brand-text">
+                <h1>MentorNote</h1>
+                <p>AI Study Assistant</p>
+            </div>
+        </a>
+
+        <div class="nav-section">
+            <p class="nav-section-title">STUDY TOOLS</p>
+            <ul class="nav-links">
+                <a href="~/Functionalities/SpeechCapture" class="nav-item active">
+                    Back
+                </a>
+                <li id="capture-summary" class="nav-item">
+                    Summary
+                </li>
+                <li id="capture-chat" class="nav-item">
+                    Chat
+                </li>
+            </ul>
+        </div>  
+    </nav>
+
+    <div class="f-home-controller">
+        <div class="header">
+            <div>
+                <section>
+                    <h1>Dashboard</h1>
+                </section>
+
+                <button id="menu-btn" class="menu-btn">☰</button>
+            </div>
+        </div>
+        <div class="capture-summary">
+            <p>@Html.Raw(Model.Summary)</p>
+        </div>
+    </div>
+    
+    <script>
+        const menuBtn = document.getElementById('menu-btn');
+        const sideNav = document.getElementById('func-navigation');
+
+        menuBtn.addEventListener('click', () => {
+          sideNav.classList.toggle('active');
+        });
+
+        // Optional: close nav when clicking outside it
+        document.addEventListener('click', (e) => {
+          if (!sideNav.contains(e.target) && !menuBtn.contains(e.target)) {
+            sideNav.classList.remove('active');
+
+          }
+        });
+    </script>
+</body>
+</html>

@@ -9,8 +9,8 @@
         <h1 class="page-title">Speech Capture</h1>
         <p class="page-subtext">Record your lecture or voice note and get an instant summary.</p>
 
-        <div class="controls">
-            <button id="startBtn" class="btn">Start Recording</button>
+        <div class="record-controls">
+            <button id="startBtn" class="btn start-btn">Start Recording</button>
             <button id="stopBtn" class="btn" disabled>Stop Recording</button>
             <button id="uploadBtn" class="btn" disabled>Upload Recording</button>
         </div>
@@ -19,6 +19,7 @@
 
         <form id="uploadForm" method="post" enctype="multipart/form-data">
             @Html.AntiForgeryToken() <!-- Required for Razor Pages -->
+            <input type="Text" name="Title" placeholder="Enter a Title for your Recording "required class="record-title"/>
             <input type="hidden" name="userId" value="@Model.NewUser.Id" />
             <input type="file" id="audioFile" name="UploadedAudio" hidden />
             <input type="hidden" name="durationSeconds" id="durationField" />
@@ -26,14 +27,58 @@
 
         <div id="statusBox" class="status-box"></div>
 
-        @if (Model.ActiveTranscript != null)
+        @foreach (var capture in @Model.Transcripts)
         {
-            <div class="summary-section" id="summarySection" >
-                <h2>AI Summary</h2>
-                <p id="summaryText">@Model.ActiveTranscript.SummaryText</p>
-                <canvas id="summaryChart"></canvas>
-            </div>
+            <form name="Notesform" method="post" class="notes-form">
+            @Html.AntiForgeryToken() <!-- Required for Razor Pages -->
+                <div class="note-card">
+                    <div class="note-left">
+                        <div class="icon-circle">
+                            <img src="https://img.icons8.com/ios-filled/20/3b82f6/book.png" alt="Book Icon" />
+                        </div>
+                        <div class="note-text">
+                            <strong>@capture.Title</strong>
+                        </div>
+                    </div>
+
+                    <div class="note-right">
+                        <a href="~/Functionalities/Capture?captureId=@capture.Id" class="tag note-tag">Explore</a>
+
+                        <svg onmouseover="togglePopup(this)" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="black" viewBox="0 0 24 24" class="kebab-img">
+                            <circle cx="12" cy="5" r="2" />
+                            <circle cx="12" cy="12" r="2" />
+                            <circle cx="12" cy="19" r="2" />
+                        </svg>
+
+                        <div class="popup-menu hidden">
+                            <button type="submit" name="Submit" value="Rename-@capture.Id" class="popup-btn">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="popup-icon" viewBox="0 0 24 24" width="16" height="16" fill="currentColor">
+                                    <path d="M4 21h4.586L20.293 9.293a1 1 0 0 0 0-1.414l-4.172-4.172a1 1 0 0 0-1.414 0L4 15.586V21zM5.414 17L15 7.414l1.586 1.586L7 18.586H5.414V17z" />
+                                </svg>
+                                Edit Title
+                            </button>
+                            <button type="submit" name="Submit" value="Delete-@capture.Id" class="popup-btn">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="popup-icon" viewBox="0 0 24 24" width="16" height="16" fill="currentColor">
+                                    <path d="M6 7h12v13a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2V7zm3 3v7h2v-7H9zm4 0v7h2v-7h-2z" />
+                                    <path d="M18 4h-3.5l-1-1h-3l-1 1H6v2h12V4z" />
+                                </svg>
+                                Delete
+                            </button>
+                        </div>
+                    </div>
+
+                </div>
+            </form>
         }
+        @if (Model.Transcripts.Count == 0)
+        {
+            <p class="empty-list">You have not Recorded anything yet Lets Begin</p>
+        }
+
+        <div class="popup-menu hidden" id="startpopup">
+            <button onclick="renameCard(this)">Rename</button>
+            <button onclick="deleteCard(this)">Delete</button>
+        </div>
       
     </div>
    
@@ -98,4 +143,24 @@
         statusBox.innerText = "Uploading & Processing...";
         document.getElementById("uploadForm").submit();
     };
+
+
+    // pop up effect
+    // Toggle popup specific to clicked kebab icon
+    function togglePopup(iconElement) {
+        // Close all open popups
+        document.querySelectorAll('.popup-menu').forEach(p => p.classList.add('hidden'));
+
+        const popup = iconElement.nextElementSibling; // assumes popup is right after icon
+        if (popup && popup.classList.contains('popup-menu')) {
+            popup.classList.toggle('hidden');
+        }
+    }
+
+    // Optional: close popup if user clicks outside
+    document.addEventListener("click", function (e) {
+        if (!e.target.closest(".notes-contols")) {
+            document.querySelectorAll('.popup-menu').forEach(p => p.classList.add('hidden'));
+        }
+    });
 </script>

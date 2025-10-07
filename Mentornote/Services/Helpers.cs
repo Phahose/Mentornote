@@ -1,5 +1,6 @@
 ﻿#nullable disable
 using DocumentFormat.OpenXml.Packaging;
+using Markdig;
 using Mentornote.Models;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.IdentityModel.Tokens;
@@ -170,7 +171,7 @@ namespace Mentornote.Services
                 messages = new[]
                 {
                 new { role = "system", content = "You are a summarization assistant for lecture transcripts." },
-                new { role = "user", content = $"Summarize the following text:\n{text}" }
+                new { role = "user", content = $"Summarize the following text and structure it using markdown with clear sections, bullet points, and bolded titles:\n{text}" }
             }
             };
 
@@ -199,6 +200,12 @@ namespace Mentornote.Services
 
 
             return summary;
+        }
+
+        public string ConvertMarkdownToHtml(string markdown)
+        {
+            var html = Markdown.ToHtml(markdown);
+            return html;
         }
     }
 }
