@@ -24,9 +24,10 @@ namespace Mentornote.Pages.Functionalities
         }
         public User NewUser { get; set; } = new User();
         public string Email { get; set; } = string.Empty;
-        public List<SpeechCapture> Transcripts = new();
-        public SpeechCapture ActiveTranscript = new();
+        public List<SpeechCapture> Captures = new();
+        public SpeechCapture ActiveCapture= new();
         public CardsServices flashcardService = new();
+        public List<SpeechCaptureChat> ChatMessages = new();
         public string Summary { get; set; }
         public void OnGet(int captureId)
         {
@@ -38,10 +39,15 @@ namespace Mentornote.Pages.Functionalities
             }
             UsersService usersService = new();
             NewUser = usersService.GetUserByEmail(Email);
-            Transcripts = flashcardService.GetAllSpeechCaptures(NewUser.Id);
-            ActiveTranscript = Transcripts.FirstOrDefault();
+            Captures = flashcardService.GetAllSpeechCaptures(NewUser.Id);
+            ActiveCapture = Captures.FirstOrDefault();
 
-            Summary = _helpers.ConvertMarkdownToHtml(ActiveTranscript.SummaryText);
+            Summary = _helpers.ConvertMarkdownToHtml(ActiveCapture.SummaryText);
+
+        }
+
+        public void OnPost()
+        {
 
         }
     }

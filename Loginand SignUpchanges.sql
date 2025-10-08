@@ -595,3 +595,66 @@ BEGIN
     DELETE FROM SpeechCapture
     WHERE Id = @Id;
 END
+
+--Speech Capture
+
+CREATE TABLE SpeechCaptureChat (
+    Id INT IDENTITY(1,1) PRIMARY KEY,
+    SpeechCaptureId INT NOT NULL,       -- link to SpeechCapture table
+    UserId INT NOT NULL,                -- who owns this chat
+    SenderType NVARCHAR(10) NOT NULL,   -- 'user' or 'ai'
+    Message NVARCHAR(MAX) NOT NULL,     -- message text
+    CreatedAt DATETIME DEFAULT GETDATE()
+);
+
+
+CREATE PROCEDURE AddSpeechCaptureChat
+    @SpeechCaptureId INT,
+    @UserId INT,
+    @SenderType NVARCHAR(10),
+    @Message NVARCHAR(MAX)
+AS
+BEGIN
+    SET NOCOUNT ON;
+
+    -- Add new message
+    INSERT INTO SpeechCaptureChat (SpeechCaptureId, UserId, SenderType, Message, CreatedAt)
+    VALUES (@SpeechCaptureId, @UserId, @SenderType, @Message, GETDATE());
+
+    -- Keep only the 100 most recent messages per recording
+    DECLARE @MaxMessages INT = 100;
+
+    WITH OrderedMessages AS (
+        SELECT Id,
+               ROW_NUMBER() OVER (PARTITION BY SpeechCaptureId ORDER BY CreatedAt DESC) AS RowNum
+        FROM SpeechCaptureChat
+        WHERE SpeechCaptureId = @SpeechCaptureId
+    )
+    DELETE FROM SpeechCaptureChat
+    WHERE Id IN (SELECT Id FROM OrderedMessages WHERE RowNum > @MaxMessages);
+END;
+
+
+CREATE PROCEDURE GetSpeechCaptureChatByCaptureId
+    @SpeechCaptureId INT
+AS
+BEGIN
+    SET NOCOUNT ON;
+
+    SELECT Id, SpeechCaptureId, UserId, SenderType, Message, CreatedAt
+    FROM SpeechCaptureChat
+    WHERE SpeechCaptureId = @SpeechCaptureId
+    ORDER BY CreatedAt ASC;
+END;
+
+
+CREATE PROCEDURE DeleteSpeechCaptureChat
+    @SpeechCaptureId INT
+AS
+BEGIN
+    SET NOCOUNT ON;
+
+    DELETE FROM SpeechCaptureChat
+    WHERE SpeechCaptureId = @SpeechCaptureId;
+END;
+

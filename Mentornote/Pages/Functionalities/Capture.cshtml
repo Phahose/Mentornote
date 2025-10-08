@@ -27,10 +27,10 @@
         <div class="nav-section">
             <p class="nav-section-title">STUDY TOOLS</p>
             <ul class="nav-links">
-                <a href="~/Functionalities/SpeechCapture" class="nav-item active">
+                <a href="~/Functionalities/SpeechCapture" class="nav-item">
                     Back
                 </a>
-                <li id="capture-summary" class="nav-item">
+                <li id="capture-summary" class="nav-item active">
                     Summary
                 </li>
                 <li id="capture-chat" class="nav-item">
@@ -50,8 +50,44 @@
                 <button id="menu-btn" class="menu-btn">☰</button>
             </div>
         </div>
-        <div class="capture-summary">
+        <div class="capture-summary" id="summarybox">
             <p>@Html.Raw(Model.Summary)</p>
+        </div>
+        <div class="capture-chat hidden" id="chatbox">
+         
+            <div id="chat-window" class="chat-window">
+                <div class="message-row bot">
+                    <div class="bot-icon">
+                        🎓
+                    </div>
+                    <div class="message-bubble">
+                        Hi! I'm ready to answer questions about "<strong>@Model.ActiveCapture.Title</strong>". What would you like to know?
+                    </div>
+                </div>
+
+                <!-- Chat History -->
+                @if (Model.ChatMessages != null && Model.ChatMessages.Any())
+                {
+                    foreach (var msg in Model.ChatMessages)
+                    {
+                        <div class="chat-message @(msg.SenderType == "user" ? "user-msg" : "ai-msg")">
+                            <p>@msg.Message</p>
+                            <span class="timestamp">@msg.CreatedAt.ToString("HH:mm")</span>
+                        </div>
+                    }
+                }
+                else
+                {
+                    <p class="no-messages">No messages yet. Start the conversation below!</p>
+                }
+            </div>
+            <form id="chat-form" method="post">
+                <input type="hidden" name="SpeechCaptureId" value="@Model.ActiveCapture.Id" />
+                <div class="chat-input-container">
+                    <input type="text" id="userMessage" name="UserMessage" placeholder="Type your message..." required />
+                    <button type="submit" class="send-btn">Send</button>
+                </div>
+            </form>
         </div>
     </div>
     
@@ -70,6 +106,28 @@
 
           }
         });
+
+        //Switch Pages
+        const capturechatbutton = document.getElementById("capture-chat");
+        const capturesummarybutton = document.getElementById("capture-summary");
+        const summarybox = document.getElementById("summarybox");
+        const chatbox = document.getElementById("chatbox");
+
+        capturechatbutton.addEventListener('click', () =>{
+            summarybox.classList.add('hidden');
+            chatbox.classList.remove('hidden');
+            capturechatbutton.classList.add('active')
+            capturesummarybutton.classList.remove('active')
+        })
+
+        capturesummarybutton.addEventListener('click', () =>{
+            summarybox.classList.remove('hidden');
+            chatbox.classList.add('hidden');
+            capturechatbutton.classList.remove('active')
+            capturesummarybutton.classList.add('active')
+        })
+
+
     </script>
 </body>
 </html>

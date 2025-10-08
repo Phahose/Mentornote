@@ -1222,5 +1222,151 @@ namespace Mentornote.Services
                 return false;
             }
         }
+
+        public void AddSpeechCaptureChat(SpeechCaptureChat chat)
+        {
+            try
+            {
+                using SqlConnection connection = new SqlConnection(connectionString);
+                connection.Open();
+
+                SqlCommand command = new SqlCommand
+                {
+                    CommandType = CommandType.StoredProcedure,
+                    Connection = connection,
+                    CommandText = "AddSpeechCaptureChat" // DB procedure name
+                };
+
+                SqlParameter captureIdParam = new SqlParameter
+                {
+                    ParameterName = "@SpeechCaptureId",
+                    SqlDbType = SqlDbType.Int,
+                    Direction = ParameterDirection.Input,
+                    SqlValue = chat.SpeechCaptureId
+                };
+
+                SqlParameter userIdParam = new SqlParameter
+                {
+                    ParameterName = "@UserId",
+                    SqlDbType = SqlDbType.Int,
+                    Direction = ParameterDirection.Input,
+                    SqlValue = chat.UserId
+                };
+
+                SqlParameter senderTypeParam = new SqlParameter
+                {
+                    ParameterName = "@SenderType",
+                    SqlDbType = SqlDbType.NVarChar,
+                    Direction = ParameterDirection.Input,
+                    SqlValue = chat.SenderType
+                };
+
+                SqlParameter messageParam = new SqlParameter
+                {
+                    ParameterName = "@Message",
+                    SqlDbType = SqlDbType.NVarChar,
+                    Direction = ParameterDirection.Input,
+                    SqlValue = chat.Message
+                };
+
+                command.Parameters.Add(captureIdParam);
+                command.Parameters.Add(userIdParam);
+                command.Parameters.Add(senderTypeParam);
+                command.Parameters.Add(messageParam);
+
+                command.ExecuteNonQuery();
+                connection.Close();
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex.Message);
+            }
+        }
+
+        public List<SpeechCaptureChat> GetSpeechCaptureChatByCaptureId(int speechCaptureId)
+        {
+            List<SpeechCaptureChat> chatMessages = new List<SpeechCaptureChat>();
+
+            try
+            {
+                using SqlConnection connection = new SqlConnection(connectionString);
+                connection.Open();
+
+                SqlCommand command = new SqlCommand
+                {
+                    CommandType = CommandType.StoredProcedure,
+                    Connection = connection,
+                    CommandText = "GetSpeechCaptureChatByCaptureId"
+                };
+
+                SqlParameter captureIdParam = new SqlParameter
+                {
+                    ParameterName = "@SpeechCaptureId",
+                    SqlDbType = SqlDbType.Int,
+                    Direction = ParameterDirection.Input,
+                    SqlValue = speechCaptureId
+                };
+
+                command.Parameters.Add(captureIdParam);
+
+                using SqlDataReader reader = command.ExecuteReader();
+                while (reader.Read())
+                {
+                    SpeechCaptureChat chat = new SpeechCaptureChat
+                    {
+                        Id = Convert.ToInt32(reader["Id"]),
+                        SpeechCaptureId = Convert.ToInt32(reader["SpeechCaptureId"]),
+                        UserId = Convert.ToInt32(reader["UserId"]),
+                        SenderType = reader["SenderType"].ToString(),
+                        Message = reader["Message"].ToString(),
+                        CreatedAt = Convert.ToDateTime(reader["CreatedAt"])
+                    };
+
+                    chatMessages.Add(chat);
+                }
+
+                connection.Close();
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex.Message);
+            }
+
+            return chatMessages;
+        }
+
+        public void DeleteSpeechCaptureChat(int speechCaptureId)
+        {
+            try
+            {
+                using SqlConnection connection = new SqlConnection(connectionString);
+                connection.Open();
+
+                SqlCommand command = new SqlCommand
+                {
+                    CommandType = CommandType.StoredProcedure,
+                    Connection = connection,
+                    CommandText = "DeleteSpeechCaptureChat" // DB procedure name
+                };
+
+                SqlParameter captureIdParam = new SqlParameter
+                {
+                    ParameterName = "@SpeechCaptureId",
+                    SqlDbType = SqlDbType.Int,
+                    Direction = ParameterDirection.Input,
+                    SqlValue = speechCaptureId
+                };
+
+                command.Parameters.Add(captureIdParam);
+
+                command.ExecuteNonQuery();
+                connection.Close();
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex.Message);
+            }
+        }
+
     }
 }

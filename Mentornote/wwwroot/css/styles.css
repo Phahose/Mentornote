@@ -184,7 +184,6 @@ body {
     height: 100vh;
     padding: 0;
     align-items: stretch;
-    background-color: green
 }
 
 .func-navigation {
@@ -1689,7 +1688,7 @@ audio{
     width: 70%;
 }
 /*Capture*/
-.capture-summary {
+.capture-summary, .capture-chat {
     height: fit-content;
     padding: 2rem;
     padding-top: 6rem;
@@ -1699,6 +1698,73 @@ audio{
     margin-left: auto;
     margin-right: auto;
 }
+
+/*Chat Capture*/
+.chat-window {
+    flex: 1;
+    overflow-y: auto;
+    border: 1px solid #eee;
+    border-radius: 8px;
+    padding: 1rem;
+    margin-bottom: 1rem;
+}
+
+.chat-message {
+    padding: 0.6rem 0.9rem;
+    border-radius: 12px;
+    margin-bottom: 0.6rem;
+    max-width: 80%;
+    word-wrap: break-word;
+}
+
+.user-msg {
+    background: #e1f3ff;
+    align-self: flex-end;
+    margin-left: auto;
+}
+
+.ai-msg {
+    background: #f2f2f2;
+    align-self: flex-start;
+}
+
+.timestamp {
+    display: block;
+    font-size: 0.7rem;
+    color: #999;
+    margin-top: 0.2rem;
+}
+
+.chat-input-container {
+    display: flex;
+    gap: 0.5rem;
+}
+
+#userMessage {
+    flex: 1;
+    padding: 0.6rem 0.8rem;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    outline: none;
+}
+
+.send-btn {
+    background: #007bff;
+    border: none;
+    color: white;
+    padding: 0.6rem 1.2rem;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: 0.2s ease;
+}
+.no-messages{
+    width:fit-content;
+    margin:auto;
+}
+.send-btn:hover {
+    background: #0056b3;
+}
+
 
 /* Tablet (up to 1024px wide) */
 @media (max-width: 1024px) {
