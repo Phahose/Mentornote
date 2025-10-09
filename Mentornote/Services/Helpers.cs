@@ -1,4 +1,5 @@
 ﻿#nullable disable
+using DocumentFormat.OpenXml.ExtendedProperties;
 using DocumentFormat.OpenXml.Packaging;
 using Markdig;
 using Mentornote.Models;
@@ -80,7 +81,7 @@ namespace Mentornote.Services
                 return sb.ToString();
             }
             else if (fileType == "txt")
-            {            
+            {
                 if (file != null)
                 {
                     stream = file.OpenReadStream();
@@ -94,7 +95,7 @@ namespace Mentornote.Services
             }
             else if (fileType == "docx")
             {
-                
+
                 if (file != null)
                 {
                     stream = file.OpenReadStream();
@@ -114,13 +115,13 @@ namespace Mentornote.Services
             {
                 throw new NotSupportedException("Unsupported file type. Only PDF and TXT are supported.");
             }
-            
+
         }
 
         public async Task<string> SaveNoteFileAsync(IFormFile uploadedNote, string textContent = null, string fileExtension = ".txt")
         {
-         /*   if (uploadedNote == null || uploadedNote.Length == 0)
-                return null;*/
+            /*   if (uploadedNote == null || uploadedNote.Length == 0)
+                   return null;*/
 
             var uploadsFolder = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "uploads", "notes");
 
@@ -156,50 +157,8 @@ namespace Mentornote.Services
                 throw new ArgumentException("Either a file or text content must be provided.");
             }
 
-          
+
             return filePath.Replace("\\", "/");
-        }
-
-        //  Helper to generate summary
-        public async Task<string> GenerateSummaryFromText(string text)
-        {
-            using var client = new HttpClient();
-            var apiKey = _config["OpenAI:ApiKey"].Trim();
-            var requestBody = new
-            {
-                model = "gpt-4o-mini",
-                messages = new[]
-                {
-                new { role = "system", content = "You are a summarization assistant for lecture transcripts." },
-                new { role = "user", content = $"Summarize the following text and structure it using markdown with clear sections, bullet points, and bolded titles:\n{text}" }
-            }
-            };
-
-            // Building API Request
-            var requestJson = JsonSerializer.Serialize(requestBody);
-            var request = new HttpRequestMessage(HttpMethod.Post, "https://api.openai.com/v1/chat/completions");
-            request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", apiKey);
-            request.Content = new StringContent(requestJson, Encoding.UTF8, "application/json");
-
-            var response = await _httpClient.SendAsync(request);
-
-            if (!response.IsSuccessStatusCode)
-            {
-                return $"OpenAI API Error: {response.StatusCode} - {await response.Content.ReadAsStringAsync()}";
-            }
-
-            var responseContentString = await response.Content.ReadAsStringAsync();
-            // Parse JSON and extract message content
-            using var doc = JsonDocument.Parse(responseContentString);
-            var summary = doc.RootElement
-                .GetProperty("choices")[0]
-                .GetProperty("message")
-                .GetProperty("content")
-                .GetString()
-                .Trim();
-
-
-            return summary;
         }
 
         public string ConvertMarkdownToHtml(string markdown)

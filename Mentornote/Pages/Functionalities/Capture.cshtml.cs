@@ -3,6 +3,10 @@ using Mentornote.Models;
 using Mentornote.Services;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
+using System.Text.Json;
+using System.Text;
+using System.IO;
+using System.Threading.Tasks;
 
 namespace Mentornote.Pages.Functionalities
 {
@@ -28,8 +32,10 @@ namespace Mentornote.Pages.Functionalities
         public SpeechCapture ActiveCapture= new();
         public CardsServices flashcardService = new();
         public List<SpeechCaptureChat> ChatMessages = new();
+        public List<SpeechCaptureSummary> CaptureSummaries = new();
+        public SpeechCaptureSummary ActiveSummary = new();
         public string Summary { get; set; }
-        public void OnGet(int captureId)
+        public async Task OnGet(int captureId)
         {
             Email = HttpContext.Session.GetString("Email")!;
             if (string.IsNullOrEmpty(Email))
@@ -41,14 +47,49 @@ namespace Mentornote.Pages.Functionalities
             NewUser = usersService.GetUserByEmail(Email);
             Captures = flashcardService.GetAllSpeechCaptures(NewUser.Id);
             ActiveCapture = Captures.FirstOrDefault();
+            CaptureSummaries = flashcardService.GetSpeechCaptureSummaryByCapture(captureId);
+            ActiveSummary = CaptureSummaries.FirstOrDefault();
+            string summarizedTranscripts;
 
-            Summary = _helpers.ConvertMarkdownToHtml(ActiveCapture.SummaryText);
+            if (ActiveSummary == null)
+            {
+                string transcriptText = GetTextFromFile(ActiveCapture.TranscriptFilePath);
 
+                summarizedTranscripts = await _speechCaptureServices.GenerateSummaryFromText(transcriptText, ActiveCapture.Id);
+                Summary = _helpers.ConvertMarkdownToHtml(summarizedTranscripts);
+            }
+            else
+            {
+                Summary = _helpers.ConvertMarkdownToHtml(ActiveSummary.SummaryText);
+            }
         }
 
         public void OnPost()
         {
 
+        }
+
+        private string GetTextFromFile(string filePath)
+        {
+            string fileContent = string.Empty;
+
+            try
+            {
+                if (System.IO.File.Exists(filePath))
+                {
+                    fileContent = System.IO.File.ReadAllText(filePath);
+                }
+                else
+                {
+                    Console.WriteLine($"File not found: {filePath}");
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error reading file: {ex.Message}");
+            }
+
+            return fileContent;
         }
     }
 }

@@ -13,11 +13,13 @@ namespace Mentornote.Services
     {
         private readonly HttpClient _httpClient;
         private readonly IConfiguration _config;
+        private readonly Helpers _helpers;
 
-        public TutorServices(HttpClient httpClient, IConfiguration config)
+        public TutorServices(HttpClient httpClient, IConfiguration config, Helpers helpers)
         {
             _httpClient = httpClient;
             _config = config;
+            _helpers = helpers;
         }
         public List<double> ParseEmbedding(string embeddingJson)
         {
@@ -55,7 +57,7 @@ namespace Mentornote.Services
             CardsServices cardsServices = new();
 
             // --- 1. Get embedding for the user question ---
-            List<double> questionEmbedding = await GetEmbeddingVectorAsync(question, apiKey);
+            List<double> questionEmbedding = await CreateQuestionEmbeddingVector(question, apiKey);
 
             if (questionEmbedding == null || questionEmbedding.Count == 0)
                 return "Could not generate embedding for question.";
@@ -144,7 +146,8 @@ namespace Mentornote.Services
                    ?? "No valid response from OpenAI.";
         }
 
-        private async Task<List<double>> GetEmbeddingVectorAsync(string text, string apiKey)
+
+        private async Task<List<double>> CreateQuestionEmbeddingVector(string text, string apiKey)
         {
             var requestBody = new
             {
@@ -172,7 +175,6 @@ namespace Mentornote.Services
 
             return vector;
         }
-
 
     }
 }

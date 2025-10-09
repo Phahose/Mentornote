@@ -530,26 +530,27 @@ END;
 CREATE TABLE SpeechCapture (
     Id INT IDENTITY(1,1) PRIMARY KEY,
     UserId INT NOT NULL,
-    TranscriptFilePath NVARCHAR(255) NOT NULL, 
-    SummaryText NVARCHAR(MAX) NOT NULL,      
+    TranscriptFilePath NVARCHAR(255) NOT NULL,       
     DurationSeconds INT NULL,             
     CreatedAt DATETIME DEFAULT GETDATE()       
 );
 
-ALTER TABLE SpeechCapture
-ADD  Title NVARCHAR(MAX)
+Alter Table SpeechCapture 
+ADD AudioFilePath NVARCHAR(255) NULL, 
 
 CREATE PROCEDURE AddSpeechCapture
     @UserId INT,
     @TranscriptFilePath NVARCHAR(255),
-    @SummaryText NVARCHAR(MAX),
+	@AudioFilePath NVARCHAR(255),
     @DurationSeconds INT = NULL,
 	@Title NVARCHAR(MAX) 
 AS
 BEGIN
-    INSERT INTO SpeechCapture (UserId, TranscriptFilePath, SummaryText, DurationSeconds, CreatedAt, Title)
-    VALUES (@UserId, @TranscriptFilePath, @SummaryText, @DurationSeconds, GETDATE(), @Title);
+    INSERT INTO SpeechCapture (UserId, TranscriptFilePath, AudioFilePath, DurationSeconds, CreatedAt, Title)
+    VALUES (@UserId, @TranscriptFilePath, @AudioFilePath , @DurationSeconds, GETDATE(), @Title);
 END
+
+DROP PROCEDURE AddSpeechCapture
 
 
 CREATE PROCEDURE GetSpeechCaptureById
@@ -560,13 +561,15 @@ BEGIN
         Id,
         UserId,
         TranscriptFilePath,
-        SummaryText,
+		AudioFilePath,
         DurationSeconds,
         CreatedAt,
 		Title
     FROM SpeechCapture
     WHERE Id = @Id;
 END
+
+DROP PROCEDURE GetSpeechCaptureById
 
 
 CREATE PROCEDURE GetAllSpeechCaptures
@@ -577,7 +580,7 @@ BEGIN
             Id,
             UserId,
             TranscriptFilePath,
-            SummaryText,
+			AudioFilePath,
             DurationSeconds,
             CreatedAt,
 			Title
@@ -592,10 +595,31 @@ CREATE PROCEDURE DeleteSpeechCapture
     @Id INT
 AS
 BEGIN
-    DELETE FROM SpeechCapture
-    WHERE Id = @Id;
-END
+    BEGIN TRY
+        BEGIN TRANSACTION;
 
+        DELETE FROM SpeechCaptureChat
+        WHERE SpeechCaptureId = @Id;
+   
+        DELETE FROM SpeechCaptureSummary
+        WHERE SpeechCaptureId = @Id;      
+        DELETE FROM SpeechCaptureEmbeddings
+        WHERE CaptureId = @Id;
+
+ 
+        DELETE FROM SpeechCapture
+        WHERE Id = @Id;
+
+        COMMIT TRANSACTION;
+    END TRY
+    BEGIN CATCH
+        ROLLBACK TRANSACTION;
+        THROW;
+    END CATCH
+END;
+
+
+DROP Procedure DeleteSpeechCapture
 --Speech Capture
 
 CREATE TABLE SpeechCaptureChat (
@@ -656,5 +680,82 @@ BEGIN
 
     DELETE FROM SpeechCaptureChat
     WHERE SpeechCaptureId = @SpeechCaptureId;
+END;
+
+
+-- Capture Summary 
+
+CREATE TABLE SpeechCaptureSummary (
+    Id INT IDENTITY(1,1) PRIMARY KEY,
+    SpeechCaptureId INT NOT NULL,
+    SummaryText NVARCHAR(MAX),
+    CreatedAt DATETIME DEFAULT GETDATE(),
+    FOREIGN KEY (SpeechCaptureId) REFERENCES SpeechCapture(Id)
+);
+
+
+CREATE PROCEDURE AddSpeechCaptureSummary
+    @SpeechCaptureId INT,
+    @SummaryText NVARCHAR(MAX)
+AS
+BEGIN
+    INSERT INTO SpeechCaptureSummary (SpeechCaptureId, SummaryText)
+    VALUES (@SpeechCaptureId, @SummaryText);
+END;
+
+
+CREATE PROCEDURE GetSpeechCaptureSummaryByCapture 
+	@CaptureId INT
+AS 
+BEGIN
+  SELECT * FROM SpeechCaptureSummary 
+  WHERE SpeechCaptureId = @CaptureId
+END;
+
+CREATE PROCEDURE DeleteSpeechCaptureSummary
+    @Id INT
+AS
+BEGIN
+    Delete FROM  SpeechCaptureSummary 
+    WHERE Id = @Id
+END;
+
+DROP PROCEDURE DeleteSpeechCaptureSummary
+
+CREATE TABLE SpeechCaptureEmbeddings (
+    Id INT IDENTITY(1,1) PRIMARY KEY,
+    CaptureId INT NOT NULL,
+    Embedding NVARCHAR(MAX),  
+	ChunkIndex INT NOT NULL,
+    ChunkText NVARCHAR(MAX) NOT NULL,
+    CreatedAt DATETIME DEFAULT GETDATE(),
+    FOREIGN KEY (CaptureId) REFERENCES SpeechCapture(Id)
+);
+
+
+DROP Table SpeechCaptureEmbeddings
+DROP Column  SummaryId
+
+CREATE PROCEDURE AddSpeechCaptureEmbedding
+    @CaptureId INT,
+    @ChunkIndex INT,
+    @ChunkText NVARCHAR(MAX),
+    @Embedding NVARCHAR(MAX)
+AS
+BEGIN
+    INSERT INTO SpeechCaptureEmbeddings (CaptureId, ChunkIndex, ChunkText, Embedding, CreatedAt)
+    VALUES (@CaptureId, @ChunkIndex, @ChunkText, @Embedding, GETDATE());
+END;
+
+
+Drop Procedure GetSpeechCaptureEmbeddingById
+
+CREATE PROCEDURE GetSpeechCaptureEmbeddingById
+    @CaptureId INT
+AS
+BEGIN
+    SELECT *
+    FROM SpeechCaptureEmbeddings
+    WHERE CaptureId = @CaptureId;
 END;
 

@@ -67,6 +67,8 @@ namespace Mentornote.Pages.Functionalities
             string[] split;
             var action = string.Empty;
             var id = 0;
+            UsersService usersService = new();
+           
             if (Submit.Contains('-'))
             {
                 split = Submit.Split('-');
@@ -76,7 +78,10 @@ namespace Mentornote.Pages.Functionalities
 
             if (action == "Delete")
             {
-                flashcardService.DeleteSpeechCapture(id);
+                Email = HttpContext.Session.GetString("Email")!;
+                NewUser = usersService.GetUserByEmail(Email);
+                _speechCaptureServices.DeleteCapture(id, NewUser.Id);
+                Transcripts = flashcardService.GetAllSpeechCaptures(NewUser.Id);
                 return Page();
             }
 
@@ -89,7 +94,9 @@ namespace Mentornote.Pages.Functionalities
             // Save audio file locally
             string uploadsFolder = Path.Combine(_env.WebRootPath, "uploads", "recordings");
             if (!Directory.Exists(uploadsFolder))
+            {
                 Directory.CreateDirectory(uploadsFolder);
+            }
 
             string audioFileName = Guid.NewGuid().ToString() + Path.GetExtension(UploadedAudio.FileName);
             string audioFilePath = Path.Combine(uploadsFolder, audioFileName);
@@ -99,11 +106,18 @@ namespace Mentornote.Pages.Functionalities
                 await UploadedAudio.CopyToAsync(stream);
             }
 
-            // Send to Whisper API to get transcript
             string transcriptText = await _speechCaptureServices.GetTranscriptFromWhisper(audioFilePath);
 
-            
-            string summarizedTranscripts = await _helpers.GenerateSummaryFromText(transcriptText);
+            // Create a transcript file path (same folder, same name but .txt)
+            string transcriptFileName = Path.GetFileNameWithoutExtension(audioFileName) + ".txt";
+            string transcriptFilePath = Path.Combine(uploadsFolder, transcriptFileName);
+
+
+            await System.IO.File.WriteAllTextAsync(transcriptFilePath, transcriptText);
+
+
+            // Send to Whisper API to get transcript
+
 
 
             Email = HttpContext.Session.GetString("Email")!;
@@ -111,21 +125,19 @@ namespace Mentornote.Pages.Functionalities
             {
                 Response.Redirect("/Login");
             }
-            UsersService usersService = new();
             NewUser = usersService.GetUserByEmail(Email);
 
             SpeechCapture capture = new()
             {
                 UserId = NewUser.Id,
-                TranscriptFilePath = audioFilePath,
-                SummaryText = summarizedTranscripts,
+                TranscriptFilePath = transcriptFilePath,
+                AudioFilePath = audioFilePath,
                 DurationSeconds = DurationSeconds,
                 Title = string.IsNullOrEmpty(Title) ? "Untitled Capture" : Title,
             };
 
             flashcardService.AddSpeechCapture(capture);
             Transcripts = flashcardService.GetAllSpeechCaptures(NewUser.Id);
-            ActiveTranscript = Transcripts.FirstOrDefault();
             return Page(); 
         }
     }

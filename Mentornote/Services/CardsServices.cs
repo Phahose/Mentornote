@@ -1029,12 +1029,12 @@ namespace Mentornote.Services
                         SqlValue = capture.TranscriptFilePath
                     };
 
-                    SqlParameter summaryTextParam = new SqlParameter
+                    SqlParameter audioFileParam = new SqlParameter
                     {
-                        ParameterName = "@SummaryText",
+                        ParameterName = "@AudioFilePath",
                         SqlDbType = SqlDbType.NVarChar,
                         Direction = ParameterDirection.Input,
-                        SqlValue = capture.SummaryText
+                        SqlValue = capture.AudioFilePath
                     };
 
                     SqlParameter durationParam = new SqlParameter
@@ -1055,9 +1055,9 @@ namespace Mentornote.Services
 
                     addCapture.Parameters.Add(userIdParam);
                     addCapture.Parameters.Add(transcriptFileParam);
-                    addCapture.Parameters.Add(summaryTextParam);
                     addCapture.Parameters.Add(durationParam);
                     addCapture.Parameters.Add(titleParameter);
+                    addCapture.Parameters.Add(audioFileParam);
 
                     addCapture.ExecuteNonQuery();
                     connection.Close();
@@ -1110,7 +1110,7 @@ namespace Mentornote.Services
                             Id = Convert.ToInt32(reader["Id"]),
                             UserId = Convert.ToInt32(reader["UserId"]),
                             TranscriptFilePath = reader["TranscriptFilePath"].ToString(),
-                            SummaryText = reader["SummaryText"].ToString(),
+                            AudioFilePath = reader["AudioFilePath"].ToString(),
                             DurationSeconds = reader["DurationSeconds"] != DBNull.Value ? Convert.ToInt32(reader["DurationSeconds"]) : 0,
                             CreatedAt = Convert.ToDateTime(reader["CreatedAt"]),
                             Title = (string)reader["Title"]
@@ -1165,7 +1165,7 @@ namespace Mentornote.Services
                             Id = Convert.ToInt32(reader["Id"]),
                             UserId = Convert.ToInt32(reader["UserId"]),
                             TranscriptFilePath = reader["TranscriptFilePath"].ToString(),
-                            SummaryText = reader["SummaryText"].ToString(),
+                            AudioFilePath = reader["AudioFilePath"].ToString(),
                             DurationSeconds = reader["DurationSeconds"] != DBNull.Value ? Convert.ToInt32(reader["DurationSeconds"]) : 0,
                             CreatedAt = Convert.ToDateTime(reader["CreatedAt"]),
                             Title = (string)reader["Title"]
@@ -1222,6 +1222,223 @@ namespace Mentornote.Services
                 return false;
             }
         }
+
+        public bool AddSpeechCaptureSummary(SpeechCaptureSummary speechCaptureSummary)
+        {
+            try
+            {
+                using SqlConnection connection = new SqlConnection(connectionString);
+                connection.Open();
+
+                SqlCommand addSummary = new SqlCommand
+                {
+                    CommandType = CommandType.StoredProcedure,
+                    Connection = connection,
+                    CommandText = "AddSpeechCaptureSummary"
+                };
+
+                addSummary.Parameters.AddWithValue("@SpeechCaptureId", speechCaptureSummary.SpeechCaptureId);
+                addSummary.Parameters.AddWithValue("@SummaryText", speechCaptureSummary.SummaryText);
+
+                addSummary.ExecuteNonQuery();
+                connection.Close();
+                return true;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex.Message);
+                return false;
+            }
+        }
+
+        public List<SpeechCaptureSummary> GetSpeechCaptureSummaryByCapture(int captureId)
+        {
+            List<SpeechCaptureSummary> summaries = new List<SpeechCaptureSummary>();
+
+            try
+            {
+                using SqlConnection connection = new SqlConnection(connectionString);
+                {
+                    connection.Open();
+
+                    SqlCommand getSummary = new SqlCommand
+                    {
+                        CommandType = CommandType.StoredProcedure,
+                        Connection = connection,
+                        CommandText = "GetSpeechCaptureSummaryByCapture"
+                    };
+
+                    SqlParameter captureIdParam = new SqlParameter
+                    {
+                        ParameterName = "@CaptureId",
+                        SqlDbType = SqlDbType.Int,
+                        Direction = ParameterDirection.Input,
+                        SqlValue = captureId
+                    };
+
+                    getSummary.Parameters.Add(captureIdParam);
+
+                    SqlDataReader reader = getSummary.ExecuteReader();
+
+                    while (reader.Read())
+                    {
+                        SpeechCaptureSummary summary = new SpeechCaptureSummary
+                        {
+                            Id = Convert.ToInt32(reader["Id"]),
+                            SpeechCaptureId = Convert.ToInt32(reader["SpeechCaptureId"]),
+                            SummaryText = reader["SummaryText"].ToString(),
+                            CreatedAt = Convert.ToDateTime(reader["CreatedAt"])
+                        };
+                        summaries.Add(summary);
+                    }
+
+                    reader.Close();
+                    connection.Close();
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex.Message);
+            }
+
+            return summaries;
+        }
+
+        public bool DeleteSpeechCaptureSummary(int id)
+        {
+            bool isDeleted = false;
+
+            try
+            {
+                using SqlConnection connection = new SqlConnection(connectionString);
+                {
+                    connection.Open();
+
+                    SqlCommand deleteCommand = new SqlCommand
+                    {
+                        CommandType = CommandType.StoredProcedure,
+                        Connection = connection,
+                        CommandText = "DeleteSpeechCaptureSummary"
+                    };
+
+                    SqlParameter idParam = new SqlParameter
+                    {
+                        ParameterName = "@Id",
+                        SqlDbType = SqlDbType.Int,
+                        Direction = ParameterDirection.Input,
+                        SqlValue = id
+                    };
+
+                    deleteCommand.Parameters.Add(idParam);
+
+                    int rowsAffected = deleteCommand.ExecuteNonQuery();
+
+                    isDeleted = rowsAffected > 0;
+
+                    connection.Close();
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex.Message);
+            }
+
+            return isDeleted;
+        }
+
+        public bool AddSpeechCaptureEmbedding(SpeechCaptureEmbedding speechCaptureEmbedding)
+        {
+            bool isAdded = false;
+
+            try
+            {
+                using SqlConnection connection = new SqlConnection(connectionString);
+                {
+                    connection.Open();
+
+                    SqlCommand addCommand = new SqlCommand
+                    {
+                        CommandType = CommandType.StoredProcedure,
+                        Connection = connection,
+                        CommandText = "AddSpeechCaptureEmbedding"
+                    };
+
+                    addCommand.Parameters.AddWithValue("@CaptureId", speechCaptureEmbedding.CaptureId);
+                    addCommand.Parameters.AddWithValue("@ChunkIndex", speechCaptureEmbedding.ChunkIndex);
+                    addCommand.Parameters.AddWithValue("@ChunkText", speechCaptureEmbedding.ChunkText);
+                    addCommand.Parameters.AddWithValue("@Embedding", speechCaptureEmbedding.Embedding);
+
+                    int rowsAffected = addCommand.ExecuteNonQuery();
+                    isAdded = rowsAffected > 0;
+
+                    connection.Close();
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex.Message);
+            }
+
+            return isAdded;
+        }
+
+        public List<SpeechCaptureEmbedding> GetSpeechCaptureEmbeddingsBySummaryId(int summaryId)
+        {
+            List<SpeechCaptureEmbedding> embeddings = new List<SpeechCaptureEmbedding>();
+
+            try
+            {
+                using SqlConnection connection = new SqlConnection(connectionString);
+                {
+                    connection.Open();
+
+                    SqlCommand getCommand = new SqlCommand
+                    {
+                        CommandType = CommandType.StoredProcedure,
+                        Connection = connection,
+                        CommandText = "GetSpeechCaptureEmbeddingsBySummaryId"
+                    };
+
+                    SqlParameter summaryIdParam = new SqlParameter
+                    {
+                        ParameterName = "@CaptureId",
+                        SqlDbType = SqlDbType.Int,
+                        Direction = ParameterDirection.Input,
+                        SqlValue = summaryId
+                    };
+
+                    getCommand.Parameters.Add(summaryIdParam);
+
+                    SqlDataReader reader = getCommand.ExecuteReader();
+
+                    while (reader.Read())
+                    {
+                        SpeechCaptureEmbedding embedding = new SpeechCaptureEmbedding
+                        {
+                            Id = Convert.ToInt32(reader["Id"]),
+                            CaptureId = Convert.ToInt32(reader["CaptureId"]),
+                            ChunkIndex = Convert.ToInt32(reader["ChunkIndex"]),
+                            ChunkText = reader["ChunkText"].ToString(),
+                            Embedding = reader["Embedding"].ToString(),
+                            CreatedAt = Convert.ToDateTime(reader["CreatedAt"])
+                        };
+                        embeddings.Add(embedding);
+                    }
+
+                    reader.Close();
+                    connection.Close();
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex.Message);
+            }
+
+            return embeddings;
+        }
+
+
+
 
         public void AddSpeechCaptureChat(SpeechCaptureChat chat)
         {

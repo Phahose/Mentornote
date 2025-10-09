@@ -13,16 +13,18 @@ namespace Mentornote.Services
     {
         private readonly HttpClient _httpClient;
         private readonly IConfiguration _config;
+        private readonly Helpers _helpers;
 
-        public NotesSummaryService(HttpClient httpClient, IConfiguration config)
+        public NotesSummaryService(HttpClient httpClient, IConfiguration config, Helpers helpers)
         {
             _httpClient = httpClient;
             _config = config;
+            _helpers = helpers;
         }
 
         public async Task<string> GenerateSummaryAsync(string noteContent, int noteId)
         {
-            var chunks = ChunkText(noteContent, 1500);
+            var chunks = _helpers.ChunkText(noteContent, 1500);
             var allSummaries = new List<string>();
             var apiKey = _config["OpenAI:ApiKey"].Trim();
             int chunkIndex = 0;
@@ -73,7 +75,7 @@ namespace Mentornote.Services
                     }
 
                     // --- Embedding for the same chunk ---
-                    await GenerateEmbeddingAsync(chunk, noteId, chunkIndex);
+                    await GenerateSummaryEmbedding(chunk, noteId, chunkIndex);
 
                    
                 }
@@ -137,7 +139,7 @@ namespace Mentornote.Services
         }
 
 
-        public async Task GenerateEmbeddingAsync(string chunk, int noteId, int chunkIndex)
+        public async Task GenerateSummaryEmbedding(string chunk, int noteId, int chunkIndex)
         {
             try
             {
@@ -183,32 +185,9 @@ namespace Mentornote.Services
         }
 
 
-        List<string> ChunkText(string fullText, int maxChunkSize = 1500)
-        {
-            var chunks = new List<string>();
-            for (int i = 0; i < fullText.Length; i += maxChunkSize)
-            {
-                var chunk = fullText.Substring(i, Math.Min(maxChunkSize, fullText.Length - i));
-                chunks.Add(chunk);
-            }
-            return chunks;
-        }
     }
 
-    
-    public class OpenAIResponse
-    {
-        public Choice[] choices { get; set; }
 
-        public class Choice
-        {
-            public Message message { get; set; }
-        }
-
-        public class Message
-        {
-            public string content { get; set; }
-        }
-    }
+   
 
 }

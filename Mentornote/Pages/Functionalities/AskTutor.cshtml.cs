@@ -31,9 +31,9 @@ namespace Mentornote.Pages.Functionalities
 
         private readonly TutorServices _tutorService;
 
-        public Ask_TutorModel(HttpClient httpClient, IConfiguration config)
+        public Ask_TutorModel(HttpClient httpClient, IConfiguration config, Helpers helpers)
         {
-            _tutorService = new TutorServices(httpClient, config);
+            _tutorService = new TutorServices(httpClient, config, helpers);
         }
 
         public void OnGet(int noteId)
