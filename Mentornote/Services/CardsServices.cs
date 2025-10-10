@@ -1382,7 +1382,7 @@ namespace Mentornote.Services
             return isAdded;
         }
 
-        public List<SpeechCaptureEmbedding> GetSpeechCaptureEmbeddingsBySummaryId(int summaryId)
+        public List<SpeechCaptureEmbedding> GetSpeechCaptureEmbeddings(int captureId)
         {
             List<SpeechCaptureEmbedding> embeddings = new List<SpeechCaptureEmbedding>();
 
@@ -1396,7 +1396,7 @@ namespace Mentornote.Services
                     {
                         CommandType = CommandType.StoredProcedure,
                         Connection = connection,
-                        CommandText = "GetSpeechCaptureEmbeddingsBySummaryId"
+                        CommandText = "GetSpeechCaptureEmbeddingById"
                     };
 
                     SqlParameter summaryIdParam = new SqlParameter
@@ -1404,7 +1404,7 @@ namespace Mentornote.Services
                         ParameterName = "@CaptureId",
                         SqlDbType = SqlDbType.Int,
                         Direction = ParameterDirection.Input,
-                        SqlValue = summaryId
+                        SqlValue = captureId
                     };
 
                     getCommand.Parameters.Add(summaryIdParam);
@@ -1486,10 +1486,19 @@ namespace Mentornote.Services
                     SqlValue = chat.Message
                 };
 
+                SqlParameter responseParam = new SqlParameter
+                {
+                    ParameterName = "@Response",
+                    SqlDbType = SqlDbType.NVarChar,
+                    Direction = ParameterDirection.Input,
+                    SqlValue = chat.Response
+                };
+
                 command.Parameters.Add(captureIdParam);
                 command.Parameters.Add(userIdParam);
                 command.Parameters.Add(senderTypeParam);
                 command.Parameters.Add(messageParam);
+                command.Parameters.Add(responseParam);
 
                 command.ExecuteNonQuery();
                 connection.Close();
@@ -1500,7 +1509,7 @@ namespace Mentornote.Services
             }
         }
 
-        public List<SpeechCaptureChat> GetSpeechCaptureChatByCaptureId(int speechCaptureId)
+        public List<SpeechCaptureChat> GetSpeechCaptureChat(int speechCaptureId)
         {
             List<SpeechCaptureChat> chatMessages = new List<SpeechCaptureChat>();
 
@@ -1513,7 +1522,7 @@ namespace Mentornote.Services
                 {
                     CommandType = CommandType.StoredProcedure,
                     Connection = connection,
-                    CommandText = "GetSpeechCaptureChatByCaptureId"
+                    CommandText = "GetSpeechCaptureChat"
                 };
 
                 SqlParameter captureIdParam = new SqlParameter
@@ -1536,6 +1545,7 @@ namespace Mentornote.Services
                         UserId = Convert.ToInt32(reader["UserId"]),
                         SenderType = reader["SenderType"].ToString(),
                         Message = reader["Message"].ToString(),
+                        Response = reader["Response"].ToString(),
                         CreatedAt = Convert.ToDateTime(reader["CreatedAt"])
                     };
 

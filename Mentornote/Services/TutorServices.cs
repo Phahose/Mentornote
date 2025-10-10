@@ -21,35 +21,7 @@ namespace Mentornote.Services
             _config = config;
             _helpers = helpers;
         }
-        public List<double> ParseEmbedding(string embeddingJson)
-        {
-            try
-            {
-                var parsed = JsonSerializer.Deserialize<EmbeddingResponse>(embeddingJson);
-                return parsed?.data?[0]?.embedding ?? new List<double>();
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"Error parsing embedding JSON: {ex.Message}");
-                return new List<double>();
-            }
-        }
-
-        public static double CosineSimilarity(List<double> vectorA, List<double> vectorB)
-        {
-            double dot = 0.0;
-            double magA = 0.0;
-            double magB = 0.0;
-
-            for (int i = 0; i < vectorA.Count; i++)
-            {
-                dot += vectorA[i] * vectorB[i];
-                magA += Math.Pow(vectorA[i], 2);
-                magB += Math.Pow(vectorB[i], 2);
-            }
-
-            return dot / (Math.Sqrt(magA) * Math.Sqrt(magB));
-        }
+    
 
         public async Task<string> AskQuestionAsync(string question, int noteId, User user)
         {
@@ -70,10 +42,10 @@ namespace Mentornote.Services
 
             foreach (var e in noteEmbeddings)
             {
-                var chunkVector = ParseEmbedding(e.EmbeddingJson); //  parser
+                var chunkVector =_helpers.ParseEmbedding(e.EmbeddingJson); //  parser
                 if (chunkVector.Count == 0) continue;
 
-                double score = CosineSimilarity(questionEmbedding, chunkVector);
+                double score = _helpers.CosineSimilarity(questionEmbedding, chunkVector);
                 scoredChunks.Add((e, score));
             }
 

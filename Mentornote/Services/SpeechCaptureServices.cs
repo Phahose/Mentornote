@@ -215,6 +215,135 @@ namespace Mentornote.Services
             return false;
         }
 
-    }
 
+        public async Task<string> AskSpeechCaptureQuestion(string question, int speechCaptureId, User user)
+        {
+            var apiKey = _config["OpenAI:ApiKey"].Trim();
+    
+
+            // --- 1. Get embedding for user question ---
+            List<double> questionEmbedding = await CreateQuestionEmbeddingVector(question, apiKey);
+
+            if (questionEmbedding == null || questionEmbedding.Count == 0)
+            {
+                return "Could not generate embedding for question.";
+            }
+
+            // --- 2. Get stored embeddings for this SpeechCapture summary ---
+            var captureEmbeddings = _cardServices.GetSpeechCaptureEmbeddings(speechCaptureId);
+
+            var scoredChunks = new List<(SpeechCaptureEmbedding embedding, double score)>();
+
+            foreach (var e in captureEmbeddings)
+            {
+                var chunkVector = _helpers.ParseEmbedding(e.Embedding);
+                if (chunkVector.Count == 0) 
+                {
+                    continue;
+                }
+
+                double score = _helpers.CosineSimilarity(questionEmbedding, chunkVector);
+                scoredChunks.Add((e, score));
+            }
+
+            // --- 3. Take top N chunks ---
+            var topChunks = scoredChunks
+                .OrderByDescending(x => x.score)
+                .Take(3)
+                .Select(x => x.embedding.ChunkText)
+                .ToList();
+
+            if (topChunks.Count == 0)
+                return "No relevant sections found for this question.";
+
+            // --- 4. Build context prompt ---
+            var context = string.Join("\n\n", topChunks);
+            var finalPrompt = $@"
+                               Use the following transcribed sections to answer the user's question.
+                               Context:
+                               {context}
+
+                               Question: {question}
+                               Answer:
+                           ";
+
+            // --- 5. Send to OpenAI Chat API ---
+            var requestBody = new
+            {
+                model = "gpt-4o-mini",
+                messages = new[]
+                {
+                   new { role = "system", content = "You are an assistant helping explain transcribed recordings accurately without adding new information." },
+                   new { role = "user", content = finalPrompt }
+               },
+                max_tokens = 500
+            };
+
+            var requestJson = JsonSerializer.Serialize(requestBody);
+            var request = new HttpRequestMessage(HttpMethod.Post, "https://api.openai.com/v1/chat/completions");
+            request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", apiKey);
+            request.Content = new StringContent(requestJson, Encoding.UTF8, "application/json");
+
+            var response = await _httpClient.SendAsync(request);
+
+            if (!response.IsSuccessStatusCode)
+            {
+                return $"OpenAI API Error: {response.StatusCode} - {await response.Content.ReadAsStringAsync()}";
+            }
+
+            var responseString = await response.Content.ReadAsStringAsync();
+            var responseContent = JsonSerializer.Deserialize<OpenAIResponse>(responseString);
+
+            string aiAnswer = responseContent?.choices?[0]?.message?.content?.Trim()
+                ?? "No valid response from OpenAI.";
+
+            // --- 6. Save chat history (user + AI message) ---
+            SpeechCaptureChat chat = new()
+            {
+                SpeechCaptureId = speechCaptureId,
+                UserId = user.Id,
+                SenderType = "user",
+                Message = question,
+                Response = aiAnswer,
+                CreatedAt = DateTime.UtcNow
+            };
+
+
+            _cardServices.AddSpeechCaptureChat(chat);
+
+            return responseContent?.choices?[0]?.message?.content?.Trim()
+                   ?? "No valid response from OpenAI.";
+        }
+
+        private async Task<List<double>> CreateQuestionEmbeddingVector(string text, string apiKey)
+        {
+            var requestBody = new
+            {
+                input = text,
+                model = "text-embedding-3-small"
+            };
+
+            var requestJson = JsonSerializer.Serialize(requestBody);
+            var request = new HttpRequestMessage(HttpMethod.Post, "https://api.openai.com/v1/embeddings");
+            request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", apiKey);
+            request.Content = new StringContent(requestJson, Encoding.UTF8, "application/json");
+
+            var response = await _httpClient.SendAsync(request);
+            if (!response.IsSuccessStatusCode) return new List<double>();
+
+            var responseString = await response.Content.ReadAsStringAsync();
+
+            using var doc = JsonDocument.Parse(responseString);
+            var vector = new List<double>();
+
+            foreach (var num in doc.RootElement.GetProperty("data")[0].GetProperty("embedding").EnumerateArray())
+            {
+                vector.Add(num.GetDouble());
+            }
+
+            return vector;
+        }
+
+    }
 }
+

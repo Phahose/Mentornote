@@ -70,8 +70,12 @@
                 {
                     foreach (var msg in Model.ChatMessages)
                     {
-                        <div class="chat-message @(msg.SenderType == "user" ? "user-msg" : "ai-msg")">
+                        <div class="chat-message user-msg">
                             <p>@msg.Message</p>
+                            <span class="timestamp">@msg.CreatedAt.ToString("HH:mm")</span>
+                        </div>
+                        <div class="chat-message ai-msg">
+                            <p>@msg.Response</p>
                             <span class="timestamp">@msg.CreatedAt.ToString("HH:mm")</span>
                         </div>
                     }
@@ -82,10 +86,12 @@
                 }
             </div>
             <form id="chat-form" method="post">
+                @Html.AntiForgeryToken()
                 <input type="hidden" name="SpeechCaptureId" value="@Model.ActiveCapture.Id" />
                 <div class="chat-input-container">
                     <input type="text" id="userMessage" name="UserMessage" placeholder="Type your message..." required />
-                    <button type="submit" class="send-btn">Send</button>
+                    <input type="hidden" id="activeSection" name="activeSection" value="summary" />
+                    <input type="submit" Name="Submit" value="Go" class="send-btn"/>
                 </div>
             </form>
         </div>
@@ -118,6 +124,9 @@
             chatbox.classList.remove('hidden');
             capturechatbutton.classList.add('active')
             capturesummarybutton.classList.remove('active')
+
+    
+            document.getElementById("activeSection").value = "chat";
         })
 
         capturesummarybutton.addEventListener('click', () =>{
@@ -125,8 +134,27 @@
             chatbox.classList.add('hidden');
             capturechatbutton.classList.remove('active')
             capturesummarybutton.classList.add('active')
+
+            document.getElementById("activeSection").value = "summary";
         })
 
+
+        // Set initial active section based on server-side value
+
+            document.addEventListener("DOMContentLoaded", function () {
+            const activeSection = "@ViewData["ActiveSection"]";
+            if (activeSection === "chat") {
+                summarybox.classList.add('hidden');
+                chatbox.classList.remove('hidden');
+                capturechatbutton.classList.add('active');
+                capturesummarybutton.classList.remove('active');
+            } else {
+                summarybox.classList.remove('hidden');
+                chatbox.classList.add('hidden');
+                capturechatbutton.classList.remove('active');
+                capturesummarybutton.classList.add('active');
+            }
+        });
 
     </script>
 </body>

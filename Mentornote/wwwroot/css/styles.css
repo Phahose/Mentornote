@@ -1707,10 +1707,11 @@ audio{
     border-radius: 8px;
     padding: 1rem;
     margin-bottom: 1rem;
+    max-height: 75vh;
 }
 
 .chat-message {
-    padding: 0.6rem 0.9rem;
+    padding: 0.2rem 0.9rem;
     border-radius: 12px;
     margin-bottom: 0.6rem;
     max-width: 80%;

@@ -161,6 +161,35 @@ namespace Mentornote.Services
             return filePath.Replace("\\", "/");
         }
 
+        public List<double> ParseEmbedding(string embeddingJson)
+        {
+            try
+            {
+                var parsed = JsonSerializer.Deserialize<EmbeddingResponse>(embeddingJson);
+                return parsed?.data?[0]?.embedding ?? new List<double>();
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error parsing embedding JSON: {ex.Message}");
+                return new List<double>();
+            }
+        }
+
+        public double CosineSimilarity(List<double> vectorA, List<double> vectorB)
+        {
+            double dot = 0.0;
+            double magA = 0.0;
+            double magB = 0.0;
+
+            for (int i = 0; i < vectorA.Count; i++)
+            {
+                dot += vectorA[i] * vectorB[i];
+                magA += Math.Pow(vectorA[i], 2);
+                magB += Math.Pow(vectorB[i], 2);
+            }
+
+            return dot / (Math.Sqrt(magA) * Math.Sqrt(magB));
+        }
         public string ConvertMarkdownToHtml(string markdown)
         {
             var html = Markdown.ToHtml(markdown);

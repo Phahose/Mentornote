@@ -631,19 +631,22 @@ CREATE TABLE SpeechCaptureChat (
     CreatedAt DATETIME DEFAULT GETDATE()
 );
 
+Alter Table SpeechCaptureChat
+Add Response NVARCHAR(MAX) NOT NULL
 
 CREATE PROCEDURE AddSpeechCaptureChat
     @SpeechCaptureId INT,
     @UserId INT,
     @SenderType NVARCHAR(10),
-    @Message NVARCHAR(MAX)
+    @Message NVARCHAR(MAX),
+	@Response NVARCHAR(MAX)
 AS
 BEGIN
     SET NOCOUNT ON;
 
     -- Add new message
-    INSERT INTO SpeechCaptureChat (SpeechCaptureId, UserId, SenderType, Message, CreatedAt)
-    VALUES (@SpeechCaptureId, @UserId, @SenderType, @Message, GETDATE());
+    INSERT INTO SpeechCaptureChat (SpeechCaptureId, UserId, SenderType, Message, Response, CreatedAt)
+    VALUES (@SpeechCaptureId, @UserId, @SenderType, @Message, @Response, GETDATE());
 
     -- Keep only the 100 most recent messages per recording
     DECLARE @MaxMessages INT = 100;
@@ -657,6 +660,8 @@ BEGIN
     DELETE FROM SpeechCaptureChat
     WHERE Id IN (SELECT Id FROM OrderedMessages WHERE RowNum > @MaxMessages);
 END;
+
+DROP Procedure AddSpeechCaptureChat
 
 
 CREATE PROCEDURE GetSpeechCaptureChatByCaptureId

@@ -1,11 +1,12 @@
 #nullable disable
+using DocumentFormat.OpenXml.ExtendedProperties;
 using Mentornote.Models;
 using Mentornote.Services;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
-using System.Text.Json;
-using System.Text;
 using System.IO;
+using System.Text;
+using System.Text.Json;
 using System.Threading.Tasks;
 
 namespace Mentornote.Pages.Functionalities
@@ -35,6 +36,11 @@ namespace Mentornote.Pages.Functionalities
         public List<SpeechCaptureSummary> CaptureSummaries = new();
         public SpeechCaptureSummary ActiveSummary = new();
         public string Summary { get; set; }
+        [BindProperty]
+        public string Submit { get; set; }
+        [BindProperty]
+        public string UserMessage { get; set; }
+
         public async Task OnGet(int captureId)
         {
             Email = HttpContext.Session.GetString("Email")!;
@@ -49,6 +55,9 @@ namespace Mentornote.Pages.Functionalities
             ActiveCapture = Captures.FirstOrDefault();
             CaptureSummaries = flashcardService.GetSpeechCaptureSummaryByCapture(captureId);
             ActiveSummary = CaptureSummaries.FirstOrDefault();
+            ChatMessages = flashcardService.GetSpeechCaptureChat(captureId);
+
+
             string summarizedTranscripts;
 
             if (ActiveSummary == null)
@@ -62,11 +71,36 @@ namespace Mentornote.Pages.Functionalities
             {
                 Summary = _helpers.ConvertMarkdownToHtml(ActiveSummary.SummaryText);
             }
+
+           
+            HttpContext.Session.SetInt32("SelectedCaptureId", captureId);
         }
 
-        public void OnPost()
+        public async Task<IActionResult> OnPost(string activeSection)
         {
+            int captureId = HttpContext.Session.GetInt32("SelectedCaptureId") ?? 0;
+            if (Submit == "Go")
+            {
+                string aiResponse =  await  _speechCaptureServices.AskSpeechCaptureQuestion(UserMessage, captureId, NewUser);
+            }
 
+            Email = HttpContext.Session.GetString("Email")!;
+            if (string.IsNullOrEmpty(Email))
+            {
+                Response.Redirect("/Start");
+            }
+            UsersService usersService = new();
+            NewUser = usersService.GetUserByEmail(Email);
+            ChatMessages = flashcardService.GetSpeechCaptureChat(captureId);
+            Captures = flashcardService.GetAllSpeechCaptures(NewUser.Id);
+            ActiveCapture = Captures.FirstOrDefault();
+            CaptureSummaries = flashcardService.GetSpeechCaptureSummaryByCapture(captureId);
+            ActiveSummary = CaptureSummaries.FirstOrDefault();
+
+
+            ViewData["ActiveSection"] = activeSection ?? "chat";
+
+            return Page();
         }
 
         private string GetTextFromFile(string filePath)
