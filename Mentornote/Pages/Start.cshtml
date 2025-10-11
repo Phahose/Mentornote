@@ -22,7 +22,7 @@
                 <h2>@Model.NotesList.Count</h2>
                 <p class="card-word">Uploaded Notes</p>
             </div>
-            <span class="card-icon bg-blue"><img src="https://img.icons8.com/?size=24&id=Yj5svDsC4jQA&format=png" /></span>
+            <img class="card-icon"  src="https://img.icons8.com/?size=100&id=TWVL3qGCOW3R&format=png&color=000000" />
         </div>
 
         <div class="fun-card">
@@ -31,7 +31,7 @@
                 <h2>@Model.FlashcardSets.Count()</h2>
                 <p class="card-word">Generated Cards</p>
             </div>
-            <span class="icon bg-purple"><img src="https://img.icons8.com/?size=24&id=Yj5svDsC4jQA&format=png" /></span>
+            <img class="card-icon" src="https://img.icons8.com/?size=100&id=44268&format=png&color=000000" />
         </div>
 
         <div class="fun-card">
@@ -40,12 +40,12 @@
                 <h2>7 days</h2>
                 <p class="card-word">Practice exams</p>
             </div>
-            <span class="icon bg-orange"><img src="https://img.icons8.com/?size=24&id=Yj5svDsC4jQA&format=png" /></span>
+            <img class="card-icon" src="https://img.icons8.com/?size=100&id=58892&format=png&color=000000" />
         </div>
     </div>
 
     <div class="start-con-holder"> 
-        <form name="Notesform" method="post" class="notes-form">
+        <form name="Notesform" method="post" id="notesForm" class="notes-form">
             @Html.AntiForgeryToken() <!-- Required for Razor Pages -->
             <div class="notes-cards-container">
                 <p class="cont-head">Recent Activity </p>
@@ -58,7 +58,6 @@
                             </div>
                             <div class="note-text">
                                 <strong>@note.Title</strong>
-                                <p class="timestamp">@note.UserId</p>
                             </div>
                         </div>
 
@@ -73,13 +72,13 @@
                             </svg>
 
                             <div class="popup-menu hidden">
-                                <button type="submit" name="Submit" value="Rename-@note.Id" class="popup-btn">
+                                <button type="button" name="Submit" id="editnotebtn"  value="Rename-@note.Id" class="popup-btn edit-note-btn">
                                     <svg xmlns="http://www.w3.org/2000/svg" class="popup-icon" viewBox="0 0 24 24" width="16" height="16" fill="currentColor">
                                         <path d="M4 21h4.586L20.293 9.293a1 1 0 0 0 0-1.414l-4.172-4.172a1 1 0 0 0-1.414 0L4 15.586V21zM5.414 17L15 7.414l1.586 1.586L7 18.586H5.414V17z" />
                                     </svg>
                                     Edit Title                    
                                 </button>
-                                <button type="submit" name="Submit" value="Delete-@note.Id" class="popup-btn">
+                                <button type="button" name="Submit" value="Delete-@note.Id" class="popup-btn delete-note-btn">
                                     <svg xmlns="http://www.w3.org/2000/svg" class="popup-icon" viewBox="0 0 24 24" width="16" height="16" fill="currentColor">
                                         <path d="M6 7h12v13a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2V7zm3 3v7h2v-7H9zm4 0v7h2v-7h-2z" />
                                         <path d="M18 4h-3.5l-1-1h-3l-1 1H6v2h12V4z" />
@@ -96,30 +95,41 @@
                 {                 
                     <p class="empty-list">You have no Notes Yet Upload a File to Make Some!!</p>
                 }
-                <!-- Popup Menu -->
-                <div class="popup-menu hidden" id="startpopup">
-                    <button onclick="renameCard(this)">Rename</button>
-                    <button onclick="deleteCard(this)">Delete</button>
-                </div>
             </div>
         </form>
-        
+    </div>
+
+    <div id="editModal" class="modal">
+        <div class="modal-content">
+            <h3>Edit Flashcard Set Title</h3>
+            <form method="post" class="modal-form">
+                @Html.AntiForgeryToken() <!-- Required for Razor Pages -->
+                <input type="hidden" id="editSetId" name="SetId" />
+                <input type="text" id="editNoteTitle" name="NewTitle" placeholder="Enter new title" required />
+                <div class="modal-buttons">
+                    <button type="submit" name="Submit" id="edit-confirm" class="confirm-btn modal-button" value="Edit">Save</button>
+                    <button type="button" onclick="closeModal('editModal')" class="cancel-btn modal-button">Cancel</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div id="deleteModal" class="modal">
+        <div class="modal-content">
+            <h3>Are you sure you want to delete this flashcard set?</h3>
+            <form method="post" class="modal-form" onsubmit="submitDeleteForm(event)">
+                @Html.AntiForgeryToken() <!-- Required for Razor Pages -->
+                <input type="hidden" id="deleteSetId" name="SetId" />
+                <div class="modal-buttons">
+                    <button type="submit" name="Submit" value="Delete" id="delete-confirm" class="confirm-btn modal-button">Yup</button>
+                    <button type="button" onclick="closeModal('deleteModal')" class="cancel-btn modal-button">Cancel</button>
+                </div>
+            </form>
+        </div>
     </div>
 </div>
 
 <script>
-     // loading animation
-    function showLoadingBar() {
-        console.log('Blaawskcm')
-        const overlay = document.getElementById("overlay");
-        if (overlay) { 
-            console.log('founfff')
-            overlay.style.display = 'flex';
-        } else {
-            console.log("Overlay not found");
-        }
-        return true;
-    }
 
     // pop up effect
     // Toggle popup specific to clicked kebab icon
@@ -139,4 +149,42 @@
             document.querySelectorAll('.popup-menu').forEach(p => p.classList.add('hidden'));
         }
     });
+
+    // Open and Close edit and Delete Controls
+
+    let currentNoteId = null;
+    let currentTitle = null;
+
+    const editButtons   = document.querySelectorAll('.edit-note-btn');
+    const deleteButtons = document.querySelectorAll('.delete-note-btn');
+    const editconfim = document.getElementById('edit-confirm');
+    const deleteconfim = document.getElementById('delete-confirm');
+    const noteListForm = document.getElementById('notesForm');
+
+    let currentNoteAction = null;
+
+    // Handle every Edit button
+    editButtons.forEach(btn => {
+      btn.addEventListener('click', () => {
+        currentNoteAction = btn.value;              
+        console.log("Edit clicked:", currentNoteAction);
+        document.getElementById('editModal').style.display = 'block';
+        editconfim.value = currentNoteAction;
+      });
+    });
+
+    // Handle every Delete button
+    deleteButtons.forEach(btn => {
+      btn.addEventListener('click', () => {
+        currentNoteAction = btn.value;               
+        console.log("Delete clicked:", currentNoteAction);
+        document.getElementById('deleteModal').style.display = 'block';
+        deleteconfim.value = currentNoteAction;
+      });
+    });
+
+    function closeModal(modalId) {
+      document.getElementById(modalId).style.display = 'none';
+    }
+
 </script>

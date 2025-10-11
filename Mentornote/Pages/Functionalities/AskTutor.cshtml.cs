@@ -60,6 +60,7 @@ namespace Mentornote.Pages.Functionalities
             Note = NotesList.Where(n => n.Id == noteId).FirstOrDefault();
 
             HttpContext.Session.SetInt32("SelectedNoteId", noteId);
+            TutorMessages = flashcardService.GetTutorMessages(noteId, NewUser.Id);
         }
 
         public async Task<IActionResult> OnPost()

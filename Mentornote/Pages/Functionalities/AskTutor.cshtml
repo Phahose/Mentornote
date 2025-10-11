@@ -24,38 +24,79 @@
                     Hi! I'm ready to answer questions about "<strong>@Model.Note.Title</strong>". What would you like to know?
                 </div>
             </div>
-
-                <!-- Chat History -->
-                @if (Model.TutorMessages != null && Model.TutorMessages.Any())
+            @if (Model.TutorMessages != null && Model.TutorMessages.Any())
+            {
+                foreach (var msg in Model.TutorMessages)
                 {
-                    foreach (var msg in Model.TutorMessages)
-                    {
-                        <!-- User Message -->
-                        <div class="message-row user">
-                            <div class="message-bubble user-bubble">
-                                @msg.Message
-                            </div>
+                    <!-- User Message -->
+                    <div class="message-row user">
+                        <div class="message-bubble user-bubble">
+                            @msg.Message
                         </div>
+                    </div>
 
-                        <!-- Bot Response -->
-                        <div class="message-row bot">
-                            <div class="bot-icon">🎓</div>
-                            <div class="message-bubble">
-                                @Html.Raw(Markdig.Markdown.ToHtml(msg.Response))
-                            </div>
+                    <!-- Bot Response -->
+                    <div class="message-row bot">
+                        <div class="bot-icon">🎓</div>
+                        <div class="message-bubble">
+                            @Html.Raw(Markdig.Markdown.ToHtml(msg.Response))
                         </div>
-                    }
+                    </div>
                 }
-         
+            }
+            <div id="typing-indicator" class="hide-message">
+                <div class="dot"></div>
+                <div class="dot"></div>
+                <div class="dot"></div>
+            </div>
         </div>
     </div>
-        <form method="post" class="chat-input-area">
-            @Html.AntiForgeryToken() <!-- Required for Razor Pages -->
-        <input type="text" name="UserQuestion" class="chat-input" placeholder="Type your question here..." required />
+    <form method="post" id="chatForm" class="chat-input-area">
+        @Html.AntiForgeryToken() <!-- Required for Razor Pages -->
+        <input type="text" name="UserQuestion" id="userQuestion" class="chat-input" placeholder="Type your question here..." required />
             <button class="send-btn">
                 <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="#ffffff" viewBox="0 0 24 24">
                     <path d="M2.01 21L23 12 2.01 3v7l15 2-15 2z" />
                 </svg>
             </button>
-        </form>
+    </form>
 </div>
+
+
+    <script>
+        document.addEventListener("DOMContentLoaded", () => {
+          const form = document.getElementById('chatForm');
+          const input = document.getElementById('userQuestion');
+          const chatContainer = document.querySelector('.chat-container');
+          const typingIndicator = document.getElementById('typing-indicator');
+
+          // ✅ Auto-scroll to bottom on page load
+          if (chatContainer) {
+            chatContainer.scrollTo({
+              top: chatContainer.scrollHeight,
+              behavior: "smooth"
+            });
+          }
+
+          // ✅ Handle form submission (show message + dots)
+          form.addEventListener('submit', () => {
+            const userText = input.value.trim();
+            if (!userText) return;
+
+            // Show user’s message immediately
+            const userMsg = document.createElement('div');
+            userMsg.className = 'message-row user';
+            userMsg.innerHTML = `<div class="message-bubble user-bubble">${userText}</div>`;
+            chatContainer.appendChild(userMsg);
+
+            // Move typing dots to bottom + show them
+            chatContainer.appendChild(typingIndicator);
+            typingIndicator.classList.remove('hide-message');
+
+            // Auto-scroll to bottom
+            chatContainer.scrollTop = chatContainer.scrollHeight;
+
+            // Form posts normally
+          });
+        });
+    </script>

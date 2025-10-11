@@ -19,6 +19,8 @@ namespace Mentornote.Pages.Shared
         [BindProperty]
         public string Submit { get; set; } = string.Empty;
         [BindProperty]
+        public string NewTitle { get; set; } = string.Empty;
+        [BindProperty]
         public IFormFile UploadedNote { get; set; }     
         public User NewUser { get; set; } = new User();
         public string Email { get; set; } = string.Empty;
@@ -75,16 +77,13 @@ namespace Mentornote.Pages.Shared
                 }
                 if (action == "Rename")
                 {
-                    string titleKey = $"NewTitle-{id}";
-
                     List<Note> notes = cardservices.GetUserNotes(NewUser.Id);
 
                     Note updatingNote = notes.Where(n => n.Id == id).FirstOrDefault();
-                    var newTitle = Request.Form[titleKey];
 
-                    if (!string.IsNullOrEmpty(newTitle))
+                    if (!string.IsNullOrEmpty(NewTitle))
                     {
-                        _flashCardsController.UpdateNotetitle(updatingNote, newTitle);
+                        _flashCardsController.UpdateNotetitle(updatingNote, NewTitle);
                     }
                 }
                 OnGet();

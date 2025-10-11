@@ -27,13 +27,22 @@ namespace Mentornote.Pages
         public string HtmlSummary { get; set; } = string.Empty;
         public Note Note = new();
         public List<Note> NotesList { get; set; } = new();
+        
         public void OnGet(int noteId)
         {
             HttpContext.Session.SetInt32("SelectedNoteId", noteId);
             noteSummary = flashcardService.GetUserNotesSummary(noteId);
-           
-            HtmlSummary = _helpers.ConvertMarkdownToHtml(noteSummary.SummaryText);
+            string fullhtmlSummary;
+            fullhtmlSummary = _helpers.ConvertMarkdownToHtml(noteSummary.SummaryText);
 
+            if (fullhtmlSummary.Length > 250)
+            {
+                HtmlSummary = fullhtmlSummary.Substring(0, 250);
+            }
+            else
+            {
+                HtmlSummary = fullhtmlSummary;
+            }
             Email = HttpContext.Session.GetString("Email")!;
             if (string.IsNullOrEmpty(Email))
             {

@@ -664,18 +664,19 @@ END;
 DROP Procedure AddSpeechCaptureChat
 
 
-CREATE PROCEDURE GetSpeechCaptureChatByCaptureId
+CREATE PROCEDURE GetSpeechCaptureChat
     @SpeechCaptureId INT
 AS
 BEGIN
     SET NOCOUNT ON;
 
-    SELECT Id, SpeechCaptureId, UserId, SenderType, Message, CreatedAt
+    SELECT Id, SpeechCaptureId, UserId, SenderType, Message, Response, CreatedAt
     FROM SpeechCaptureChat
     WHERE SpeechCaptureId = @SpeechCaptureId
     ORDER BY CreatedAt ASC;
 END;
 
+DROP Procedure GetSpeechCaptureChat
 
 CREATE PROCEDURE DeleteSpeechCaptureChat
     @SpeechCaptureId INT
