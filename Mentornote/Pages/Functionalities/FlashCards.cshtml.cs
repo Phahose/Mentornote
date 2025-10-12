@@ -17,9 +17,9 @@ namespace Mentornote.Pages.Functionalities
         public CardsServices flashcardService = new();
         public List<Note> NotesList { get; set; } = new();
         public Note Note = new();
-        public void OnGet(int flashcardSetId)
+        public void OnGet(int noteId)
         {
-            HttpContext.Session.SetInt32("SelectedFlashcardSetId", flashcardSetId);
+            HttpContext.Session.SetInt32("SelectedFlashcardSetId", noteId);
             Email = HttpContext.Session.GetString("Email")!;
             if (string.IsNullOrEmpty(Email))
             {
@@ -30,16 +30,16 @@ namespace Mentornote.Pages.Functionalities
             NewUser = usersService.GetUserByEmail(Email);
             FlashcardSets = flashcardService.GetUserFlashcards(NewUser.Id);
 
-            HttpContext.Session.SetInt32("SelectedFlashcardSetId", flashcardSetId);
+            HttpContext.Session.SetInt32("SelectedFlashcardSetId", noteId);
 
             FlashcardSets = FlashcardSets
-                .Where(f => f.Id == flashcardSetId)
+                .Where(f => f.NoteId == noteId)
                 .ToList();
 
             NotesList = flashcardService.GetUserNotes(NewUser.Id);
-            Note = NotesList.Where(n => n.Id == FlashcardSets[0].NoteId).FirstOrDefault();
+            Note = NotesList.Where(n => n.Id == noteId).FirstOrDefault();
 
-            HttpContext.Session.SetInt32("SelectedNoteId", FlashcardSets[0].NoteId);
+            HttpContext.Session.SetInt32("SelectedNoteId", noteId);
         }
     }
 }

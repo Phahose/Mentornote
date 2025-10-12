@@ -3,11 +3,18 @@
 @{
     Layout = "StartNav";
 }
+<div class="header">
+    <div>
+        <section>
+            <h1>Speech Capture</h1>
+        </section>
 
+        <button id="menu-btn" class="menu-btn">☰</button>
+    </div>
+</div>
 <div class="fg">
     <div class="speech-container">
-        <h1 class="page-title">Speech Capture</h1>
-        <p class="page-subtext">Record your lecture or voice note and get an instant summary.</p>
+        <p class="page-subtext">Click Start Recording to Start</p>
 
         <div class="record-controls">
             <button id="startBtn" class="btn start-btn">Start Recording</button>
@@ -26,62 +33,87 @@
         </form>
 
         <div id="statusBox" class="status-box"></div>
-
-        @foreach (var capture in @Model.Transcripts)
-        {
-            <form name="Notesform" method="post" class="notes-form">
+        <form name="Notesform" method="post" id="notesForm" class="notes-form">
             @Html.AntiForgeryToken() <!-- Required for Razor Pages -->
-                <div class="note-card">
-                    <div class="note-left">
-                        <div class="icon-circle">
-                            <img src="https://img.icons8.com/ios-filled/20/3b82f6/book.png" alt="Book Icon" />
+            <div class="notes-cards-container">
+                @foreach (var capture in @Model.Transcripts)
+                {
+
+                    <div class="note-card">
+                        <div class="note-left">
+                            <div class="icon-circle">
+                                <img src="https://img.icons8.com/ios-filled/20/3b82f6/book.png" alt="Book Icon" />
+                            </div>
+                            <div class="note-text">
+                                <strong>@capture.Title</strong>
+                            </div>
                         </div>
-                        <div class="note-text">
-                            <strong>@capture.Title</strong>
+
+                        <div class="note-right">
+                            <a href="~/Functionalities/Capture?captureId=@capture.Id" class="tag note-tag">Explore</a>
+
+                            <svg onmouseover="togglePopup(this)" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="black" viewBox="0 0 24 24" class="kebab-img">
+                                <circle cx="12" cy="5" r="2" />
+                                <circle cx="12" cy="12" r="2" />
+                                <circle cx="12" cy="19" r="2" />
+                            </svg>
+
+                            <div class="popup-menu hidden">
+                                <button type="button" name="Submit" id="editnotebtn"  value="Rename-@capture.Id" class="popup-btn edit-note-btn">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="popup-icon" viewBox="0 0 24 24" width="16" height="16" fill="currentColor">
+                                        <path d="M4 21h4.586L20.293 9.293a1 1 0 0 0 0-1.414l-4.172-4.172a1 1 0 0 0-1.414 0L4 15.586V21zM5.414 17L15 7.414l1.586 1.586L7 18.586H5.414V17z" />
+                                    </svg>
+                                    Edit Title                    
+                                </button>
+                                <button type="button" name="Submit" value="Delete-@capture.Id" class="popup-btn delete-note-btn">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="popup-icon" viewBox="0 0 24 24" width="16" height="16" fill="currentColor">
+                                        <path d="M6 7h12v13a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2V7zm3 3v7h2v-7H9zm4 0v7h2v-7h-2z" />
+                                        <path d="M18 4h-3.5l-1-1h-3l-1 1H6v2h12V4z" />
+                                    </svg>
+                                    Delete
+                                </button>
+                            </div>
                         </div>
+
                     </div>
+                }
+                @if (Model.Transcripts.Count == 0)
+                {
+                    <p class="empty-list">You have not Recorded anything yet Lets Begin</p>
+                }
 
-                    <div class="note-right">
-                        <a href="~/Functionalities/Capture?captureId=@capture.Id" class="tag note-tag">Explore</a>
-
-                        <svg onmouseover="togglePopup(this)" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="black" viewBox="0 0 24 24" class="kebab-img">
-                            <circle cx="12" cy="5" r="2" />
-                            <circle cx="12" cy="12" r="2" />
-                            <circle cx="12" cy="19" r="2" />
-                        </svg>
-
-                        <div class="popup-menu hidden">
-                            <button type="submit" name="Submit" value="Rename-@capture.Id" class="popup-btn">
-                                <svg xmlns="http://www.w3.org/2000/svg" class="popup-icon" viewBox="0 0 24 24" width="16" height="16" fill="currentColor">
-                                    <path d="M4 21h4.586L20.293 9.293a1 1 0 0 0 0-1.414l-4.172-4.172a1 1 0 0 0-1.414 0L4 15.586V21zM5.414 17L15 7.414l1.586 1.586L7 18.586H5.414V17z" />
-                                </svg>
-                                Edit Title
-                            </button>
-                            <button type="submit" name="Submit" value="Delete-@capture.Id" class="popup-btn">
-                                <svg xmlns="http://www.w3.org/2000/svg" class="popup-icon" viewBox="0 0 24 24" width="16" height="16" fill="currentColor">
-                                    <path d="M6 7h12v13a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2V7zm3 3v7h2v-7H9zm4 0v7h2v-7h-2z" />
-                                    <path d="M18 4h-3.5l-1-1h-3l-1 1H6v2h12V4z" />
-                                </svg>
-                                Delete
-                            </button>
-                        </div>
+            </div>
+        </form>
+       
+        <div id="editModal" class="modal">
+            <div class="modal-content">
+                <h3>Edit Flashcard Set Title</h3>
+                <form method="post" class="modal-form">
+                    @Html.AntiForgeryToken() <!-- Required for Razor Pages -->
+                    <input type="hidden" id="editSetId" name="SetId" />
+                    <input type="text" id="editNoteTitle" name="NewTitle" placeholder="Enter new title" required />
+                    <div class="modal-buttons">
+                        <button type="submit" name="Submit" id="edit-confirm" class="confirm-btn modal-button" value="Edit">Save</button>
+                        <button type="button" onclick="closeModal('editModal')" class="cancel-btn modal-button">Cancel</button>
                     </div>
-
-                </div>
-            </form>
-        }
-        @if (Model.Transcripts.Count == 0)
-        {
-            <p class="empty-list">You have not Recorded anything yet Lets Begin</p>
-        }
-
-        <div class="popup-menu hidden" id="startpopup">
-            <button onclick="renameCard(this)">Rename</button>
-            <button onclick="deleteCard(this)">Delete</button>
+                </form>
+            </div>
         </div>
-      
+
+        <div id="deleteModal" class="modal">
+            <div class="modal-content">
+                <h3>Are you sure you want to delete this flashcard set?</h3>
+                <form method="post" class="modal-form" onsubmit="submitDeleteForm(event)">
+                    @Html.AntiForgeryToken() <!-- Required for Razor Pages -->
+                    <input type="hidden" id="deleteSetId" name="SetId" />
+                    <div class="modal-buttons">
+                        <button type="submit" name="Submit" value="Delete" id="delete-confirm" class="confirm-btn modal-button">Yup</button>
+                        <button type="button" onclick="closeModal('deleteModal')" class="cancel-btn modal-button">Cancel</button>
+                    </div>
+                </form>
+            </div>
+        </div>
     </div>
-   
 </div>
 
 
@@ -163,4 +195,42 @@
             document.querySelectorAll('.popup-menu').forEach(p => p.classList.add('hidden'));
         }
     });
+
+
+
+    // Open and Close edit and Delete Controls
+    let currentNoteId = null;
+    let currentTitle = null;
+
+    const editButtons   = document.querySelectorAll('.edit-note-btn');
+    const deleteButtons = document.querySelectorAll('.delete-note-btn');
+    const editconfim = document.getElementById('edit-confirm');
+    const deleteconfim = document.getElementById('delete-confirm');
+    const noteListForm = document.getElementById('notesForm');
+
+    let currentNoteAction = null;
+
+    // Handle every Edit button
+    editButtons.forEach(btn => {
+      btn.addEventListener('click', () => {
+        currentNoteAction = btn.value;
+        console.log("Edit clicked:", currentNoteAction);
+        document.getElementById('editModal').style.display = 'block';
+        editconfim.value = currentNoteAction;
+      });
+    });
+
+    // Handle every Delete button
+    deleteButtons.forEach(btn => {
+      btn.addEventListener('click', () => {
+        currentNoteAction = btn.value;
+        console.log("Delete clicked:", currentNoteAction);
+        document.getElementById('deleteModal').style.display = 'block';
+        deleteconfim.value = currentNoteAction;
+      });
+    });
+
+    function closeModal(modalId) {
+      document.getElementById(modalId).style.display = 'none';
+    }
 </script>

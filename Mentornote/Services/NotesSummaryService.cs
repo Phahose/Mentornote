@@ -132,6 +132,7 @@ namespace Mentornote.Services
                 NoteId = noteId,
                 SummaryText = dummySummary
             };
+            //await GenerateSummaryEmbedding(chunk, noteId, chunkIndex);
             cardsServices.AddNoteSummary(noteSummary);
 
             return dummySummary;
