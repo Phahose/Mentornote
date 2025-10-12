@@ -48,12 +48,30 @@
                                 <div class="exam-options">
                                     @foreach (var option in question.Choices)
                                     {
-                                        var isUserAnswer = userResponse != null && option.Id == userResponse.First().OptionId;
-                                        var isCorrect = option.IsCorrect;
 
-                                        string optionClass = isCorrect ? "correct-option"
-                                        : isUserAnswer && !isCorrect ? "wrong-option"
-                                        : "";
+                                        bool isUserAnswer = false;
+                                        bool isCorrect = option.IsCorrect;
+
+                                        // Check if the user selected this option
+                                        if (userResponse != null && userResponse.Any())
+                                        {
+                                            if (option.Id == userResponse.First().OptionId)
+                                            {
+                                                isUserAnswer = true;
+                                            }
+                                        }
+
+                                        // Determine the CSS class
+                                        string optionClass = "";
+
+                                        if (isCorrect)
+                                        {
+                                            optionClass = "correct-option";
+                                        }
+                                        else if (isUserAnswer && !isCorrect)
+                                        {
+                                            optionClass = "wrong-option";
+                                        }
 
                                         <label class="option @optionClass">
                                             <input type="radio" disabled

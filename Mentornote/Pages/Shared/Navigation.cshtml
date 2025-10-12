@@ -18,32 +18,34 @@
                 <p>AI Study Assistant</p>
             </div>
         </div>
-
+        @{
+            var currentPath = Context.Request.Path; // current page route
+        }
         <div class="nav-section">
             <p class="nav-section-title">STUDY TOOLS</p>
             <ul class="nav-links">
-                <a href="~/Start"  class="nav-item active">
-                    <span class="icon bg-blue"><img src="https://img.icons8.com/?size=24&id=Yj5svDsC4jQA&format=png" /></span>
+                <a href="~/Start" class="nav-item @(currentPath == "/Start" ? "active" : "")">
+                    <span class="icon bg-green"><img src="https://img.icons8.com/?size=24&id=Yj5svDsC4jQA&format=png" /></span>
                      Dashboard
                 </a>
-                <a href="~/Preview?noteId=@Model.Note.Id" class="nav-item active">
-                    <span class="icon bg-blue"><img src="https://img.icons8.com/?size=24&id=Yj5svDsC4jQA&format=png" /></span>
+                <a href="~/Preview?noteId=@Model.Note.Id" class="nav-item @(currentPath == "/Preview" ? "active" : "")">
+                    <span class="icon bg-blue"><img src="https://img.icons8.com/?size=24&id=2191&format=png&color=000000" /></span>
                      Back To Preview
                 </a>
 
-                <a href="~/Functionalities/Flashcards?flashcardSetId=@Model.FlashcardSets[0].Id" class="nav-item">
+                <a href="~/Functionalities/Flashcards?flashcardSetId=@Model.FlashcardSets[0].Id" class="nav-item @(currentPath == "/Functionalities/Flashcards" ? "active" : "")">
                     <span class="icon bg-purple"><img src="https://img.icons8.com/ios-filled/24/FFFFFF/flash-on.png" /></span>
                     Flashcards
                 </a>
-                <a href="~/Functionalities/AskTutor?noteId=@Model.Note.Id" class="nav-item">
+                <a href="~/Functionalities/AskTutor?noteId=@Model.Note.Id" class="nav-item @(currentPath == "/Functionalities/AskTutor" ? "active" : "")">
                     <span class="icon bg-orange"><img src="https://img.icons8.com/ios-filled/24/FFFFFF/chat.png" /></span>
                     AI Tutor
                 </a>
-                <a href="~/Functionalities/PracticeTest?noteId=@Model.Note.Id" class="nav-item">
+                <a href="~/Functionalities/PracticeTest?noteId=@Model.Note.Id" class="nav-item @(currentPath == "/Functionalities/PracticeTest" ? "active" : "")">
                     <span class="icon bg-red"><img src="https://img.icons8.com/ios-filled/24/FFFFFF/test-passed.png" /></span>
                     Practice Test
                 </a>
-                <a href="~/Functionalities/Summary?noteId=@Model.Note.Id" class="nav-item">
+                <a href="~/Functionalities/Summary?noteId=@Model.Note.Id" class="nav-item @(currentPath == "/Functionalities/Summary" ? "active" : "")">
                     <span class="icon bg-orange"><img src="https://img.icons8.com/ios-filled/24/FFFFFF/chat.png" /></span>
                     Summary
                 </a>

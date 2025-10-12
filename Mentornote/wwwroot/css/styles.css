@@ -339,10 +339,13 @@ body {
 .fg {
     padding: 1rem;
     width: 90%;
-    height:fit-content;
-    max-height:100vh;
+    height: fit-content;
+    max-height: 100vh;
     margin-left: auto;
     margin-top: 5rem;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
 }
 .flashcard-container {
     width: 70%;
@@ -402,8 +405,8 @@ body {
 .controls{
     margin-top: 2rem;
     width:fit-content;
-    margin-left: auto;
     margin-right: auto;
+    margin-left: auto;
 }
 
 .controls button {
@@ -765,7 +768,15 @@ body {
     background: inherit;
     border-radius: 12px;
     box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+    transition: 0.2s ease-in-out;
+    z-index: -10;
+  
 }
+
+    .note-card:hover {
+        transform: scale(1.03);
+        z-index: -10;
+    }
 
 .note-left {
     display: flex;
@@ -869,7 +880,7 @@ body {
     flex-direction: column;
     gap: 8px;
     box-shadow: 0 0 10px #000;
-    z-index: 77799;
+    z-index: 10000;
     transition: ease-in-out;
     width: 6rem;
 }
@@ -1285,7 +1296,10 @@ body {
 /*Preview*/
 .main-content{
     display: flex;
+    flex-flow:column;
     justify-content:space-between;
+    width: 70%;
+    margin:auto;
 }
 .study-tools {
     background-color: white;
@@ -1493,10 +1507,11 @@ body {
 }
 
 .summary-box {
-    max-width: 65%;
+    width: 92%;
     background-color: white;
     padding: 1rem;
     margin-left: 1rem;
+    margin:auto;
 }
 
 .summary-box p{
@@ -1505,20 +1520,14 @@ body {
 }
 
 /*Summary*/
-.summary-summary-box {
-    background-color: white;
-    padding: 1rem;
-    margin: 1rem;
-    width: 90%;
-    height: 80vh;
-    overflow-y: scroll;
-    border-radius: 2rem;
-    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.03);
-}
+
 .summary-summary-box {
     font-size: 0.8rem;
+    overflow-x: hidden;
 }
-
+.summary-main-content{
+    width: 100%;
+}
 /*Practice Exam*/
 .test-container {
     width: 60%;
@@ -1962,8 +1971,9 @@ audio{
    
     /*Tablet Preview Page */
     .main-content{
-        flex-flow: column;
-       flex-direction: column-reverse
+       flex-flow: column;
+       flex-direction: column-reverse;
+       width: 100%;
     }
     .study-tools{
         width: 90%;

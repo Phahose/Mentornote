@@ -66,7 +66,7 @@ namespace Mentornote.Controllers
            // var summary = await _notesSummaryService.GenerateSummaryAsync(text, noteId);
 
 
-            var summary = await _notesSummaryService.GenerateFakeSummaryAsync(text, noteId);
+           var summary = await _notesSummaryService.GenerateFakeSummaryAsync(text, noteId);
             await _hub.Clients.All.SendAsync("ReceiveProgress", "Finalizing...", 4);
             var set = _flashcardService.CreateFlashcardSet(title, userId, cards);
             _context.FlashcardSets.Add(set);

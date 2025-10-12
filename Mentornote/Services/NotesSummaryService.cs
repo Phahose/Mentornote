@@ -62,8 +62,7 @@ namespace Mentornote.Services
                     var responseContentString = await response.Content.ReadAsStringAsync();
                     var responseContent = JsonSerializer.Deserialize<OpenAIResponse>(responseContentString);
 
-                    if (responseContent?.choices?.Length > 0 &&
-                        responseContent.choices[0]?.message?.content != null)
+                    if (responseContent?.choices?.Length > 0 && responseContent.choices[0]?.message?.content != null)
                     {
                         var summary = responseContent.choices[0].message.content.Trim();
                         allSummaries.Add(summary);

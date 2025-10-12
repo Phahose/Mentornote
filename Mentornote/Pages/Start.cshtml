@@ -48,7 +48,7 @@
         <form name="Notesform" method="post" id="notesForm" class="notes-form">
             @Html.AntiForgeryToken() <!-- Required for Razor Pages -->
             <div class="notes-cards-container">
-                <p class="cont-head">Recent Activity </p>
+                <p class="cont-head">My Uploads</p>
                 @foreach (var note in @Model.NotesList)
                 {
                     <div class="note-card">

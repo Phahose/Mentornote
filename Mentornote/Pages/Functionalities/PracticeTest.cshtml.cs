@@ -56,7 +56,26 @@ namespace Mentornote.Pages.Functionalities
 
             // Get all tests for the note
             Tests = cardService.GetTestsWithQuestions(noteId);
+
+            if (Tests.Count == 0)
+            {
+                _testServices.CreateTestQuestion(noteId, NewUser.Id).Wait();
+                Tests = cardService.GetTestsWithQuestions(noteId);
+            }
             ActiveTest = Tests.Last();
+
+
+            if (ActiveTest.Questions.Count > 40)
+            {
+                var shuffledList = new List<TestQuestion>();
+                var random = new Random();
+                shuffledList = ActiveTest.Questions.OrderBy(x => random.Next()).ToList();
+
+                var selectedItems = shuffledList.Take(40).ToList();
+
+                ActiveTest.Questions = selectedItems;
+            }
+           
 
 
             if (Tests.Count == 0)

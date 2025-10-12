@@ -17,7 +17,6 @@
     </div>
 </div>
 <div class="fg">
-
     <div class="main-content">
         <!-- Study Tools Section -->
         <div class="study-tools">
@@ -69,32 +68,13 @@
             </a>
 
         </div>
-
-@*         <!-- Right Side Panel -->
-        <div class="right-panel">
-            <!-- Progress Box -->
-            <div class="progress-box">
-                <h3>Study Progress</h3>
-                <p>Flashcards Studied <strong>0%</strong></p>
-                <div class="progress-stats">
-                    <div>
-                        <span class="count purple">@Model.FlashcardSets[0].Flashcards.Count</span><br />
-                        <span>Total Cards</span>
-                    </div>
-                    <div>
-                        <span class="count orange">0</span><br />
-                        <span>Exams Taken</span>
-                    </div>
-                </div>
-            </div>
+        <div class="summary-box">
+            <h3>Summary</h3>
+            <p>
+                @Html.Raw(Model.HtmlSummary)
+            </p>
         </div>
-    </div> *@
- </div>
-    <!-- Summary Section -->
-    <div class="summary-box">
-        <h3>Summary</h3>
-        <p>
-           @Html.Raw(Model.HtmlSummary)
-        </p>
     </div>
+    <!-- Summary Section -->
+   
 </div>

@@ -30,9 +30,11 @@ namespace Mentornote.Services
             {
                 try
                 {
-                   // var flashcardsFromChunk = await GenerateFlashcardsFromChunk(chunk, noteId);
-                    var flashcardsFromChunk = await GenerateFakeFlashcardsFromChunk(chunk, noteId);
+                   var flashcardsFromChunk = await GenerateFlashcardsFromChunk(chunk, noteId);
+                    //var flashcardsFromChunk = await GenerateFakeFlashcardsFromChunk(chunk, noteId);
+
                     allFlashcards.AddRange(flashcardsFromChunk);
+                    
                 }
                 catch (Exception ex)
                 {
@@ -40,6 +42,19 @@ namespace Mentornote.Services
                     continue; // skip this one and keep going;
                 }     
             }
+
+
+            if (allFlashcards.Count > 40)
+            {
+                var shuffledList = new List<Flashcard>();
+                var random = new Random();
+                shuffledList = allFlashcards.OrderBy(x => random.Next()).ToList();
+                var selectedItems = shuffledList.Take(40).ToList();
+
+                allFlashcards = selectedItems;
+            }
+
+            
 
             return allFlashcards;
         }

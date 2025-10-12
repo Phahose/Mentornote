@@ -62,8 +62,8 @@ namespace Mentornote.Services
             //Chunk Text
             var chunks = _helpers.ChunkText(text);
 
+            List<TestQuestion> totalTestQuestions = new();
 
-        
             foreach (var chunk in chunks)
             {
                 try
@@ -74,23 +74,36 @@ namespace Mentornote.Services
                    
                     test.Id = testId;
 
-                    foreach (TestQuestion q in questionsFromChunk)
-                    {
-                        q.TestId = test.Id;
-                        int questionId =  cardsServices.AddTestQuestion(q);
+                    totalTestQuestions.AddRange(questionsFromChunk);
 
-                        foreach (var choice in q.Choices)
-                        {
-                            choice.TestQuestionId = questionId;
-                            cardsServices.AddTestQuestionChoice(choice);
-                        }
-                    }
-                    
                 }
                 catch (Exception ex)
                 {
                     Console.WriteLine($"Error in chunk {chunk}: {ex.Message}");
                     continue; // skip this one and keep going;
+                }
+            }
+
+            if (totalTestQuestions.Count > 40)
+            {
+                var shuffledList = new List<TestQuestion>();
+                var random = new Random();
+                shuffledList = totalTestQuestions.OrderBy(x => random.Next()).ToList();
+
+                var selectedItems = shuffledList.Take(40).ToList();
+
+                totalTestQuestions = selectedItems;
+            }
+
+            foreach (TestQuestion q in totalTestQuestions)
+            {
+                q.TestId = test.Id;
+                int questionId = cardsServices.AddTestQuestion(q);
+
+                foreach (var choice in q.Choices)
+                {
+                    choice.TestQuestionId = questionId;
+                    cardsServices.AddTestQuestionChoice(choice);
                 }
             }
             return true;
