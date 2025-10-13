@@ -23,7 +23,7 @@
             <h2>Study Tools</h2>
             <p class="subtitle">Choose how you want to study this material</p>
 
-            <a href="/Functionalities/FlashCards?noteId=@Model.Note.Id" class="tool-card flashcard-tool">
+            <a href="/Functionalities/FlashCards?noteId=@Model.Note.Id" class="tool-card flashcard-tool load-trigger">
                 <div>
                     <img src="https://img.icons8.com/ios-filled/50/FFFFFF/graduation-cap.png" alt="Logo" class="logo" />
                     <div>
@@ -34,7 +34,7 @@
                 <span class="arrow">&rarr;</span>
             </a>
 
-            <a href="/Functionalities/AskTutor?noteId=@Model.Note.Id" class="tool-card ai-tutor">
+            <a href="/Functionalities/AskTutor?noteId=@Model.Note.Id" class="tool-card ai-tutor load-trigger">
                 <div>
                     <img src="https://img.icons8.com/ios-filled/24/FFFFFF/chat.png" />
                     <div>
@@ -45,7 +45,7 @@
                 <span class="arrow">&rarr;</span>
             </a>
 
-            <a href="/Functionalities/PracticeTest?noteId=@Model.Note.Id" class="tool-card exam">
+            <a href="/Functionalities/PracticeTest?noteId=@Model.Note.Id" class="tool-card exam load-trigger">
                 <div>
                     <img src="https://img.icons8.com/ios-filled/24/FFFFFF/test-passed.png" />
                     <div>
@@ -56,7 +56,7 @@
                 <span class="arrow">&rarr;</span>
             </a>
 
-            <a href="/Functionalities/Summary?noteId=@Model.Note.Id" class="tool-card summarized">
+            <a href="/Functionalities/Summary?noteId=@Model.Note.Id" class="tool-card summarized load-trigger">
                 <div>
                     <img src="https://img.icons8.com/ios-filled/24/FFFFFF/test-passed.png" />
                     <div>

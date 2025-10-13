@@ -120,8 +120,6 @@ namespace Mentornote.Services
 
         public async Task<string> SaveNoteFileAsync(IFormFile uploadedNote, string textContent = null, string fileExtension = ".txt")
         {
-            /*   if (uploadedNote == null || uploadedNote.Length == 0)
-                   return null;*/
 
             var uploadsFolder = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "uploads", "notes");
 

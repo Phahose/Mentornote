@@ -88,7 +88,7 @@ namespace Mentornote.Pages.Functionalities
                         }
                     }
                     OnGet();
-                    return Page();
+                    return RedirectToPage("/Start");
                 }
                 else if (Submit == "Upload Link")
                 {
@@ -131,6 +131,7 @@ namespace Mentornote.Pages.Functionalities
                         else if (status.ToString().Contains("OkObjectResult"))
                         {
                             Status = "Success";
+                            return RedirectToPage("/Start");
                         }
                     }
                     catch (Exception ex)

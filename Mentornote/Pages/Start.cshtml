@@ -7,7 +7,7 @@
 <div class="header">
     <div>
         <section>
-            <h1>Dashboard</h1>
+            <h1>Welcome @Model.NewUser.FirstName</h1>
         </section>
 
         <button id="menu-btn" class="menu-btn">☰</button>
@@ -63,7 +63,7 @@
 
                         <div class="note-right">
                            @*  <a href="/Functionalities/FlashCards?flashcardSetId=@flashcardset.Id" class="tag note-tag">View Card</a> *@
-                            <a href="/Preview?noteId=@note.Id" class="tag note-tag">View Card</a>
+                            <a href="/Preview?noteId=@note.Id" class="tag note-tag load-trigger">View Card</a>
 
                             <svg onmouseover="togglePopup(this)" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="black" viewBox="0 0 24 24" class="kebab-img">
                                 <circle cx="12" cy="5" r="2" />

@@ -3,32 +3,34 @@
 @{
     ViewData["Title"] = "Login";
 }
-<div class="auth-container">
-    <h1>Welcome Back</h1>
-    <p class="tagline">Smarter learning, louder bragging.</p>
+<div class="index-body">
+    <div class="auth-container">
+        <h1>Welcome Back</h1>
+        <p class="tagline">Smarter learning, louder bragging.</p>
 
-    <form class="auth-form" method="post">
-        @Html.AntiForgeryToken() <!-- Required for Razor Pages -->
-        <div class="social-buttons">
-            <button class="google-btn">
-                <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/google/google-original.svg" alt="Google" />
-                <span>Continue with Google</span>
-            </button>
+        <form class="auth-form" method="post">
+            @Html.AntiForgeryToken() <!-- Required for Razor Pages -->
+            <div class="social-buttons">
+                <button class="google-btn">
+                    <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/google/google-original.svg" alt="Google" />
+                    <span>Continue with Google</span>
+                </button>
 
-            <button class="apple-btn">
-                <img src="https://upload.wikimedia.org/wikipedia/commons/f/fa/Apple_logo_black.svg" alt="Apple" />
-                <span>Continue with Apple</span>
-            </button>
-        </div>
-        @{
-            if (Model.ErrorMessage != "")
-            {
-                <p>@Model.ErrorMessage</p>
+                <button class="apple-btn">
+                    <img src="https://upload.wikimedia.org/wikipedia/commons/f/fa/Apple_logo_black.svg" alt="Apple" />
+                    <span>Continue with Apple</span>
+                </button>
+            </div>
+            @{
+                if (Model.ErrorMessage != "")
+                {
+                    <p>@Model.ErrorMessage</p>
+                }
             }
-        }
-        <input type="email" placeholder="Email" name="Email" required />
-        <input type="password" placeholder="Password" name="Password" required />
-        <input type="submit" name="Submit" value="Login"/>
-        <p class="switch">Don't have an account? <a href="~/SignUp">Sign up</a></p>
-    </form>
+            <input type="email" placeholder="Email" name="Email" required />
+            <input type="password" placeholder="Password" name="Password" required />
+            <input type="submit" name="Submit" value="Login" />
+            <p class="switch">Don't have an account? <a href="~/SignUp">Sign up</a></p>
+        </form>
+    </div>
 </div>

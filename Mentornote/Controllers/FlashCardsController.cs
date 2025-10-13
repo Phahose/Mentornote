@@ -58,15 +58,14 @@ namespace Mentornote.Controllers
 
             await _hub.Clients.All.SendAsync("ReceiveProgress", "Making your FlashCards...", 2);
 
-            var cards = await _flashcardService.GenerateFromNotes(text, noteId);
+            //var cards = await _flashcardService.GenerateFlashcardsFromChunk(text, noteId);
+           var cards = await _flashcardService.GenerateFakeFlashcardsFromChunk(text, noteId);
 
             await _hub.Clients.All.SendAsync("ReceiveProgress", "Summaizing Your Notes...", 3);
 
+           //var summary = await _notesSummaryService.GenerateSummaryAsync(text, noteId);
+           var summary = await _notesSummaryService.GenerateFakeSummaryAsync(text, noteId);
 
-            var summary = await _notesSummaryService.GenerateSummaryAsync(text, noteId);
-
-
-           //var summary = await _notesSummaryService.GenerateFakeSummaryAsync(text, noteId);
             await _hub.Clients.All.SendAsync("ReceiveProgress", "Finalizing...", 4);
             var set = _flashcardService.CreateFlashcardSet(title, userId, cards);
             _context.FlashcardSets.Add(set);
@@ -87,7 +86,7 @@ namespace Mentornote.Controllers
                     FileName = request.FileName,
                     UserId = userId,
                     Title = title,
-                    SourceUrl = sourceUrl,
+                    SourceUrl = string.IsNullOrEmpty(sourceUrl) ? "none" : sourceUrl,
                     SourceType = sourceType,
                     FilePath = _helpers.SaveNoteFileAsync(request).Result,
                 };
@@ -101,8 +100,6 @@ namespace Mentornote.Controllers
                 return 0;
             }
         }
-
-     
 
         public bool DeleteNote (int noteId, int userId)
         {
@@ -132,19 +129,6 @@ namespace Mentornote.Controllers
             }
 
             return false;
-        }
-
-        public void DeleteFlashcardSet(int flashcardSetId)
-        {
-            var flashcards = _context.Flashcards.Where(f => f.FlashcardSetId == flashcardSetId).ToList();
-            _context.Flashcards.RemoveRange(flashcards);
-            var setToDelete = _context.FlashcardSets.FirstOrDefault(f => f.Id == flashcardSetId);
-
-            if (setToDelete != null)
-            {
-                _context.FlashcardSets.Remove(setToDelete);
-                _context.SaveChanges();
-            }
         }
 
         public void UpdateNotetitle(Note note, string newTitle)

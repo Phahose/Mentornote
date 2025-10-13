@@ -1,4 +1,5 @@
 ﻿#nullable disable
+using DocumentFormat.OpenXml.ExtendedProperties;
 using Mentornote.Models;
 using Microsoft.Data.SqlClient;
 using System.Data;
@@ -21,28 +22,54 @@ namespace Mentornote.Services
             _helpers = helpers;
         }
 
-        public async Task<List<Flashcard>> GenerateFromNotes(string notes, int noteId)
+
+        public async Task<List<Flashcard>> GenerateFlashcardsFromChunk(string note, int noteId)
         {
             var allFlashcards = new List<Flashcard>();
-            var chunks = _helpers.ChunkText(notes, 1500); // You can tweak 1500 depending on what works
+            var chunks = _helpers.ChunkText(note, 1500);
 
-            foreach (var chunk in chunks)
+            foreach (var chunck in chunks)
             {
                 try
                 {
-                   var flashcardsFromChunk = await GenerateFlashcardsFromChunk(chunk, noteId);
-                    //var flashcardsFromChunk = await GenerateFakeFlashcardsFromChunk(chunk, noteId);
+                    var apiKey = _config["OpenAI:ApiKey"].Trim();
+                    var prompt = $"Generate flashcards from these notes and also a title based on the notes Return ONLY valid JSON. The title should be 2 words max:\n{note}\n\nReturn JSON array with 'title', 'question', and 'answer'.";
+
+                    var requestBody = new
+                    {
+                        model = "gpt-3.5-turbo",
+                        messages = new[]
+                        {
+                             new { role = "user", content = prompt }
+                        }
+                    };
+
+                    var requestJson = JsonSerializer.Serialize(requestBody);
+                    var request = new HttpRequestMessage(HttpMethod.Post, "https://api.openai.com/v1/chat/completions");
+                    request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", apiKey);
+                    request.Content = new StringContent(requestJson, Encoding.UTF8, "application/json");
+
+                        
+                    var response = await _httpClient.SendAsync(request);
+                    response.EnsureSuccessStatusCode();
+                    var json = await response.Content.ReadAsStringAsync();
+
+                    Console.WriteLine($"RAW AI RESPONSE: {json}");
+
+
+                    var flashcardsFromChunk = ParseResponse(json, noteId);
 
                     allFlashcards.AddRange(flashcardsFromChunk);
                     
+
+                    throw new Exception("Failed after multiple attempts due to rate limiting.");
                 }
                 catch (Exception ex)
                 {
-                    Console.WriteLine($"Error in chunk {chunk}: {ex.Message}");
-                    continue; // skip this one and keep going;
-                }     
+                    Console.WriteLine(ex.Message);
+                    continue;
+                }
             }
-
 
             if (allFlashcards.Count > 40)
             {
@@ -54,51 +81,12 @@ namespace Mentornote.Services
                 allFlashcards = selectedItems;
             }
 
-            
-
             return allFlashcards;
-        }
 
-        private async Task<List<Flashcard>> GenerateFlashcardsFromChunk(string notesChunk, int noteId)
-        {
-            var apiKey = _config["OpenAI:ApiKey"].Trim();
-            var prompt = $"Generate flashcards from these notes and also a title based on the notes. The title should be 2 words max:\n{notesChunk}\n\nReturn JSON array with 'title', 'question', and 'answer'.";
-
-            var requestBody = new
-            {
-                model = "gpt-3.5-turbo",
-                messages = new[]
-                {
-                     new { role = "user", content = prompt }
-                }
-            };
-
-            for (int attempt = 0; attempt < 3; attempt++)
-            {
-                var requestJson = JsonSerializer.Serialize(requestBody);
-                var request = new HttpRequestMessage(HttpMethod.Post, "https://api.openai.com/v1/chat/completions");
-                request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", apiKey);
-                request.Content = new StringContent(requestJson, Encoding.UTF8, "application/json");
-
-                var response = await _httpClient.SendAsync(request);
-
-                if (response.StatusCode == HttpStatusCode.TooManyRequests)
-                {
-                    Console.WriteLine("Rate limit hit. Retrying in 2 seconds...");
-                    await Task.Delay(2000);
-                    continue;
-                }
-
-                response.EnsureSuccessStatusCode();
-                var json = await response.Content.ReadAsStringAsync();
-                return ParseResponse(json, noteId);
-            }
-
-            throw new Exception("Failed after multiple attempts due to rate limiting.");
         }
 
 
-        private async Task<List<Flashcard>> GenerateFakeFlashcardsFromChunk(string notesChunk, int noteId)
+        public async Task<List<Flashcard>> GenerateFakeFlashcardsFromChunk(string notesChunk, int noteId)
         {
             // Simulate delay so it feels like "processing"
             await Task.Delay(300);
@@ -152,8 +140,12 @@ namespace Mentornote.Services
                 .GetProperty("content")
                 .GetString();
 
+            Console.WriteLine($"This is whartrge model is saying {content}");
+
             // content is a JSON string (escaped) — now deserialize it
             var rawFlashcards = JsonSerializer.Deserialize<List<Flashcard>>(content);
+
+           
 
             return rawFlashcards.Select(fc => new Flashcard
             {

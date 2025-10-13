@@ -1,0 +1,115 @@
+what's happening guys today we're going 
+ to calculate the future value and 
+ present value of cash flows with the ba2 
+ plus calculator on the third row of the calculator we 
+ find the buttons needed to complete the 
+ time value of money calculations 
+ let's say you put one hundred thousand 
+ dollars in an account for three years 
+ the interest rate you earn on this money 
+ is five percent if interest is 
+ compounded annually 
+ how much money will you have in the 
+ account at the end of three years 
+ first we'll indicate the total number of 
+ compounding periods we have for this 
+ problem 
+ we have a three year time frame and 
+ interest is compounded annually 
+ so the number of compounding periods is 
+ three 
+ we'll enter this by first pressing three 
+ then 
+ n which represents compounding periods 
+ in this calculator the interest rate is five percent we 
+ enter this in by pressing five 
+ then the i y button notice that we don't 
+ enter five percent as 
+ point zero five like we would if we were 
+ doing this calculation manually 
+ the time value of money function on this 
+ calculator calls 
+ for the interest rates to be entered in 
+ this way now we'll need to enter the present 
+ value it's important that we enter the 
+ present value as a negative number 
+ especially when we're doing more 
+ complicated problems down the road 
+ this is by convention for this and some 
+ other calculators 
+ that provide a time value of money 
+ function a good way to think about this 
+ is to imagine the money leaving your 
+ hands and going into an account 
+ it's a negative to you this may help you 
+ visualize and remember 
+ why present value for problems of this 
+ sort need to be entered as a negative 
+ number 
+ so we'll press 100 000 make it negative 
+ then press pv for present value 
+ there is no payment in this problem so 
+ the payment is zero now we want to calculate the future 
+ value because we want to know 
+ how much money we'll have at the end of 
+ this three year period 
+ so we'll press the cpt button for 
+ compute 
+ then fv for future value 
+ and here we have 115 and 762.50 cents as our future value when we're done with one problem and 
+ ready to do another 
+ it's important that we clear out the 
+ time value of money worksheet 
+ we do this by pressing second then 
+ pressing the button that says 
+ clr tvm so now 
+ when we go back and look we'll see that 
+ our time value of money worksheet 
+ is completely zeroed out we can verify 
+ this by pressing 
+ rcl for recall and then each of the time 
+ value of money buttons 
+ to verify that each value is set to zero 
+ now let's assume that you expect to 
+ receive a cash flow in the amount of one 
+ hundred thousand dollars 
+ two years from today the current 
+ discount rate is three percent 
+ annually what is the present value of 
+ this one hundred thousand dollar payment 
+ as we did in the first problem we'll 
+ first enter the number of compounding 
+ periods 
+ the compounding convention here is 
+ annual and the term is two years 
+ so the number of compounding periods is 
+ two we type two 
+ then end the interest rate is three 
+ percent 
+ we enter three then i y 
+ the future value will be one hundred 
+ thousand 
+ notice that the future value was entered 
+ as a positive number 
+ we can think about this as a positive 
+ cash flow to us 
+ there's no payment in this problem so 
+ payment once again is zero 
+ now we want to know what the present 
+ value is 
+ so we press cpt for compute then 
+ pv for present value and here we see 
+ that the present value of a one hundred 
+ thousand dollar cash flow 
+ two years from today discounted to 
+ present with a discount rate of three 
+ percent 
+ is ninety four thousand two hundred 
+ fifty nine dollars 
+ and fifty nine cents this value is 
+ represented as a negative number 
+ by convention if you found this helpful 
+ and are interested in seeing more videos 
+ like this one 
+ please like and subscribe below thanks 
+ for watching

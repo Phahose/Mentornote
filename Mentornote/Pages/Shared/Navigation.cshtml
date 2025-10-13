@@ -24,28 +24,28 @@
         <div class="nav-section">
             <p class="nav-section-title">STUDY TOOLS</p>
             <ul class="nav-links">
-                <a href="~/Start" class="nav-item @(currentPath == "/Start" ? "active" : "")">
+                <a href="~/Start" class="nav-item @(currentPath == "/Start" ? "active" : "") load-trigger">
                     <span class="icon bg-green"><img src="https://img.icons8.com/?size=24&id=Yj5svDsC4jQA&format=png" /></span>
                      Dashboard
                 </a>
-                <a href="~/Preview?noteId=@Model.Note.Id" class="nav-item @(currentPath == "/Preview" ? "active" : "")">
+                <a href="~/Preview?noteId=@Model.Note.Id" class="nav-item @(currentPath == "/Preview" ? "active" : "") load-trigger">
                     <span class="icon bg-blue"><img src="https://img.icons8.com/?size=24&id=2191&format=png&color=000000" /></span>
                      Back To Preview
                 </a>
 
-                <a href="~/Functionalities/Flashcards?flashcardSetId=@Model.FlashcardSets[0].Id" class="nav-item @(currentPath == "/Functionalities/Flashcards" ? "active" : "")">
+                <a href="~/Functionalities/Flashcards?flashcardSetId=@Model.FlashcardSets[0].Id" class="nav-item @(currentPath == "/Functionalities/Flashcards" ? "active" : "") load-trigger">
                     <span class="icon bg-purple"><img src="https://img.icons8.com/ios-filled/24/FFFFFF/flash-on.png" /></span>
                     Flashcards
                 </a>
-                <a href="~/Functionalities/AskTutor?noteId=@Model.Note.Id" class="nav-item @(currentPath == "/Functionalities/AskTutor" ? "active" : "")">
+                <a href="~/Functionalities/AskTutor?noteId=@Model.Note.Id" class="nav-item @(currentPath == "/Functionalities/AskTutor" ? "active" : "") load-trigger">
                     <span class="icon bg-orange"><img src="https://img.icons8.com/ios-filled/24/FFFFFF/chat.png" /></span>
                     AI Tutor
                 </a>
-                <a href="~/Functionalities/PracticeTest?noteId=@Model.Note.Id" class="nav-item @(currentPath == "/Functionalities/PracticeTest" ? "active" : "")">
+                <a href="~/Functionalities/PracticeTest?noteId=@Model.Note.Id" class="nav-item @(currentPath == "/Functionalities/PracticeTest" ? "active" : "") load-trigger">
                     <span class="icon bg-red"><img src="https://img.icons8.com/ios-filled/24/FFFFFF/test-passed.png" /></span>
                     Practice Test
                 </a>
-                <a href="~/Functionalities/Summary?noteId=@Model.Note.Id" class="nav-item @(currentPath == "/Functionalities/Summary" ? "active" : "")">
+                <a href="~/Functionalities/Summary?noteId=@Model.Note.Id" class="nav-item @(currentPath == "/Functionalities/Summary" ? "active" : "") load-trigger">
                     <span class="icon bg-orange"><img src="https://img.icons8.com/ios-filled/24/FFFFFF/chat.png" /></span>
                     Summary
                 </a>
@@ -58,6 +58,13 @@
                     @* <button id="second-menu-btn" class="menu-btn">☰</button> *@
                 </li>
             </ul>
+        </div>
+        <div id="loading-overlay" class="loading-overlay hidden">
+            <div class="loading-card">
+                <div class="spinner-ring"></div>
+                <h2 class="loading-title">Getting your items...</h2>
+                <p class="loading-subtext">Hang tight while we prepare everything for you 💡</p>
+            </div>
         </div>
     </nav>
 
@@ -82,6 +89,37 @@
             sideNav.classList.remove('active');
           }
         });
+
+        // Loading animation
+
+            document.addEventListener("DOMContentLoaded", () => {
+            const overlay = document.getElementById("loading-overlay");
+            if (!overlay) return;
+
+            // Function to show the loader
+            const showLoader = () => {
+                overlay.classList.remove("hidden");
+            };
+
+            // Function to hide the loader
+            const hideLoader = () => {
+                overlay.classList.add("hidden");
+            };
+
+            // Show loader when clicking internal navigation links
+            document.querySelectorAll("a.load-trigger").forEach(link => {
+                link.addEventListener("click", e => {
+                    // Skip if it's an anchor link
+                    if (link.href.includes("#")) return;
+                    showLoader();
+                });
+            });
+
+            // Hide loader when page finishes loading
+            window.addEventListener("load", hideLoader);
+        });
+
+       
     </script>
 </body>
 </html>

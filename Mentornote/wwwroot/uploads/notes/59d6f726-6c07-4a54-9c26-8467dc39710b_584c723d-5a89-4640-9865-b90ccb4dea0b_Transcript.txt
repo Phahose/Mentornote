@@ -1,0 +1,70 @@
+hey what's up guys I'm going to show you 
+ how I have my capture carard connected 
+ from my PlayStation 5 to my PC for live 
+ streaming through 
+ OBS this is my current setup right now 
+ right now I have a USB microphone 
+ connected right to the 
+ PC and I also have the Sony 3D 
+ pulse USB dongle connected to the 
+ PC PlayStation 5 of course you need one 
+ of those make sure you have that what 
+ you want to do is connect the HDMI out 
+ of your PlayStation into the in of the 
+ capture card and the out of the HDMI 
+ into the in of the monitor or TV that 
+ you want to show your 
+ gameplay you want to make sure you have 
+ your 3.0 USB cable it should to come 
+ with your capture card connect to a 3.0 
+ USB slot in your PC or Mac has to be a 
+ 3.0 cable into a 3.0 USB slot in my case 
+ I'm using OBS you might using another 
+ streaming software but there is no Drive 
+ necessary now that you have your capture 
+ card connected to your PC and your 
+ PlayStation is turned on you want to go 
+ to OBS and start adding the capture 
+ device so first thing is you go down 
+ here to the add new source and it's 
+ going to be a video cap video capture 
+ device and let's call this 
+ PS5 okay hit okay and we want to use the 
+ USB video and then there it is you hit 
+ okay so there you go you have video 
+ now so you can see down here actually 
+ that you are getting signal for the PSR 
+ audio signal but there's no desktop 
+ audio I'm not getting anything in my 
+ headset right so what you want to do at 
+ this point is go under Advanced Audio 
+ properties and under audio monitoring 
+ for the desktop desktop audio click 
+ Monitor and output and for the PS5 also 
+ Monitor and output 
+ there you go now we have audio coming 
+ through my headset hit close you can see 
+ the audio signal is bumping which is 
+ great I'm using the Sony 3D pulse 
+ headsets again and if you are using this 
+ you got to make sure that you have 
+ monitor also turned on on your headset 
+ here there's a off and I'm sorry yeah an 
+ off and monitor switch that you want to 
+ turn on that way you can control the 
+ volume also in the headset because if 
+ you lower the volume here that will 
+ affect the output of the audio which you 
+ don't want obviously you want you know a 
+ really good sounding stream but if you 
+ if it's too loud it's too low you have 
+ the monitor turned on your headset you 
+ control the actual volume I put in here 
+ in your headset which is way better and 
+ that's it you're ready to go you're 
+ ready to stream just make sure you have 
+ everything connected set up whatever 
+ platform you're going to stream on and 
+ hit go you're very welcome and thank you 
+ for coming by and checking out my video 
+ have a nice day
