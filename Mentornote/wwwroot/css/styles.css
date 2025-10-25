@@ -1345,6 +1345,7 @@ body {
     overflow-y: auto;
     width: 90%;
     margin: auto;
+    font-family: "IBM Plex Sans", sans-serif;
 }
 .tutor-container {
     height:fit-content;
@@ -1643,7 +1644,8 @@ body {
     background-color: white;
     padding: 1rem;
     margin-left: 1rem;
-    margin:auto;
+    margin: auto;
+    font-family: "IBM Plex Sans", sans-serif;
 }
 
 .summary-box p{
@@ -1657,8 +1659,9 @@ body {
     font-size: 0.8rem;
     overflow-x: hidden;
 }
-.summary-main-content{
+.summary-main-content {
     width: 100%;
+    font-family: "IBM Plex Sans", sans-serif;
 }
 /*Practice Exam*/
 .test-container {
