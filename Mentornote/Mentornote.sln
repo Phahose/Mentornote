@@ -5,6 +5,12 @@ VisualStudioVersion = 17.14.36301.6
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Mentornote", "Mentornote.csproj", "{0BC88F4F-6441-48BF-9751-5532A3541BCC}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Mentornote.Desktop", "..\Mentornote.Desktop\Mentornote.Desktop.csproj", "{8588909D-9D95-445C-A9BD-BD138BA7A6EA}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Mentornote.Backend", "..\Mentornote.Backend\Mentornote.Backend.csproj", "{62BA32B8-9605-4D4E-A973-489124CAA445}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MentorNote.Shared", "..\MentorNote.Shared\MentorNote.Shared.csproj", "{DED3B5C2-7A0D-4854-AEE0-41291B1274B4}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -15,6 +21,18 @@ Global
 		{0BC88F4F-6441-48BF-9751-5532A3541BCC}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{0BC88F4F-6441-48BF-9751-5532A3541BCC}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{0BC88F4F-6441-48BF-9751-5532A3541BCC}.Release|Any CPU.Build.0 = Release|Any CPU
+		{8588909D-9D95-445C-A9BD-BD138BA7A6EA}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{8588909D-9D95-445C-A9BD-BD138BA7A6EA}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{8588909D-9D95-445C-A9BD-BD138BA7A6EA}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{8588909D-9D95-445C-A9BD-BD138BA7A6EA}.Release|Any CPU.Build.0 = Release|Any CPU
+		{62BA32B8-9605-4D4E-A973-489124CAA445}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{62BA32B8-9605-4D4E-A973-489124CAA445}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{62BA32B8-9605-4D4E-A973-489124CAA445}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{62BA32B8-9605-4D4E-A973-489124CAA445}.Release|Any CPU.Build.0 = Release|Any CPU
+		{DED3B5C2-7A0D-4854-AEE0-41291B1274B4}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{DED3B5C2-7A0D-4854-AEE0-41291B1274B4}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{DED3B5C2-7A0D-4854-AEE0-41291B1274B4}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{DED3B5C2-7A0D-4854-AEE0-41291B1274B4}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

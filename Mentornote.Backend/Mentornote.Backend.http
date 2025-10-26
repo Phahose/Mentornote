@@ -1,0 +1,6 @@
+@Mentornote.Backend_HostAddress = http://localhost:5085
+
+GET {{Mentornote.Backend_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
