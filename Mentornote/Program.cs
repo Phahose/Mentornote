@@ -17,9 +17,9 @@ namespace Mentornote
             var builder = WebApplication.CreateBuilder(args);
             var jwtSettings = builder.Configuration.GetSection("Jwt");
             
-            Console.WriteLine($"JWT Key: {jwtSettings["Key"]}");
+            /*Console.WriteLine($"JWT Key: {jwtSettings["Key"]}");
             Console.WriteLine($"JWT Issuer: {jwtSettings["Issuer"]}");
-            Console.WriteLine($"JWT Audience: {jwtSettings["Audience"]}");
+            Console.WriteLine($"JWT Audience: {jwtSettings["Audience"]}");*/
 
             var key = Encoding.UTF8.GetBytes(jwtSettings["Key"]);
             if (string.IsNullOrEmpty(jwtSettings["Key"]))

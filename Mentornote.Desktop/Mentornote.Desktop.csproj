@@ -13,4 +13,10 @@
     <PackageReference Include="NAudio" Version="2.2.1" />
   </ItemGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\Mentornote.Backend\Mentornote.Backend.csproj" />
+    <ProjectReference Include="..\MentorNote.Shared\MentorNote.Shared.csproj" />
+    <ProjectReference Include="..\Mentornote\Mentornote.csproj" />
+  </ItemGroup>
+
 </Project>

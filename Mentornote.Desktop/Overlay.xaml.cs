@@ -1,7 +1,12 @@
 ﻿#nullable disable
 using Mentornote.Desktop.MVVM;
 using System;
+using System.Collections.Concurrent;
+using System.IO;
+using System.Net.Http;
+using System.Net.Http.Json;
 using System.Runtime.InteropServices;
+using System.Text;
 using System.Windows;
 using System.Windows.Input;
 using System.Windows.Interop;
@@ -13,6 +18,8 @@ namespace Mentornote.Desktop
     {
         private AudioListener _listener;
         private bool _isListening = false;
+        private static readonly HttpClient _http = new HttpClient();
+        private string _meetingId;
         public Overlay()
         {
             InitializeComponent();
@@ -27,17 +34,14 @@ namespace Mentornote.Desktop
             Loaded += (_, __) => MakeTransparentLayer();
         }
 
-        private void OnAudioFileReady(object sender, string filePath)
-        {
-            RecordedText.Text = "Audio Saved";
-        }
-
         private void Mic_Click(object sender, RoutedEventArgs e)
         {
             if (!_isListening)
             {
+                 _meetingId = Guid.NewGuid().ToString();
                 _listener = new AudioListener();
-                _listener.AudioFileReady += OnAudioFileReady;
+               // _listener.AudioFileReady += ProcessAudioFile;
+                _listener.AudioChunkReady += ProcessLiveAudio;
                 _listener.StartListening();
                 _isListening = true;
                 Console.WriteLine("Started capturing system audio...");
@@ -51,6 +55,68 @@ namespace Mentornote.Desktop
                 RecordingCheck.Text = "Not Recording";
             }
         }
+
+        private async void ProcessLiveAudio(object sender, byte[] chunk)
+        {
+            try
+            {
+                using var content = new ByteArrayContent(chunk);
+                content.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue("audio/wav");
+
+
+                _http.DefaultRequestHeaders.Remove("X-Meeting-ID");
+                _http.DefaultRequestHeaders.Add("X-Meeting-ID", _meetingId);
+
+                // send to your API endpoint (running in Speko.Backend or local ASP.NET)
+                var response = await _http.PostAsync("http://localhost:5085/api/transcribe", content);
+                response.EnsureSuccessStatusCode();
+
+                // 2️⃣ Parse JSON into usable C# object
+                var result = await response.Content.ReadFromJsonAsync<TranscibeResponse>();
+
+                // 3️⃣ Extract both transcript and suggestion
+                string transcript = result?.Text ?? "";
+                string suggestion = result?.Suggestion ?? "";
+
+                // 4️⃣ Do something with them
+                Console.WriteLine($"🗣 Transcript: {transcript}");
+                Console.WriteLine($"💡 Suggestion: {suggestion}");
+
+                // later you’ll parse JSON into text + suggestion objects and show in UI
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"❌ Error sending chunk: {ex.Message}");
+            }
+        }
+
+        private async void ProcessAudioFile(object sender, string filePath)
+        {
+            RecordedText.Text = "Audio Saved";
+            try
+            {
+                Console.WriteLine($"[Summary] Uploading final audio file: {filePath}");
+
+                using var content = new MultipartFormDataContent();
+                var fileContent = new ByteArrayContent(await File.ReadAllBytesAsync(filePath));
+                fileContent.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue("audio/wav");
+                content.Add(fileContent, "file", Path.GetFileName(filePath));
+
+                var response = await _http.PostAsync("https://localhost:5085/api/transcribe/final", content);
+                response.EnsureSuccessStatusCode();
+
+                var json = await response.Content.ReadAsStringAsync();
+                Console.WriteLine($"[Summary] Response: {json}");
+
+                // optional: delete temp file after use
+                File.Delete(filePath);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"❌ Error sending final file: {ex.Message}");
+            }
+        }
+
 
         private void Close_Click(object sender, RoutedEventArgs e)
         {
@@ -81,4 +147,6 @@ namespace Mentornote.Desktop
         [DllImport("user32.dll")] static extern int GetWindowLong(IntPtr hWnd, int nIndex);
         [DllImport("user32.dll")] static extern int SetWindowLong(IntPtr hWnd, int nIndex, int dwNewLong);
     }
+
+   
 }

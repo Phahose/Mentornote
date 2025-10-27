@@ -1,3 +1,7 @@
+#nullable disable
+using System.Text;
+using Mentornote.Backend;
+using Microsoft.Extensions.Options;
 
 namespace Mentornote.Backend
 {
@@ -7,16 +11,23 @@ namespace Mentornote.Backend
         {
             var builder = WebApplication.CreateBuilder(args);
 
-            // Add services to the container.
+            //Deepgram Configuration Binding
+            builder.Services.Configure<DeepgramOptions>(
+                builder.Configuration.GetSection("Deepgram"));
 
+            // Register your service with the key
+            builder.Services.AddSingleton<Transcribe>();
+            builder.Services.AddSingleton<GeminiServices>();
+            builder.Services.AddSingleton<ConversationMemory>();  
+
+            //Add controllers and Swagger (same as before)
             builder.Services.AddControllers();
-            // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
             builder.Services.AddEndpointsApiExplorer();
             builder.Services.AddSwaggerGen();
 
             var app = builder.Build();
 
-            // Configure the HTTP request pipeline.
+            //Swagger setup
             if (app.Environment.IsDevelopment())
             {
                 app.UseSwagger();
@@ -24,11 +35,13 @@ namespace Mentornote.Backend
             }
 
             app.UseAuthorization();
-
-
             app.MapControllers();
-
             app.Run();
         }
+    }
+
+    public class DeepgramOptions
+    {
+        public string ApiKey { get; set; }
     }
 }
