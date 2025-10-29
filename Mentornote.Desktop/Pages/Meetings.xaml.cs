@@ -1,4 +1,6 @@
-﻿using System;
+﻿using DocumentFormat.OpenXml.Drawing.Charts;
+using Microsoft.Extensions.DependencyInjection;
+using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
@@ -57,7 +59,7 @@ namespace Mentornote.Desktop.Pages
                 When = DateTime.Now.AddDays(-7).AddHours(2),
                 Status = "Completed"
             });
-    }
+        }
 
         private void OpenOverlay_Click(object sender, RoutedEventArgs e)
         {

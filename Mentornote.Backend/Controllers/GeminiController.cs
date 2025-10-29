@@ -1,25 +1,25 @@
 ﻿#nullable disable
-using System;
+using Microsoft.AspNetCore.Mvc;
+using System.Net.Http;
 using System.Text;
 using System.Text.Json;
 
-namespace Mentornote.Backend
+namespace Mentornote.Backend.Controllers
 {
-    public class GeminiServices
+    [ApiController]
+    [Route("api/gemini")]
+    public class GeminiController : Controller
     {
-        private readonly HttpClient _httpClient;
         private readonly string _apiKey;
-        private readonly ConversationMemory _memory;
-
-        public GeminiServices(IConfiguration config, ConversationMemory memory)
+        private readonly HttpClient _httpClient;
+        public GeminiController(IConfiguration configuration)
         {
-            _apiKey = config["Gemini:ApiKey"];
             _httpClient = new HttpClient();
-            _httpClient.Timeout = TimeSpan.FromSeconds(30); // prevent hangs
-            _memory = memory;
+            _apiKey = configuration["Gemini:ApiKey"];
         }
 
-        public async Task<string> GenerateSuggestionAsync(string transcript)
+        [HttpPost("suggest")]
+        public async Task<string> GenerateSuggestionAsync([FromBody] string transcript)
         {
             try
             {
@@ -33,14 +33,14 @@ namespace Mentornote.Backend
                         {
                             parts = new[]
                             {
-                                new { text = $"You are an AI meeting assistant. Suggest one concise, context-aware response for the following conversation:\n\n{transcript}" }
+                                new { text = $"You are sitting in this meeting. Reply with one simple friendly response to the last statment, in this transcript :\n\n{transcript}" }
                             }
                         }
                     },
                     generationConfig = new
                     {
                         temperature = 0.7,
-                        maxOutputTokens = 300,
+                        maxOutputTokens = 5000,
                     }
                 };
 
@@ -60,12 +60,16 @@ namespace Mentornote.Backend
                 }
 
                 using var doc = JsonDocument.Parse(body);
+
+                Console.WriteLine($"The Body{body}");
+                Console.WriteLine($"The Doc{doc}");
+
                 var text = doc.RootElement
-                    .GetProperty("candidates")[0]
-                    .GetProperty("content")
-                    .GetProperty("parts")[0]
-                    .GetProperty("text")
-                    .GetString();
+                            .GetProperty("candidates")[0]
+                            .GetProperty("content")
+                            .GetProperty("parts")[0]
+                            .GetProperty("text")
+                            .GetString();
 
                 return text ?? string.Empty;
             }

@@ -1,7 +1,6 @@
 ﻿#nullable disable
+using Mentornote.Backend;
 using Mentornote.Desktop.MVVM;
-using System;
-using System.Collections.Concurrent;
 using System.IO;
 using System.Net.Http;
 using System.Net.Http.Json;
@@ -10,7 +9,8 @@ using System.Text;
 using System.Windows;
 using System.Windows.Input;
 using System.Windows.Interop;
-using static System.Net.Mime.MediaTypeNames;
+using System.Text.Json;
+using System.Threading.Tasks;
 
 namespace Mentornote.Desktop
 {
@@ -20,6 +20,7 @@ namespace Mentornote.Desktop
         private bool _isListening = false;
         private static readonly HttpClient _http = new HttpClient();
         private string _meetingId;
+       
         public Overlay()
         {
             InitializeComponent();
@@ -45,7 +46,7 @@ namespace Mentornote.Desktop
                 _listener.StartListening();
                 _isListening = true;
                 Console.WriteLine("Started capturing system audio...");
-                RecordingCheck.Text = "Halooooooooooooooooo";
+                ListeningSection.Visibility = Visibility.Visible;
             }
             else 
             {                
@@ -55,6 +56,23 @@ namespace Mentornote.Desktop
                 RecordingCheck.Text = "Not Recording";
             }
         }
+
+        private async void Suggestion_Click(object sender, RoutedEventArgs e)
+        {
+            Helper helper = new();
+            StatementText.Text = "Generating suggestion...";
+            var transcript = await helper.GetFullTranscriptAsync();
+            StatementText.Text = transcript;
+            var json = JsonSerializer.Serialize(transcript);
+            var content = new StringContent(json, Encoding.UTF8, "application/json");
+
+            var response = await _http.PostAsync("http://localhost:5085/api/gemini/suggest", content);
+            response.EnsureSuccessStatusCode();
+
+            var suggestion = await response.Content.ReadAsStringAsync();
+            SuggestionText.Text = suggestion;
+        }
+
 
         private async void ProcessLiveAudio(object sender, byte[] chunk)
         {
@@ -74,20 +92,14 @@ namespace Mentornote.Desktop
                 // 2️⃣ Parse JSON into usable C# object
                 var result = await response.Content.ReadFromJsonAsync<TranscibeResponse>();
 
-                // 3️⃣ Extract both transcript and suggestion
-                string transcript = result?.Text ?? "";
-                string suggestion = result?.Suggestion ?? "";
+                string transcript = result?.Text ?? ""; 
 
-                // 4️⃣ Do something with them
-                Console.WriteLine($"🗣 Transcript: {transcript}");
-                Console.WriteLine($"💡 Suggestion: {suggestion}");
-
-                // later you’ll parse JSON into text + suggestion objects and show in UI
             }
             catch (Exception ex)
             {
                 Console.WriteLine($"❌ Error sending chunk: {ex.Message}");
             }
+
         }
 
         private async void ProcessAudioFile(object sender, string filePath)
@@ -121,6 +133,7 @@ namespace Mentornote.Desktop
         private void Close_Click(object sender, RoutedEventArgs e)
         {
             _listener?.StopListening();
+            ListeningSection.Visibility = Visibility.Collapsed;
             Close();
         }
 

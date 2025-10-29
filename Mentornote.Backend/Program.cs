@@ -11,9 +11,6 @@ namespace Mentornote.Backend
         {
             var builder = WebApplication.CreateBuilder(args);
 
-            //Deepgram Configuration Binding
-            builder.Services.Configure<DeepgramOptions>(
-                builder.Configuration.GetSection("Deepgram"));
 
             // Register your service with the key
             builder.Services.AddSingleton<Transcribe>();
@@ -40,8 +37,5 @@ namespace Mentornote.Backend
         }
     }
 
-    public class DeepgramOptions
-    {
-        public string ApiKey { get; set; }
-    }
+ 
 }
