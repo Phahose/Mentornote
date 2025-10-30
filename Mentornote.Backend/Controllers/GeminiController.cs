@@ -84,5 +84,30 @@ namespace Mentornote.Backend.Controllers
                 return "[Error contacting Gemini]";
             }
         }
+
+        [HttpPost("upload")]
+        public async Task<IActionResult> UploadMeetingFile(IFormFile file)
+        {
+            if (file == null || file.Length == 0)
+                return BadRequest("No file uploaded.");
+
+            var uploadDir = Path.Combine(Directory.GetCurrentDirectory(), "UploadedFiles");
+            Directory.CreateDirectory(uploadDir);
+
+            var filePath = Path.Combine(uploadDir, file.FileName);
+            using (var stream = new FileStream(filePath, FileMode.Create))
+            {
+                await file.CopyToAsync(stream);
+            }
+
+            // Return metadata
+            return Ok(new
+            {
+                file.FileName,
+                file.Length,
+                filePath
+            });
+        }
+
     }
 }

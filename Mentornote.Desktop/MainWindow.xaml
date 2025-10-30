@@ -5,7 +5,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:Mentornote.Desktop"
         mc:Ignorable="d"
-        Title="MainWindow" Height="450" Width="800">
+        Title="MainWindow" Height="500" Width="800" MinHeight="500" MinWidth="650">
     <Grid>
         <!-- Define two columns: a fixed-width sidebar and a flexible main area -->
         <Grid.ColumnDefinitions>
@@ -83,7 +83,7 @@
             <DockPanel LastChildFill="True"  
                 Margin="20,20,20,0">
                 
-                <!-- Page title on the left -->
+            <!-- Page title on the left -->
             <TextBlock  x:Name="HeaderTitle"
                         Text="Meetings"       
                         FontSize="20"

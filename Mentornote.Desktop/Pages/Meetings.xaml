@@ -27,7 +27,7 @@
                        Foreground="White"
                        DockPanel.Dock="Left"/>
 
-            <!-- The Add Meeting button is docked to the right of the header -->
+            <!-- The Add Meeting button -->
             <Button Content="＋ Add Meeting"
                     Background="#FF3A6EE8"
                     Foreground="White"
@@ -53,6 +53,14 @@
                       Foreground="White"
                       Margin="0,0,0,20"
                       Padding="4">
+
+
+                <ListView.ItemContainerStyle>
+                    <Style TargetType="ListViewItem">
+                        <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
+                    </Style>
+                </ListView.ItemContainerStyle>
+
                 <ListView.ItemTemplate>
                     <DataTemplate>
                         <Border Background="#FF2A2A2A"
@@ -61,6 +69,7 @@
                                 CornerRadius="8"
                                 Padding="12"
                                 Margin="0,6,0,6">
+
                             <StackPanel>
                                 <TextBlock Text="{Binding Title}"
                                            FontSize="15"
@@ -73,11 +82,22 @@
                                            Foreground="#FF7DBEFF"
                                            FontWeight="SemiBold"
                                            Margin="0,6,0,0"/>
+                                <Button Content="Load More"
+                                         Width="120"
+                                         Height="36"
+                                         Background="#FF3A3A3A"
+                                         Foreground="White"
+                                         BorderBrush="#FF4A4A4A"
+                                         HorizontalAlignment="Right"
+                                         VerticalAlignment="Top"
+                                        Click="LoadMore_Click"/>
                             </StackPanel>
                         </Border>
                     </DataTemplate>
                 </ListView.ItemTemplate>
+                
             </ListView>
+           
         </StackPanel>
 
     </Grid>

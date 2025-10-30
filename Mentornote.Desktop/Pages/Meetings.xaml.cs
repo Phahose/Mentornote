@@ -66,6 +66,12 @@ namespace Mentornote.Desktop.Pages
             var overlay = new Overlay();
             overlay.Show();
         }
+        private void LoadMore_Click(object sender, RoutedEventArgs e)
+        {
+            var meetingWindow = new MeetingWindow();
+            meetingWindow.Show();
+        }
+
     }
     // Simple model for display
     public class MeetingItem
