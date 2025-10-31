@@ -765,3 +765,129 @@ BEGIN
     WHERE CaptureId = @CaptureId;
 END;
 
+
+
+
+
+CREATE TABLE Appointments
+(
+    Id INT IDENTITY(1,1) PRIMARY KEY,
+    UserId INT NOT NULL,  
+    Title NVARCHAR(200) NOT NULL,
+    Description NVARCHAR(MAX) NULL,
+    StartTime DATETIME2 NULL,
+    EndTime DATETIME2 NULL,
+    CreatedAt DATETIME2 NOT NULL DEFAULT SYSUTCDATETIME(),
+    UpdatedAt DATETIME2 NULL,
+    Status NVARCHAR(50) NULL,
+    Notes NVARCHAR(MAX) NULL,
+
+    CONSTRAINT FK_Appointments_Users FOREIGN KEY (UserId)
+        REFERENCES dbo.Users(Id)
+);
+
+
+DROP Table AppointmentNotesVectors
+
+CREATE TABLE AppointmentNotes
+(
+    Id INT IDENTITY(1,1) PRIMARY KEY,
+    UserId INT NOT NULL, 
+    AppointmentId INT NOT NULL,
+    DocumentId UNIQUEIDENTIFIER NOT NULL DEFAULT NEWID(),
+    DocumentPath NVARCHAR(500) NOT NULL,
+    Chunk NVARCHAR(MAX) NOT NULL,
+    Vector NVARCHAR(MAX) NOT NULL,
+    CreatedAt DATETIME2 NOT NULL DEFAULT SYSUTCDATETIME(),
+
+    CONSTRAINT FK_AppointmentVectors_Appointments FOREIGN KEY (AppointmentId)
+        REFERENCES dbo.Appointments(Id),
+
+    CONSTRAINT FK_AppointmentVectors_Users FOREIGN KEY (UserId)
+        REFERENCES dbo.Users(Id)
+);
+
+CREATE OR ALTER PROCEDURE AddAppointment
+    @UserId INT,
+    @Title NVARCHAR(200),
+    @Description NVARCHAR(MAX) = NULL,
+    @StartTime DATETIME2 = NULL,
+    @EndTime DATETIME2 = NULL,
+    @Status NVARCHAR(50) = NULL,
+    @Notes NVARCHAR(MAX) = NULL
+AS
+BEGIN
+    SET NOCOUNT ON;
+
+    INSERT INTO Appointments (UserId, Title, Description, StartTime, EndTime, Status, Notes, CreatedAt)
+    VALUES (@UserId, @Title, @Description, @StartTime, @EndTime, @Status, @Notes, SYSUTCDATETIME());
+
+    SELECT SCOPE_IDENTITY() AS AppointmentId;
+END;
+
+CREATE OR ALTER PROCEDURE GetAppointments
+    @UserId INT
+AS
+BEGIN
+    SET NOCOUNT ON;
+
+    SELECT * FROM Appointments
+    WHERE UserId = @UserId
+    ORDER BY CreatedAt DESC;
+END;
+
+CREATE OR ALTER PROCEDURE GetAppointmentById
+    @UserId INT,
+    @Id INT
+AS
+BEGIN
+    SET NOCOUNT ON;
+
+    SELECT * FROM Appointments
+    WHERE Id = @Id AND UserId = @UserId;
+END;
+
+
+DROP PROCEDURE AddAppointmentNoteVector
+
+CREATE OR ALTER PROCEDURE AddAppointmentNote
+    @UserId INT,
+    @AppointmentId INT,
+    @DocumentPath NVARCHAR(500),
+    @Chunk NVARCHAR(MAX),
+    @Vector NVARCHAR(MAX)
+AS
+BEGIN
+    SET NOCOUNT ON;
+
+    INSERT INTO AppointmentNotes (UserId, AppointmentId, DocumentPath, Chunk, Vector, CreatedAt)
+    VALUES (@UserId, @AppointmentId, @DocumentPath, @Chunk, @Vector, SYSUTCDATETIME());
+
+    SELECT SCOPE_IDENTITY() AS VectorId;
+END;
+
+
+DROP PROCEDURE GetAppointmentVectors
+
+CREATE OR ALTER PROCEDURE GetAppointmentNotes
+    @UserId INT,
+    @AppointmentId INT
+AS
+BEGIN
+    SET NOCOUNT ON;
+
+    SELECT * FROM AppointmentNotes
+    WHERE UserId = @UserId AND AppointmentId = @AppointmentId
+    ORDER BY CreatedAt DESC;
+END;
+
+CREATE OR ALTER PROCEDURE DeleteAppointment
+    @UserId INT,
+    @Id INT
+AS
+BEGIN
+    SET NOCOUNT ON;
+
+    DELETE FROM Appointments
+    WHERE Id = @Id AND UserId = @UserId;
+END;

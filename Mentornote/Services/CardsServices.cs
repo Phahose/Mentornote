@@ -1,12 +1,6 @@
-﻿using Elfie.Serialization;
-using Markdig;
-using Mentornote.Models;
-using Microsoft.AspNetCore.Http.HttpResults;
-using Microsoft.CodeAnalysis.Elfie.Diagnostics;
+﻿using Mentornote.Models;
 using Microsoft.Data.SqlClient;
 using System.Data;
-using System.Text;
-using UglyToad.PdfPig;
 namespace Mentornote.Services
 {
     public class CardsServices

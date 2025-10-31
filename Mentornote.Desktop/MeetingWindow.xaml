@@ -5,9 +5,9 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:Mentornote.Desktop"
         mc:Ignorable="d"
-        Title="MeetingWindow" Height="450" Width="800">
+        Title="MeetingWindow" Height="650" Width="800" MinHeight="500" MinWidth="650">
     <Grid Background="#FF242424">
-
+       
         <!-- Define rows -->
         <Grid.RowDefinitions>
             <RowDefinition Height="50"/>
@@ -17,9 +17,9 @@
         </Grid.RowDefinitions>
 
         <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="*"/>
+            <ColumnDefinition Width="6*"/>
             <!-- Sidebar fixed width -->
-            <ColumnDefinition Width="200"/>
+            <ColumnDefinition Width="4*"/>
             <!-- Main content takes remaining space -->
         </Grid.ColumnDefinitions>
 
@@ -86,58 +86,120 @@
                   BorderBrush="#FF333333"
                   Foreground="White"
                   Height="150">
+                    <ListView.Style>
+                        <Style TargetType="ListView">
+                            <Style.Triggers>
+                                <!-- when there are no files -->
+                                <DataTrigger Binding="{Binding SelectedFiles.Count}" Value="0">
+                                    <Setter Property="Template">
+                                        <Setter.Value>
+                                            <ControlTemplate>
+                                                <TextBlock Text="No files Uploaded yet"
+                                           Foreground="#FFBFBFBF"
+                                           VerticalAlignment="Center"
+                                           HorizontalAlignment="Center"
+                                           FontStyle="Italic"/>
+                                            </ControlTemplate>
+                                        </Setter.Value>
+                                    </Setter>
+                                </DataTrigger>
+                            </Style.Triggers>
+                        </Style>
+                    </ListView.Style>
                     <ListView.ItemTemplate>
                         <DataTemplate>
-                            <DockPanel Margin="4">
+                            <StackPanel Margin="4" Orientation="Horizontal">
                                 <Button Content="X"
                                 Width="22" Height="22"
-                                Margin="0,0,6,0"
+                                Margin="20,0,6,0"
                                 DockPanel.Dock="Right"
                                 CommandParameter="{Binding}"
                                 Click="RemoveFile_Click"/>
                                 <TextBlock Text="{Binding FileName}"
                                    VerticalAlignment="Center"/>
-                            </DockPanel>
+                            </StackPanel>
                         </DataTemplate>
                     </ListView.ItemTemplate>
                 </ListView>
-
-                <!-- 🧩 File Selection Buttons -->
-                <StackPanel Orientation="Horizontal" HorizontalAlignment="Left" Margin="0,10,0,0">
-                    <Button Content="Choose Files"
-                    Width="120" Height="36"
-                    Margin="0,0,8,0"
-                    Background="MediumPurple"
-                    Foreground="White"
-                    Click="ChooseFiles_Click"/>
-                    <Button Content="Upload All"
-                    Width="120" Height="36"
-                    Background="MediumPurple"
-                    Foreground="White"
-                    Click="UploadAll_Click"/>
-                </StackPanel>
-
+ 
+               
                 <!-- 🧩 Uploaded Attachments -->
                 <TextBlock Text="Attachments"
                    Foreground="#FFBFBFBF"
                    FontSize="14"
                    Margin="0,20,0,0"/>
-                <ListView ItemsSource="{Binding Attachments}"
+                <ListView ItemsSource="{Binding SelectedFiles}"
                   Margin="0,5,0,5"
                   Background="#FF2A2A2A"
                   BorderBrush="#FF333333"
                   Foreground="White"
                   Height="200">
+                    <ListView.Style>
+                        <Style TargetType="ListView">
+                            <Style.Triggers>
+                                <!-- when there are no files -->
+                                <DataTrigger Binding="{Binding SelectedFiles.Count}" Value="0">
+                                    <Setter Property="Template">
+                                        <Setter.Value>
+                                            <ControlTemplate>
+                                                <TextBlock Text="No files selected yet"
+                                           Foreground="#FFBFBFBF"
+                                           VerticalAlignment="Center"
+                                           HorizontalAlignment="Center"
+                                           FontStyle="Italic"/>
+                                            </ControlTemplate>
+                                        </Setter.Value>
+                                    </Setter>
+                                </DataTrigger>
+                            </Style.Triggers>
+                        </Style>
+                    </ListView.Style>
                     <ListView.ItemTemplate>
                         <DataTemplate>
                             <StackPanel Orientation="Horizontal">
                                 <TextBlock Text="{Binding FileName}" Width="200"/>
-                                <Button Content="Open" Width="60" Margin="10,0,0,0"/>
+                                <Button Content="X"
+                                        Width="22" Height="22"
+                                        Margin="20,0,6,0"
+                                        DockPanel.Dock="Right"
+                                        CommandParameter="{Binding}"
+                                        Click="RemoveFile_Click"/>
                             </StackPanel>
                         </DataTemplate>
                     </ListView.ItemTemplate>
                 </ListView>
+                <!-- 🧩 File Selection Buttons -->
+                <StackPanel Orientation="Horizontal" HorizontalAlignment="Left" Margin="0,10,0,0">
+                    <Button Content="Choose Files"
+                            Width="80" Height="36"
+                            Margin="0,0,8,0"
+                            Background="MediumAquamarine"
+                            Foreground="White"
+                            Click="ChooseFiles_Click"/>
+
+                    <Button Content="Upload All"
+                            Width="80" Height="36"
+                            Background="MediumPurple"
+                            Foreground="White"
+                            Click="UploadAll_Click"/>
+                    
+                    <Button Content="Remove All"
+                            Width="80" Height="36"
+                            Background="MediumVioletRed"
+                            Margin="10,0,0,0"
+                            Foreground="White"
+                            Click="RemoveAllFile_Click"/>
+
+                    <!--<Button Content="Upload All"
+                            Width="120" Height="36"
+                            Background="MediumPurple"
+                            Foreground="White"
+                            Click="UploadAll_Click"
+                            IsEnabled="{Binding SelectedFiles.Count, Converter={StaticResource GreaterThanZeroConverter}}"/>-->
+                </StackPanel>
             </StackPanel>
+            
         </Border>
+      
     </Grid>
 </Window>

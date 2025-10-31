@@ -5,6 +5,7 @@ using System.Net.Http;
 using System.Windows;
 using System.Windows.Shapes;
 using static System.Net.WebRequestMethods;
+using static System.Windows.Forms.VisualStyles.VisualStyleElement.Window;
 
 namespace Mentornote.Desktop
 {
@@ -27,23 +28,40 @@ namespace Mentornote.Desktop
         public MeetingWindow()
         {
             InitializeComponent();
+            DataContext = this;
+        }
+
+        private void ChooseFiles_Click(object sender, RoutedEventArgs e)
+        {
+            var dialog = new Microsoft.Win32.OpenFileDialog
+            {
+                Title = "Select files to attach",
+                Filter = "Documents|*.pdf;*.docx;*.txt|All Files|*.*",
+                Multiselect = true
+            };
+
+            if (dialog.ShowDialog() == true)
+            {
+                foreach (var path in dialog.FileNames)
+                {
+                    if (!SelectedFiles.Any(f => f.FilePath == path))
+                        SelectedFiles.Add(new PendingFile { FilePath = path });
+                }
+            }
         }
 
         private async void UploadFile_Click(object sender, RoutedEventArgs e)
         {
             // 1️⃣ Pick a file from the user's system
-            var dialog = new Microsoft.Win32.OpenFileDialog
+            if (SelectedFiles.Count == 0)
             {
-                Title = "Select a file to attach",
-                Filter = "Documents|*.pdf;*.docx;*.txt|All Files|*.*",
-                Multiselect = false
-            };
-
-            if (dialog.ShowDialog() == true)
+                System.Windows.MessageBox.Show("No files selected to upload!");
+                return;
+            }
+            foreach (var pendingFile in SelectedFiles)
             {
-                string filePath = dialog.FileName;
+                string filePath = pendingFile.FileName;
                 string fileName = System.IO.Path.GetFileName(filePath);
-
                 try
                 {
                     // 2️⃣ Prepare the multipart form data
@@ -55,19 +73,16 @@ namespace Mentornote.Desktop
 
                     // 3️⃣ Send to your backend API
                     // Adjust URL to your actual backend route
-                    var response = await _http.PostAsync( "http://127.0.0.1:5085/api/context/upload",
-                        form);
+                    var response = await _http.PostAsync("http://127.0.0.1:5085/api/context/upload", form);
 
                     // 4️⃣ Handle response
                     if (response.IsSuccessStatusCode)
                     {
-                       System.Windows.MessageBox.Show($"✅ {fileName} uploaded successfully!",
-                                        "Upload Complete",
-                                        MessageBoxButton.OK,
-                                        MessageBoxImage.Information);
+                        System.Windows.MessageBox.Show($"✅ {fileName} uploaded successfully!",
+                                         "Upload Complete",
+                                         MessageBoxButton.OK,
+                                         MessageBoxImage.Information);
 
-                        // Optionally refresh the attachment list here
-                        // await LoadAttachmentsAsync();
                     }
                     else
                     {
@@ -86,6 +101,38 @@ namespace Mentornote.Desktop
                 }
             }
         }
+      
+        private void RemoveFile_Click(object sender, RoutedEventArgs e)
+        {
+            if ((sender as FrameworkElement)?.DataContext is PendingFile file)
+            {
+                var result = System.Windows.MessageBox.Show(
+                    $"Remove '{file.FileName}' from selected files?",
+                    "Confirm Remove",
+                    MessageBoxButton.YesNo,
+                    MessageBoxImage.Question);
+
+                if (result == MessageBoxResult.Yes)
+                    SelectedFiles.Remove(file);
+            }
+        }
+        private void RemoveAllFile_Click(object sender, RoutedEventArgs e)
+        {
+            SelectedFiles.Clear();
+        }
+
+        private void UploadAll_Click(object sender, RoutedEventArgs e)
+        {
+            if (SelectedFiles.Count == 0)
+            {
+                System.Windows.MessageBox.Show("No files selected to upload!");
+                return;
+            }
+
+            // upload logic
+        }
+
+
     }
     public class PendingFile
     {
