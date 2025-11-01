@@ -11,12 +11,11 @@ namespace Mentornote.Backend
         private readonly string _apiKey;
         private readonly ConversationMemory _memory;
 
-        public GeminiServices(IConfiguration config, ConversationMemory memory)
+        public GeminiServices(IConfiguration config)
         {
             _apiKey = config["Gemini:ApiKey"];
             _httpClient = new HttpClient();
             _httpClient.Timeout = TimeSpan.FromSeconds(30); // prevent hangs
-            _memory = memory;
         }
 
         public async Task<string> GenerateSuggestionAsync(string transcript)

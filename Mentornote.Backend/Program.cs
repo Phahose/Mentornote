@@ -1,6 +1,7 @@
 #nullable disable
 using System.Text;
 using Mentornote.Backend;
+using Mentornote.Backend.Services;
 using Microsoft.Extensions.Options;
 
 namespace Mentornote.Backend

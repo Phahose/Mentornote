@@ -50,7 +50,7 @@ namespace Mentornote.Desktop
             }
         }
 
-        private async void UploadFile_Click(object sender, RoutedEventArgs e)
+        private async void UploadAll_Click(object sender, RoutedEventArgs e)
         {
             // 1️⃣ Pick a file from the user's system
             if (SelectedFiles.Count == 0)
@@ -60,20 +60,24 @@ namespace Mentornote.Desktop
             }
             foreach (var pendingFile in SelectedFiles)
             {
-                string filePath = pendingFile.FileName;
+                string filePath = pendingFile.FilePath;
                 string fileName = System.IO.Path.GetFileName(filePath);
                 try
-                {
-                    // 2️⃣ Prepare the multipart form data
+                { 
                     using var form = new MultipartFormDataContent();
-                    using var fileStream = System.IO.File.OpenRead(filePath);
+                    // Create file content
+                    using var fileStream = new FileStream(filePath, FileMode.Open, FileAccess.Read);
                     var fileContent = new StreamContent(fileStream);
+                    fileContent.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue("application/octet-stream");
 
-                    form.Add(fileContent, "file", fileName);
-
+                    // Add file and other fields to form
+                    form.Add(fileContent, "File", fileName);
+                    form.Add(new StringContent("1"), "AppointmentId");
+                    form.Add(new StringContent("1"), "UserId");       
+                    
                     // 3️⃣ Send to your backend API
                     // Adjust URL to your actual backend route
-                    var response = await _http.PostAsync("http://127.0.0.1:5085/api/context/upload", form);
+                    var response = await _http.PostAsync("http://127.0.0.1:5085/api/appointments/upload", form);
 
                     // 4️⃣ Handle response
                     if (response.IsSuccessStatusCode)
@@ -121,16 +125,6 @@ namespace Mentornote.Desktop
             SelectedFiles.Clear();
         }
 
-        private void UploadAll_Click(object sender, RoutedEventArgs e)
-        {
-            if (SelectedFiles.Count == 0)
-            {
-                System.Windows.MessageBox.Show("No files selected to upload!");
-                return;
-            }
-
-            // upload logic
-        }
 
 
     }

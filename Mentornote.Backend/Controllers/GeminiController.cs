@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using System.Net.Http;
 using System.Text;
 using System.Text.Json;
+using static System.Net.WebRequestMethods;
 
 namespace Mentornote.Backend.Controllers
 {
@@ -109,5 +110,45 @@ namespace Mentornote.Backend.Controllers
             });
         }
 
+        [HttpPost("notevector")]
+        public async Task<string> GetEmbeddingAsync(string text)
+        {
+            try
+            {
+                // 1️⃣ Define endpoint correctly
+                var endpoint = $"https://generativelanguage.googleapis.com/v1beta/models/embedding-001:embedContent?key={_apiKey}";
+
+                var body = new
+                {
+                    model = "models/embedding-001",
+                    content = new
+                    {
+                        parts = new[]
+                        {
+                      new { text = text }
+                    }
+                    }
+                };
+
+                // 3️⃣ Make request
+                var res = await _httpClient.PostAsJsonAsync(endpoint, body);
+
+                // 4️⃣ Log or handle detailed error info before throwing
+                var responseJson = await res.Content.ReadAsStringAsync();
+
+                if (!res.IsSuccessStatusCode)
+                {
+                    throw new Exception($"Embedding request failed: {res.StatusCode} - {responseJson}");
+                }
+                return responseJson;
+
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"❌ Embedding request failed: {ex.Message}");
+                return $"Error: {ex.Message}";
+            }            
+        }
     }
 }
+
