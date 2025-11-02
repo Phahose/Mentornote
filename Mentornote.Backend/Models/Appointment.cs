@@ -14,6 +14,6 @@ namespace Mentornote.Backend.Models
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
         public DateTime? UpdatedAt { get; set; }
         // 🔗 Navigation property
-        public ICollection<AppointmentNote>? AppointmentNote { get; set; }
+        public ICollection<AppointmentDocuments>? AppointmentNote { get; set; }
     }
 }

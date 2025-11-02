@@ -102,6 +102,43 @@ namespace Mentornote.Backend.Services
                 return 0;
             }
         }
-
-    }
+        
+        public void AddAppointmentNote(AppointmentDocuments appointmentNote)
+        {
+            try
+            {
+                using SqlConnection connection = new SqlConnection(connectionString);
+                {
+                    connection.Open();
+                    SqlCommand cmd = new SqlCommand
+                    {
+                        CommandType = CommandType.StoredProcedure,
+                        Connection = connection,
+                        CommandText = "AddAppointmentNote"
+                    };
+                    // Parameters
+                    cmd.Parameters.Add(new SqlParameter("@AppointmentId", SqlDbType.Int)
+                    {
+                        Direction = ParameterDirection.Input,
+                        SqlValue = appointmentNote.AppointmentId
+                    });
+                    cmd.Parameters.Add(new SqlParameter("@Content", SqlDbType.NVarChar)
+                    {
+                        Direction = ParameterDirection.Input,
+                        SqlValue = appointmentNote.Content ?? (object)DBNull.Value
+                    });
+                    cmd.Parameters.Add(new SqlParameter("@CreatedAt", SqlDbType.DateTime2)
+                    {
+                        Direction = ParameterDirection.Input,
+                        SqlValue = appointmentNote.CreatedAt
+                    });
+                    cmd.ExecuteNonQuery();
+                    connection.Close();
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error adding appointment note: {ex.Message}");
+            }
+        }
 }

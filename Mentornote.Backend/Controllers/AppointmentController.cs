@@ -55,7 +55,7 @@ namespace Mentornote.Backend.Controllers
             };
 
 
-            AppointmentNote newNote = new AppointmentNote
+            AppointmentDocuments newNote = new AppointmentDocuments
             {
                 AppointmentId = AppointmentId,
                 UserId = UserId,
