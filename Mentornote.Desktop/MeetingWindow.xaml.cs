@@ -78,7 +78,7 @@ namespace Mentornote.Desktop
                 try
                 { 
                     // Create file content
-                    using var fileStream = new FileStream(filePath, FileMode.Open, FileAccess.Read);
+                    var fileStream = new FileStream(filePath, FileMode.Open, FileAccess.Read);
                     var fileContent = new StreamContent(fileStream);
                     fileContent.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue("application/octet-stream");
                     
