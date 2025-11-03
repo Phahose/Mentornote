@@ -1,4 +1,5 @@
-﻿using Microsoft.Win32;
+﻿using Mentornote.Backend.DTO;
+using Microsoft.Win32;
 using System.Collections.ObjectModel;
 using System.IO;
 using System.Net.Http;
@@ -14,16 +15,22 @@ namespace Mentornote.Desktop
     /// </summary>
     public partial class MeetingWindow : Window
     {
-        public string DesciptionText{ get; set;} = "We will be talking about the project roadmap and key milestones for the upcoming quarter.";
+        public string DescriptionText{ get; set;} = "We will be talking about the project roadmap and key milestones for the upcoming quarter.";
         private static readonly HttpClient _http = new HttpClient();
         public ObservableCollection<PendingFile> SelectedFiles { get; set; } = new();
+        public string MeetingTopic { get; set; } = "Project Roadmap Discussion";
+        public string MeetingDate { get; set; } = "September 15, 2024";
+        public string MeetingTime { get; set; } = "10:00 AM - 11:00 AM";
+        public string MeetingLocation { get; set; } = "Conference Room A";
+        public string OrganizerName { get; set; } = "Alice Johnson";
+        public string Descrption { get; set; } = "Meeting Description";
 
 
-        /*       private async void Window_Loaded(object sender, RoutedEventArgs e)
-               {
-                   // Called once when window opens
-                   DesciptionText = "We We will ber Talking about the ";
-               }*/
+        //private async void Window_Loaded(object sender, RoutedEventArgs e)
+        //{
+        //    // Called once when window opens
+        //    DesciptionText = "We We will ber Talking about the ";
+        //}
 
         public MeetingWindow()
         {
@@ -58,43 +65,31 @@ namespace Mentornote.Desktop
                 System.Windows.MessageBox.Show("No files selected to upload!");
                 return;
             }
+            List<FileDTO> uploadedFilePaths = new List<FileDTO>();
+
+       
+
+
             foreach (var pendingFile in SelectedFiles)
             {
                 string filePath = pendingFile.FilePath;
                 string fileName = System.IO.Path.GetFileName(filePath);
+                
                 try
                 { 
-                    using var form = new MultipartFormDataContent();
                     // Create file content
                     using var fileStream = new FileStream(filePath, FileMode.Open, FileAccess.Read);
                     var fileContent = new StreamContent(fileStream);
                     fileContent.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue("application/octet-stream");
-
-                    // Add file and other fields to form
-                    form.Add(fileContent, "File", fileName);
-                    form.Add(new StringContent("1"), "AppointmentId");
-                    form.Add(new StringContent("1"), "UserId");       
                     
-                    // 3️⃣ Send to your backend API
-                    // Adjust URL to your actual backend route
-                    var response = await _http.PostAsync("http://127.0.0.1:5085/api/appointments/upload", form);
-
-                    // 4️⃣ Handle response
-                    if (response.IsSuccessStatusCode)
+                    FileDTO fileDTO = new FileDTO
                     {
-                        System.Windows.MessageBox.Show($"✅ {fileName} uploaded successfully!",
-                                         "Upload Complete",
-                                         MessageBoxButton.OK,
-                                         MessageBoxImage.Information);
+                        FileContent = fileContent,
+                        FileName = fileName
+                    };
+                    uploadedFilePaths.Add(fileDTO);
 
-                    }
-                    else
-                    {
-                        System.Windows.MessageBox.Show($"❌ Upload failed: {response.ReasonPhrase}",
-                                        "Error",
-                                        MessageBoxButton.OK,
-                                        MessageBoxImage.Error);
-                    }
+                  
                 }
                 catch (Exception ex)
                 {
@@ -103,6 +98,46 @@ namespace Mentornote.Desktop
                                     MessageBoxButton.OK,
                                     MessageBoxImage.Error);
                 }
+            }
+            
+            try
+            {
+                using var appointment = new MultipartFormDataContent();
+                appointment.Add(new StringContent("1"), "UserId");
+                appointment.Add(new StringContent(TitleInput.Text), "Title");
+                appointment.Add(new StringContent(AppointmentDescription.Text), "Description");
+                appointment.Add(new StringContent(OrganizerInput.Text), "Organizer");
+                appointment.Add(new StringContent(DateInput.Text), "Date");
+                appointment.Add(new StringContent(StartTimeInput.Text), "StartTime");
+                appointment.Add(new StringContent(EndTimeInput.Text), "EndTime");
+
+                foreach (var file in uploadedFilePaths)
+                {
+                    appointment.Add(file.FileContent, "Files", file.FileName);
+                }
+                // 3️⃣ Send to backend API
+                var response = await _http.PostAsync("http://127.0.0.1:5085/api/appointments/upload", appointment);
+
+                // 4️⃣ Handle response
+                if (response.IsSuccessStatusCode)
+                {
+                    System.Windows.MessageBox.Show($"✅ uploaded successfully!",
+                                     "Upload Complete",
+                                     MessageBoxButton.OK,
+                                     MessageBoxImage.Information);
+                }
+                else
+                {
+                    System.Windows.MessageBox.Show($"❌ Upload failed: {response.ReasonPhrase}",
+                                    "Error",
+                                    MessageBoxButton.OK,
+                                    MessageBoxImage.Error);
+                }
+            }
+            catch (Exception)
+            {
+
+                throw;
             }
         }
       

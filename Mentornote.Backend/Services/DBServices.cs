@@ -102,8 +102,8 @@ namespace Mentornote.Backend.Services
                 return 0;
             }
         }
-        
-        public void AddAppointmentNote(AppointmentDocuments appointmentNote)
+
+        public void AddAppointmentDocument(AppointmentDocuments appointmentDoc)
         {
             try
             {
@@ -117,20 +117,30 @@ namespace Mentornote.Backend.Services
                         CommandText = "AddAppointmentNote"
                     };
                     // Parameters
+                    cmd.Parameters.Add(new SqlParameter("@UserId", SqlDbType.Int)
+                    {
+                        Direction = ParameterDirection.Input,
+                        SqlValue = appointmentDoc.UserId,
+                    });
                     cmd.Parameters.Add(new SqlParameter("@AppointmentId", SqlDbType.Int)
                     {
                         Direction = ParameterDirection.Input,
-                        SqlValue = appointmentNote.AppointmentId
+                        SqlValue = appointmentDoc.AppointmentId
                     });
-                    cmd.Parameters.Add(new SqlParameter("@Content", SqlDbType.NVarChar)
+                    cmd.Parameters.Add(new SqlParameter("@DocumentPath", SqlDbType.NVarChar)
                     {
                         Direction = ParameterDirection.Input,
-                        SqlValue = appointmentNote.Content ?? (object)DBNull.Value
+                        SqlValue = appointmentDoc.DocumentPath ?? (object)DBNull.Value
                     });
-                    cmd.Parameters.Add(new SqlParameter("@CreatedAt", SqlDbType.DateTime2)
+                    cmd.Parameters.Add(new SqlParameter("@Chunk", SqlDbType.NVarChar)
                     {
                         Direction = ParameterDirection.Input,
-                        SqlValue = appointmentNote.CreatedAt
+                        SqlValue = appointmentDoc.Chunk ?? (object)DBNull.Value
+                    });
+                    cmd.Parameters.Add(new SqlParameter("@Vector", SqlDbType.NVarChar)
+                    {
+                        Direction = ParameterDirection.Input,
+                        SqlValue = appointmentDoc.Vector ?? (object)DBNull.Value
                     });
                     cmd.ExecuteNonQuery();
                     connection.Close();
@@ -141,4 +151,5 @@ namespace Mentornote.Backend.Services
                 Console.WriteLine($"Error adding appointment note: {ex.Message}");
             }
         }
+    }
 }

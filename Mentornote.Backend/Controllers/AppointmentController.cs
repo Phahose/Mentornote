@@ -16,55 +16,64 @@ namespace Mentornote.Backend.Controllers
   
 
         [HttpPost("upload")]
-        public async Task<IActionResult> UploadFile([FromForm] AppointmentFileUploadDTO appointmentFileUpload)
+        public async Task<IActionResult> UploadFile([FromForm] AppointmentDTO appointmentDTO)
         {
-            var file = appointmentFileUpload.File;
-            var AppointmentId = appointmentFileUpload.AppointmentId;
-            var UserId = appointmentFileUpload.UserId;
-            
-            if (file == null || file.Length == 0)
+            var files = appointmentDTO.Files; 
+            var UserId = appointmentDTO.UserId;
+            List<string> processedFileVectors = new List<string>();
+            List<string> documentPaths = new List<string>();
+
+            foreach (var file in files)
             {
-                return BadRequest("No file uploaded.");
+                if (file == null || file.Length == 0)
+                {
+                    return BadRequest("No file uploaded.");
+                }
+                // 1️⃣ Save to local directory
+                var uploadDir = Path.Combine(Directory.GetCurrentDirectory(), "App_Data", "UploadedFiles");
+                if (!Directory.Exists(uploadDir))
+                {
+                    Directory.CreateDirectory(uploadDir);
+                }
+
+                var filePath = Path.Combine(uploadDir, file.FileName);
+                documentPaths.Add(filePath);
+
+                using (var stream = new FileStream(filePath, FileMode.Create))
+                {
+                    await file.CopyToAsync(stream);
+                }
+
+                var (textChunk, vectorJson) = await fileServices.ProcessFileAsync(filePath);
+                processedFileVectors.Add(vectorJson);
             }
-            // 1️⃣ Save to local directory
-            var uploadDir = Path.Combine(Directory.GetCurrentDirectory(), "App_Data", "UploadedFiles");
-            if (!Directory.Exists(uploadDir))
-            {
-                Directory.CreateDirectory(uploadDir);
-            }
-
-            var filePath = Path.Combine(uploadDir, file.FileName);
-
-            using (var stream = new FileStream(filePath, FileMode.Create))
-            {
-                await file.CopyToAsync(stream);
-            }
-
-            var result = fileServices.ProcessFileAsync(filePath);
-
+               
 
             Appointment appointment = new Appointment()
             {
-                Id = AppointmentId,
                 UserId = UserId,
-                Title = "Sample Appointment",
-                Description = "This is a sample appointment description.",
-                StartTime = DateTime.Now,
-                EndTime = DateTime.Now.AddHours(1),
+                Title = appointmentDTO.Title,
+                Description = appointmentDTO.Description,
+                StartTime = appointmentDTO.StartTime,
+                EndTime = appointmentDTO.EndTime,
                 Status = "Scheduled"
             };
 
+            var AppointmentId = dBServices.AddAppointment(appointment, UserId);
 
-            AppointmentDocuments newNote = new AppointmentDocuments
+            foreach (var (filePath, vector) in documentPaths.Zip(processedFileVectors, (path, vec) => (path, vec)))
             {
-                AppointmentId = AppointmentId,
-                UserId = UserId,
-                DocumentPath = filePath,
-                Vector = result.Result.ToString(),
-            };
-
-            // Combe back here to fix
-            return Ok(new { File = file.FileName, Path = filePath });
+                AppointmentDocuments newDoc = new AppointmentDocuments
+                {
+                    AppointmentId = AppointmentId,
+                    UserId = UserId,
+                    DocumentPath = filePath,
+                    Vector = vector,
+                };
+                dBServices.AddAppointmentDocument(newDoc);
+            }
+            
+            return Ok();
         }
     }
 }
