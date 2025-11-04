@@ -796,8 +796,6 @@ CREATE TABLE AppointmentNotes
     AppointmentId INT NOT NULL,
     DocumentId UNIQUEIDENTIFIER NOT NULL DEFAULT NEWID(),
     DocumentPath NVARCHAR(500) NOT NULL,
-    Chunk NVARCHAR(MAX) NOT NULL,
-    Vector NVARCHAR(MAX) NOT NULL,
     CreatedAt DATETIME2 NOT NULL DEFAULT SYSUTCDATETIME(),
 
     CONSTRAINT FK_AppointmentVectors_Appointments FOREIGN KEY (AppointmentId)
@@ -890,4 +888,31 @@ BEGIN
 
     DELETE FROM Appointments
     WHERE Id = @Id AND UserId = @UserId;
+END;
+
+CREATE TABLE AppointmentDocumentEmbeddings (
+    EmbeddingId INT IDENTITY(1,1) PRIMARY KEY,
+    AppointmentDocumentId INT FOREIGN KEY REFERENCES AppointmentNotes(Id),
+    ChunkIndex INT NOT NULL,
+    ChunkText NVARCHAR(MAX),
+    Vector NVARCHAR(MAX),
+    CreatedAt DATETIME2 DEFAULT SYSUTCDATETIME()
+);
+
+CREATE OR ALTER PROCEDURE AddAppointmentDocumentEmbedding
+    @AppointmentDocumentId INT,
+    @ChunkIndex INT,
+    @ChunkText NVARCHAR(MAX),
+    @Vector NVARCHAR(MAX)
+AS
+BEGIN
+    SET NOCOUNT ON;
+
+    INSERT INTO AppointmentDocumentEmbeddings
+        (AppointmentDocumentId, ChunkIndex, ChunkText, Vector, CreatedAt)
+    VALUES
+        (@AppointmentDocumentId, @ChunkIndex, @ChunkText, @Vector, SYSUTCDATETIME());
+
+    -- Return the ID of the inserted embedding (if you need it in C#)
+    SELECT CAST(SCOPE_IDENTITY() AS INT) AS EmbeddingId;
 END;

@@ -35,6 +35,7 @@ namespace Mentornote.Desktop
         public MeetingWindow()
         {
             InitializeComponent();
+            PopulateTimeCombos();
             DataContext = this;
         }
 
@@ -160,8 +161,25 @@ namespace Mentornote.Desktop
             SelectedFiles.Clear();
         }
 
+        private void PopulateTimeCombos()
+        {
+            var start = DateTime.Today;
+            var end = start.AddDays(1);
 
+            // Generate times every 30 minutes
+            for (var time = start; time < end; time = time.AddMinutes(30))
+            {
+                string displayTime = time.ToString("h:mm tt"); // 12-hour format, e.g. "5:30 PM"
+                StartTimeInput.Items.Add(displayTime);
+                EndTimeInput.Items.Add(displayTime);
+            }
 
+            // Optionally preselect current nearest half-hour
+            var now = DateTime.Now;
+            var nearestHalfHour = now.AddMinutes(30 - now.Minute % 30).ToString("h:mm tt");
+            StartTimeInput.Text = nearestHalfHour;
+            EndTimeInput.Text = DateTime.Now.AddHours(1).ToString("h:mm tt");
+        }
     }
     public class PendingFile
     {

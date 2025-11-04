@@ -54,22 +54,23 @@
                 <TextBox x:Name="TitleInput" Margin="0,5,0,15" Background="#FF2A2A2A"
                             Foreground="White"
                             BorderBrush="#FF3A3A3A"
-                            Padding="2"/>
+                            Padding="2"
+                            Text="Tennis Meet"/>
                 
-                <TextBlock x:Name="AppointmentDescription"
-                           Text="Appointment Description"
+                <TextBlock Text="Appointment Description"
                            Foreground="#FFBFBFBF"
                            FontSize="14"
                            Margin="0,0,0,5"/>
-                
-                <TextBox Text="{Binding Description}"
+
+                <TextBox x:Name="AppointmentDescription"
                          AcceptsReturn="True"
                          Height="120"
                          TextWrapping="Wrap"
                          Background="#FF2A2A2A"
                          Foreground="White"
                          BorderBrush="#FF3A3A3A"
-                         Padding="8"/>
+                         Padding="8"
+                         Text="The Meeting with tennis this is a test appointment to see ow the program works"/>
                 
                 <TextBlock Text="Organizer Name:"
                            Foreground="#FFBFBFBF"
@@ -79,37 +80,38 @@
                 <TextBox x:Name="OrganizerInput" Margin="0,5,0,15" Background="#FF2A2A2A"
                             Foreground="White"
                             BorderBrush="#FF3A3A3A"
-                            Padding="2"/>
+                            Padding="2"
+                            Text="Nicholas Ekwom"/>
 
                 <TextBlock Text="Appointment Date:" 
                            Foreground="#FFBFBFBF"
                            FontSize="14"
                            Margin="0,0,0,5"/>
                 <DatePicker x:Name="DateInput" Margin="0,5,0,15" Background="#FF2A2A2A"
-                            Foreground="White"
+                            Foreground="black"
                             BorderBrush="#FF3A3A3A"
-                            Padding="2"/>
+                            Padding="2"
+                            Text="02-11-2025"/>
 
                 <StackPanel Orientation="Horizontal" Margin="0,5,0,15">
                     <StackPanel Margin="0,0,20,0">
                         <TextBlock Text="Start Time:"  
-                                   Foreground="#FFBFBFBF"
+                                   Foreground="White"
                                    FontSize="14"
                                    Margin="0,0,0,5"/>
-                        <TextBox x:Name="StartTimeInput" Width="100" Background="#FF2A2A2A"
-                                 Foreground="White"
-                                 BorderBrush="#FF3A3A3A"
-                                 Padding="2"/>
+                        <ComboBox x:Name="StartTimeInput"
+                                  Width="120"
+                                  IsEditable="True"
+                                  Margin="0,0,20,0" />
                     </StackPanel>
                     <StackPanel>
                         <TextBlock Text="End Time:"
-                                    Foreground="#FFBFBFBF"
+                                    Foreground="White"
                                     FontSize="14"
                                     Margin="0,0,0,5"/>
-                        <TextBox x:Name="EndTimeInput" Width="100" Background="#FF2A2A2A"
-                                 Foreground="White"
-                                 BorderBrush="#FF3A3A3A"
-                                 Padding="2"/>
+                        <ComboBox x:Name="EndTimeInput"
+                                  Width="120"
+                                  IsEditable="True"/>
                     </StackPanel>
                 </StackPanel>
 

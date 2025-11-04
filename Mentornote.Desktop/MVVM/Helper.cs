@@ -27,5 +27,16 @@ namespace Mentornote.Desktop.MVVM
                 return string.Empty;
             }
         }
+
+        public List<string> ChunkText(string fullText, int maxChunkSize = 1500)
+        {
+            var chunks = new List<string>();
+            for (int i = 0; i < fullText.Length; i += maxChunkSize)
+            {
+                var chunk = fullText.Substring(i, Math.Min(maxChunkSize, fullText.Length - i));
+                chunks.Add(chunk);
+            }
+            return chunks;
+        }
     }
 }

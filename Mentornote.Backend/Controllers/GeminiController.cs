@@ -1,4 +1,5 @@
 ﻿#nullable disable
+using Mentornote.Backend.DTO;
 using Microsoft.AspNetCore.Mvc;
 using System.Net.Http;
 using System.Text;
@@ -111,10 +112,15 @@ namespace Mentornote.Backend.Controllers
         }
 
         [HttpPost("notevector")]
-        public async Task<string> GetEmbeddingAsync(string text)
+        public async Task<string> GetEmbeddingAsync([FromBody] NoteContentDTO noteContentDTO)
         {
             try
             {
+                Console.WriteLine($"Received payload: {JsonSerializer.Serialize(noteContentDTO)}");
+                if (noteContentDTO == null || string.IsNullOrWhiteSpace(noteContentDTO.Content))
+                {
+                    return "Error: Text is null or empty.";
+                }
                 // 1️⃣ Define endpoint correctly
                 var endpoint = $"https://generativelanguage.googleapis.com/v1beta/models/embedding-001:embedContent?key={_apiKey}";
 
@@ -125,11 +131,15 @@ namespace Mentornote.Backend.Controllers
                     {
                         parts = new[]
                         {
-                      new { text = text }
-                    }
+                             new { text = noteContentDTO.Content }
+                        }
                     }
                 };
 
+                Console.WriteLine(JsonSerializer.Serialize(body, new JsonSerializerOptions
+                {
+                    WriteIndented = true
+                }));
                 // 3️⃣ Make request
                 var res = await _httpClient.PostAsJsonAsync(endpoint, body);
 

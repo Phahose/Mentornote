@@ -80,18 +80,13 @@ namespace Mentornote.Backend.Services
                         SqlValue = appointment.Notes ?? (object)DBNull.Value
                     });
 
-                    // Output param for AppointmentId
-                    var outputIdParam = new SqlParameter("@NewAppointmentId", SqlDbType.Int)
-                    {
-                        Direction = ParameterDirection.Output
-                    };
 
-                    cmd.Parameters.Add(outputIdParam);
 
-                    cmd.ExecuteNonQuery();
+                    appointmentId = Convert.ToInt32((decimal)cmd.ExecuteScalar());
+
                     connection.Close();
 
-                    appointmentId = (int)outputIdParam.Value;
+                    //appointmentId = (int)outputIdParam.Value;
                 }
 
                 return appointmentId;
@@ -103,7 +98,7 @@ namespace Mentornote.Backend.Services
             }
         }
 
-        public void AddAppointmentDocument(AppointmentDocuments appointmentDoc)
+        public int AddAppointmentDocument(AppointmentDocuments appointmentDoc)
         {
             try
             {
@@ -114,7 +109,7 @@ namespace Mentornote.Backend.Services
                     {
                         CommandType = CommandType.StoredProcedure,
                         Connection = connection,
-                        CommandText = "AddAppointmentNote"
+                        CommandText = "AddAppointmentDocument"
                     };
                     // Parameters
                     cmd.Parameters.Add(new SqlParameter("@UserId", SqlDbType.Int)
@@ -132,24 +127,37 @@ namespace Mentornote.Backend.Services
                         Direction = ParameterDirection.Input,
                         SqlValue = appointmentDoc.DocumentPath ?? (object)DBNull.Value
                     });
-                    cmd.Parameters.Add(new SqlParameter("@Chunk", SqlDbType.NVarChar)
-                    {
-                        Direction = ParameterDirection.Input,
-                        SqlValue = appointmentDoc.Chunk ?? (object)DBNull.Value
-                    });
-                    cmd.Parameters.Add(new SqlParameter("@Vector", SqlDbType.NVarChar)
-                    {
-                        Direction = ParameterDirection.Input,
-                        SqlValue = appointmentDoc.Vector ?? (object)DBNull.Value
-                    });
-                    cmd.ExecuteNonQuery();
+
+                    var result = cmd.ExecuteScalar();
+                   
+
                     connection.Close();
+
+                    return Convert.ToInt32(result); 
                 }
             }
             catch (Exception ex)
             {
                 Console.WriteLine($"Error adding appointment note: {ex.Message}");
+                return 0;
             }
         }
+
+        public int AddAppointmentDocumentEmbedding(AppointmentDocumentEmbedding embedding)
+        {
+            using var connection = new SqlConnection(connectionString);
+            using var command = new SqlCommand("AddAppointmentDocumentEmbedding", connection);
+            command.CommandType = CommandType.StoredProcedure;
+
+            command.Parameters.AddWithValue("@AppointmentDocumentId", embedding.AppointmentDocumentId);
+            command.Parameters.AddWithValue("@ChunkIndex", embedding.ChunkIndex);
+            command.Parameters.AddWithValue("@ChunkText", embedding.ChunkText);
+            command.Parameters.AddWithValue("@Vector", embedding.Vector);
+
+            connection.Open();
+            var result = command.ExecuteScalar();
+            return Convert.ToInt32(result); // returns the new EmbeddingId
+        }
+
     }
 }

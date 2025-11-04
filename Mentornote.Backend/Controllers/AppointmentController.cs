@@ -1,8 +1,9 @@
-﻿using Mentornote.Backend.Models;
+﻿using Mentornote.Backend.DTO;
+using Mentornote.Backend.Models;
 using Mentornote.Backend.Services;
-using Mentornote.Backend.DTO;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Data.SqlClient;
+using System.Numerics;
 
 namespace Mentornote.Backend.Controllers
 {
@@ -20,8 +21,22 @@ namespace Mentornote.Backend.Controllers
         {
             var files = appointmentDTO.Files; 
             var UserId = appointmentDTO.UserId;
-            List<string> processedFileVectors = new List<string>();
-            List<string> documentPaths = new List<string>();
+            List<string> documentPaths = new();
+            int documentID = 0;
+
+            Appointment appointment = new Appointment()
+            {
+                UserId = UserId,
+                Title = appointmentDTO.Title,
+                Description = appointmentDTO.Description,
+                StartTime = appointmentDTO.StartTime,
+                EndTime = appointmentDTO.EndTime,
+                Status = "Scheduled"
+            };
+
+            var AppointmentId = dBServices.AddAppointment(appointment, UserId);
+
+            //var AppointmentId = 1; // Placeholder for AppointmentId
 
             foreach (var file in files)
             {
@@ -44,35 +59,19 @@ namespace Mentornote.Backend.Controllers
                     await file.CopyToAsync(stream);
                 }
 
-                var (textChunk, vectorJson) = await fileServices.ProcessFileAsync(filePath);
-                processedFileVectors.Add(vectorJson);
-            }
-               
-
-            Appointment appointment = new Appointment()
-            {
-                UserId = UserId,
-                Title = appointmentDTO.Title,
-                Description = appointmentDTO.Description,
-                StartTime = appointmentDTO.StartTime,
-                EndTime = appointmentDTO.EndTime,
-                Status = "Scheduled"
-            };
-
-            var AppointmentId = dBServices.AddAppointment(appointment, UserId);
-
-            foreach (var (filePath, vector) in documentPaths.Zip(processedFileVectors, (path, vec) => (path, vec)))
-            {
                 AppointmentDocuments newDoc = new AppointmentDocuments
                 {
                     AppointmentId = AppointmentId,
                     UserId = UserId,
                     DocumentPath = filePath,
-                    Vector = vector,
                 };
-                dBServices.AddAppointmentDocument(newDoc);
+
+                documentID = dBServices.AddAppointmentDocument(newDoc);
+
+                await fileServices.ProcessFileAsync(filePath, documentID);
+                
             }
-            
+
             return Ok();
         }
     }
