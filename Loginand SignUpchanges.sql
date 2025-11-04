@@ -846,23 +846,25 @@ BEGIN
 END;
 
 
-DROP PROCEDURE AddAppointmentNoteVector
 
-CREATE OR ALTER PROCEDURE AddAppointmentNote
+
+CREATE OR ALTER PROCEDURE AddAppointmentDocument
     @UserId INT,
     @AppointmentId INT,
-    @DocumentPath NVARCHAR(500),
-    @Chunk NVARCHAR(MAX),
-    @Vector NVARCHAR(MAX)
+    @DocumentPath NVARCHAR(500)
 AS
 BEGIN
     SET NOCOUNT ON;
 
-    INSERT INTO AppointmentNotes (UserId, AppointmentId, DocumentPath, Chunk, Vector, CreatedAt)
-    VALUES (@UserId, @AppointmentId, @DocumentPath, @Chunk, @Vector, SYSUTCDATETIME());
+    INSERT INTO AppointmentNotes (UserId, AppointmentId, DocumentPath, CreatedAt)
+    VALUES (@UserId, @AppointmentId, @DocumentPath, SYSUTCDATETIME());
 
-    SELECT SCOPE_IDENTITY() AS VectorId;
+  
+    SELECT CAST(SCOPE_IDENTITY() AS INT) AS AppointmentNoteId;
 END;
+
+
+
 
 
 DROP PROCEDURE GetAppointmentVectors
@@ -916,3 +918,15 @@ BEGIN
     -- Return the ID of the inserted embedding (if you need it in C#)
     SELECT CAST(SCOPE_IDENTITY() AS INT) AS EmbeddingId;
 END;
+
+
+
+ DELETE FROM [AppointmentNotes];
+
+-- Reset identity seed
+DBCC CHECKIDENT ('Appointments', RESEED, 0);
+
+DELETE FROM Appointments;
+
+-- Reset identity seed
+DBCC CHECKIDENT ('Appointments', RESEED, 0);
