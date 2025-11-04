@@ -6,3 +6,4 @@ obj/
 *.suo
 appsettings.json
 /Mentornote/appsettings.Development.json
+Mentornote.Backend/appsettings.Development.json
