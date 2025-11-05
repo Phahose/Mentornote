@@ -129,11 +129,11 @@ namespace Mentornote.Backend.Services
                     });
 
                     var result = cmd.ExecuteScalar();
-                   
+
 
                     connection.Close();
 
-                    return Convert.ToInt32(result); 
+                    return Convert.ToInt32(result);
                 }
             }
             catch (Exception ex)
@@ -159,5 +159,124 @@ namespace Mentornote.Backend.Services
             return Convert.ToInt32(result); // returns the new EmbeddingId
         }
 
+        public List<Appointment> GetAppointmentsByUserId(int userId)
+        {
+            try
+            {
+                List<Appointment> appointments = new List<Appointment>();
+                using SqlConnection connection = new SqlConnection(connectionString);
+                {
+                    connection.Open();
+                    SqlCommand cmd = new SqlCommand
+                    {
+                        CommandType = CommandType.StoredProcedure,
+                        Connection = connection,
+                        CommandText = "GetUserAppointments"
+                    };
+                    cmd.Parameters.Add(new SqlParameter("@UserId", SqlDbType.Int)
+                    {
+                        Direction = ParameterDirection.Input,
+                        SqlValue = userId
+                    });
+                    using SqlDataReader reader = cmd.ExecuteReader();
+                    while (reader.Read())
+                    {
+                        Appointment appointment = new Appointment
+                        {
+                            Id = reader.GetInt32(reader.GetOrdinal("Id")),
+                            UserId = reader.GetInt32(reader.GetOrdinal("UserId")),
+                            Title = reader.GetString(reader.GetOrdinal("Title")),
+                            Description = reader.IsDBNull(reader.GetOrdinal("Description")) ? null : reader.GetString(reader.GetOrdinal("Description")),
+                            StartTime = reader.IsDBNull(reader.GetOrdinal("StartTime")) ? (DateTime?)null : reader.GetDateTime(reader.GetOrdinal("StartTime")),
+                            EndTime = reader.IsDBNull(reader.GetOrdinal("EndTime")) ? (DateTime?)null : reader.GetDateTime(reader.GetOrdinal("EndTime")),
+                            Status = reader.GetString(reader.GetOrdinal("Status")),
+                            Notes = reader.IsDBNull(reader.GetOrdinal("Notes")) ? null : reader.GetString(reader.GetOrdinal("Notes")),
+                            CreatedAt = reader.GetDateTime(reader.GetOrdinal("CreatedAt")),
+                          //  UpdatedAt = reader.GetDateTime(reader.GetOrdinal("UpdatedAt"))
+                        };
+                        appointments.Add(appointment);
+                    }
+                    connection.Close();
+                }
+                return appointments;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex.Message);
+                return new List<Appointment>();
+            }
+           
+        }
+
+        public List<AppointmentDocuments> GetAppointmentDocumentsByAppointmentId(int appointmentId)
+        {
+            List<AppointmentDocuments> documents = new List<AppointmentDocuments>();
+            using SqlConnection connection = new SqlConnection(connectionString);
+            {
+                connection.Open();
+                SqlCommand cmd = new SqlCommand
+                {
+                    CommandType = CommandType.StoredProcedure,
+                    Connection = connection,
+                    CommandText = "GetAppointmentDocumentsByAppointmentId"
+                };
+                cmd.Parameters.Add(new SqlParameter("@AppointmentId", SqlDbType.Int)
+                {
+                    Direction = ParameterDirection.Input,
+                    SqlValue = appointmentId
+                });
+                using SqlDataReader reader = cmd.ExecuteReader();
+                while (reader.Read())
+                {
+                    AppointmentDocuments document = new AppointmentDocuments
+                    {
+                        Id = reader.GetInt32(reader.GetOrdinal("Id")),
+                        UserId = reader.GetInt32(reader.GetOrdinal("UserId")),
+                        AppointmentId = reader.GetInt32(reader.GetOrdinal("AppointmentId")),
+                        DocumentPath = reader.GetString(reader.GetOrdinal("DocumentPath")),
+                        CreatedAt = reader.GetDateTime(reader.GetOrdinal("CreatedAt"))
+                    };
+                    documents.Add(document);
+                }
+                connection.Close();
+            }
+            return documents;
+        }
+
+        public List<AppointmentDocumentEmbedding> GetEmbeddingsByDocumentId(int appointmentDocumentId)
+        {
+            List<AppointmentDocumentEmbedding> embeddings = new List<AppointmentDocumentEmbedding>();
+            using SqlConnection connection = new SqlConnection(connectionString);
+            {
+                connection.Open();
+                SqlCommand cmd = new SqlCommand
+                {
+                    CommandType = CommandType.StoredProcedure,
+                    Connection = connection,
+                    CommandText = "GetEmbeddingsByDocumentId"
+                };
+                cmd.Parameters.Add(new SqlParameter("@AppointmentDocumentId", SqlDbType.Int)
+                {
+                    Direction = ParameterDirection.Input,
+                    SqlValue = appointmentDocumentId
+                });
+                using SqlDataReader reader = cmd.ExecuteReader();
+                while (reader.Read())
+                {
+                    AppointmentDocumentEmbedding embedding = new AppointmentDocumentEmbedding
+                    {
+                        EmbeddingId = reader.GetInt32(reader.GetOrdinal("EmbeddingId")),
+                        AppointmentDocumentId = reader.GetInt32(reader.GetOrdinal("AppointmentDocumentId")),
+                        ChunkIndex = reader.GetInt32(reader.GetOrdinal("ChunkIndex")),
+                        ChunkText = reader.GetString(reader.GetOrdinal("ChunkText")),
+                        Vector = reader.GetString(reader.GetOrdinal("Vector")),
+                        CreatedAt = reader.GetDateTime(reader.GetOrdinal("CreatedAt"))
+                    };
+                    embeddings.Add(embedding);
+                }
+                connection.Close();
+            }
+            return embeddings;
+        }
     }
 }

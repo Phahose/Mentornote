@@ -71,11 +71,90 @@
                                 Margin="0,6,0,6">
 
                             <StackPanel>
-                                <TextBlock Text="{Binding Title}"
-                                           FontSize="15"
-                                           FontWeight="Bold"
-                                           Foreground="White"/>
-                                <TextBlock Text="{Binding WhenText}" 
+                                <StackPanel Orientation="Horizontal">
+                                    <TextBlock Text="{Binding Title}"
+                                     FontSize="15"
+                                     FontWeight="Bold"
+                                     Foreground="White"/>
+
+                                    <TextBlock Text="{Binding StartTime,  StringFormat='{}{0:hh:mm tt}'}"
+                                     FontSize="15"
+                                     FontWeight="Bold"
+                                     Foreground="Olive"/>
+                                    
+                                    <TextBlock Text="{Binding EndTime, StringFormat='{}{0:hh:mm tt}'}"
+                                     FontSize="15"
+                                     FontWeight="Bold"
+                                     Foreground="Olive"/>
+                                    
+                                </StackPanel>
+                              
+                                <TextBlock Text="{Binding Description}" 
+                                           Foreground="#FFBFBFBF" 
+                                           Margin="0,2,0,0"/>
+                                <TextBlock Text="{Binding Status}" 
+                                           Foreground="#FF7DBEFF"
+                                           FontWeight="SemiBold"
+                                           Margin="0,6,0,0"/>
+                                <Button Content="Load More"
+                                         Width="120"
+                                         Height="36"
+                                         Background="#FF3A3A3A"
+                                         Foreground="White"
+                                         BorderBrush="#FF4A4A4A"
+                                         HorizontalAlignment="Right"
+                                         VerticalAlignment="Top"
+                                        Click="LoadMore_Click"/>
+                            </StackPanel>
+                        </Border>
+                    </DataTemplate>
+                </ListView.ItemTemplate>
+                
+            </ListView>
+            <ListView ItemsSource="{Binding Past}"
+                      Background="#FF232323"
+                      BorderBrush="#FF333333"
+                      Foreground="White"
+                      Margin="0,0,0,20"
+                      Padding="4">
+
+
+                <ListView.ItemContainerStyle>
+                    <Style TargetType="ListViewItem">
+                        <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
+                    </Style>
+                </ListView.ItemContainerStyle>
+
+                <ListView.ItemTemplate>
+                    <DataTemplate>
+                        <Border Background="#FF2A2A2A"
+                                BorderBrush="#FF3A3A3A"
+                                BorderThickness="1"
+                                CornerRadius="8"
+                                Padding="12"
+                                Margin="0,6,0,6">
+
+                            <StackPanel>
+                                <StackPanel Orientation="Horizontal">
+                                    <TextBlock Text="{Binding Title}"
+                                               FontSize="15"
+                                               FontWeight="Bold"
+                                               Foreground="White"/>
+
+                                    <TextBlock Text="{Binding StartTime, StringFormat='{}{0:hh:mm tt}'}"
+                                               FontSize="10"
+                                               FontWeight="Bold"
+                                               Foreground="LightBlue"
+                                               Margin="10,5"/>
+
+                                    <TextBlock Text="{Binding EndTime, StringFormat='{}{0:hh:mm tt}'}"
+                                               FontSize="10"
+                                               FontWeight="Bold"
+                                               Foreground="LightBlue"
+                                               Margin="2,5"/>
+
+                                </StackPanel>
+                                <TextBlock Text="{Binding Description}" 
                                            Foreground="#FFBFBFBF" 
                                            Margin="0,2,0,0"/>
                                 <TextBlock Text="{Binding Status}" 
