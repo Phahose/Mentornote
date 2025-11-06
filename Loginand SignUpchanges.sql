@@ -822,8 +822,8 @@ AS
 BEGIN
     SET NOCOUNT ON;
 
-    INSERT INTO Appointments (UserId, Title, Description, StartTime, EndTime, Status, Notes, CreatedAt)
-    VALUES (@UserId, @Title, @Description, @StartTime, @EndTime, @Status, @Notes, SYSUTCDATETIME());
+    INSERT INTO Appointments (UserId, Title, Description, StartTime, EndTime, Status, Notes, CreatedAt, [Date], Organizer)
+    VALUES (@UserId, @Title, @Description, @StartTime, @EndTime, @Status, @Notes, SYSUTCDATETIME(), @Date, @Organizer);
 
     SELECT SCOPE_IDENTITY() AS AppointmentId;
 END;
@@ -927,13 +927,80 @@ BEGIN
 END;
 
 
+CREATE TABLE BackgroundJobs (
+    Id BIGINT IDENTITY(1,1) PRIMARY KEY,
+    JobType NVARCHAR(100) NOT NULL,
+    ReferenceId INT NULL,
+    ReferenceType NVARCHAR(100) NULL,
+    Status NVARCHAR(50) NOT NULL DEFAULT 'Pending',
+    Payload NVARCHAR(MAX) NULL,
+    ResultMessage NVARCHAR(MAX) NULL,
+    ErrorTrace NVARCHAR(MAX) NULL,
+    CreatedAt DATETIME2 NOT NULL DEFAULT SYSUTCDATETIME(),
+    UpdatedAt DATETIME2 NULL,
+    StartedAt DATETIME2 NULL,
+    CompletedAt DATETIME2 NULL
+);
 
- DELETE FROM [AppointmentNotes];
 
+CREATE PROCEDURE CreateBackgroundJob
+    @JobType NVARCHAR(100),
+    @ReferenceId INT = NULL,
+    @ReferenceType NVARCHAR(100) = NULL,
+    @Payload NVARCHAR(MAX) = NULL,
+    @JobId BIGINT OUTPUT
+AS
+BEGIN
+    SET NOCOUNT ON;
+
+    INSERT INTO BackgroundJobs (JobType, ReferenceId, ReferenceType, Payload, Status, CreatedAt)
+    VALUES (@JobType, @ReferenceId, @ReferenceType, @Payload, 'Pending', SYSUTCDATETIME());
+
+    SET @JobId = SCOPE_IDENTITY();
+END
+
+CREATE PROCEDURE UpdateBackgroundJob
+    @JobId BIGINT,
+    @Status NVARCHAR(50),
+    @ResultMessage NVARCHAR(MAX) = NULL,
+    @ErrorTrace NVARCHAR(MAX) = NULL
+AS
+BEGIN
+    SET NOCOUNT ON;
+
+    UPDATE BackgroundJobs
+    SET
+        Status = @Status,
+        ResultMessage = @ResultMessage,
+        ErrorTrace = @ErrorTrace,
+        UpdatedAt = SYSUTCDATETIME(),
+        StartedAt = CASE WHEN @Status = 'Processing' THEN SYSUTCDATETIME() ELSE StartedAt END,
+        CompletedAt = CASE WHEN @Status IN ('Completed', 'Failed') THEN SYSUTCDATETIME() ELSE CompletedAt END
+    WHERE Id = @JobId;
+END
+
+CREATE PROCEDURE GetBackgroundJob
+    @JobId BIGINT
+AS
+BEGIN
+    SET NOCOUNT ON;
+
+    SELECT Id, JobType, Status, ResultMessage, CreatedAt, StartedAt, CompletedAt
+    FROM BackgroundJobs
+    WHERE Id = @JobId;
+END
+
+
+DELETE FROM AppointmentDocumentEmbeddings;
+-- Reset identity seed
+DBCC CHECKIDENT ('Appointments', RESEED, 0);
+
+DELETE FROM [AppointmentNotes];
 -- Reset identity seed
 DBCC CHECKIDENT ('Appointments', RESEED, 0);
 
 DELETE FROM Appointments;
-
 -- Reset identity seed
 DBCC CHECKIDENT ('Appointments', RESEED, 0);
+
+DELETE FROM BackgroundJobs
