@@ -786,6 +786,9 @@ CREATE TABLE Appointments
         REFERENCES dbo.Users(Id)
 );
 
+Alter Table Appointments
+ADD Organizer NVARCHAR(200) NULL,
+   [Date] DATE NULL;
 
 DROP Table AppointmentNotesVectors
 
@@ -812,7 +815,9 @@ CREATE OR ALTER PROCEDURE AddAppointment
     @StartTime DATETIME2 = NULL,
     @EndTime DATETIME2 = NULL,
     @Status NVARCHAR(50) = NULL,
-    @Notes NVARCHAR(MAX) = NULL
+    @Notes NVARCHAR(MAX) = NULL,
+	@Date DATE = NULL,
+	@Organizer NVARCHAR(200) = NULL
 AS
 BEGIN
     SET NOCOUNT ON;
@@ -823,7 +828,7 @@ BEGIN
     SELECT SCOPE_IDENTITY() AS AppointmentId;
 END;
 
-CREATE OR ALTER PROCEDURE GetAppointments
+CREATE OR ALTER PROCEDURE GetUserAppointments
     @UserId INT
 AS
 BEGIN
@@ -833,6 +838,8 @@ BEGIN
     WHERE UserId = @UserId
     ORDER BY CreatedAt DESC;
 END;
+
+EXEC GetUserAppointments 1
 
 CREATE OR ALTER PROCEDURE GetAppointmentById
     @UserId INT,

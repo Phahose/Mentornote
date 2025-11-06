@@ -28,7 +28,7 @@
                        DockPanel.Dock="Left"/>
 
             <!-- The Add Meeting button -->
-            <Button Content="＋ Add Meeting"
+            <Button Content="＋ Add Appointment"
                     Background="#FF3A6EE8"
                     Foreground="White"
                     BorderBrush="#FF2B56B9"
@@ -37,7 +37,8 @@
                     FontWeight="SemiBold"
                     HorizontalAlignment="Right"
                     DockPanel.Dock="Right"
-                    Margin="0,0,0,0"/>
+                    Margin="0,0,0,0"
+                    Click="LoadMore_Click"/>
 
             <Button Content="Test Overlay"
                     Width="140"
@@ -47,7 +48,8 @@
 
         <!-- LISTS -->
         <StackPanel Grid.Row="1">
-            <ListView ItemsSource="{Binding Upcoming}"
+            <ListView x:Name="UpcomingAppointmentsList"
+                      ItemsSource="{Binding Upcoming}"
                       Background="#FF232323"
                       BorderBrush="#FF333333"
                       Foreground="White"
@@ -111,7 +113,8 @@
                 </ListView.ItemTemplate>
                 
             </ListView>
-            <ListView ItemsSource="{Binding Past}"
+            <ListView x:Name="PastAppointmentsList"
+                      ItemsSource="{Binding Past}"
                       Background="#FF232323"
                       BorderBrush="#FF333333"
                       Foreground="White"
@@ -176,7 +179,18 @@
                 </ListView.ItemTemplate>
                 
             </ListView>
-           
+            <StackPanel x:Name="NoAppointmentsPanel"
+                        Visibility="Collapsed"
+                        HorizontalAlignment="Center"
+                        VerticalAlignment="Center"
+                        Margin="20">
+                
+                <TextBlock Text="No appointments created yet."
+                           FontStyle="Italic"
+                           Foreground="Gray"
+                           TextAlignment="Center"/>
+                
+            </StackPanel>
         </StackPanel>
 
     </Grid>

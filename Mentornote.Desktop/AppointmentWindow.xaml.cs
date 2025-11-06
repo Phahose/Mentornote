@@ -1,8 +1,11 @@
 ﻿using Mentornote.Backend.DTO;
+using Mentornote.Backend.Models;
+using Mentornote.Backend.Services;
 using Microsoft.Win32;
 using System.Collections.ObjectModel;
 using System.IO;
 using System.Net.Http;
+using System.Text.Json;
 using System.Windows;
 using System.Windows.Shapes;
 using static System.Net.WebRequestMethods;
@@ -13,18 +16,11 @@ namespace Mentornote.Desktop
     /// <summary>
     /// Interaction logic for MeetingWindow.xaml
     /// </summary>
-    public partial class MeetingWindow : Window
+    public partial class AppointmentWindow : Window
     {
-        public string DescriptionText{ get; set;} = "We will be talking about the project roadmap and key milestones for the upcoming quarter.";
         private static readonly HttpClient _http = new HttpClient();
         public ObservableCollection<PendingFile> SelectedFiles { get; set; } = new();
-        public string MeetingTopic { get; set; } = "Project Roadmap Discussion";
-        public string MeetingDate { get; set; } = "September 15, 2024";
-        public string MeetingTime { get; set; } = "10:00 AM - 11:00 AM";
-        public string MeetingLocation { get; set; } = "Conference Room A";
-        public string OrganizerName { get; set; } = "Alice Johnson";
-        public string Descrption { get; set; } = "Meeting Description";
-
+   
 
         //private async void Window_Loaded(object sender, RoutedEventArgs e)
         //{
@@ -32,10 +28,10 @@ namespace Mentornote.Desktop
         //    DesciptionText = "We We will ber Talking about the ";
         //}
 
-        public MeetingWindow()
+        public AppointmentWindow()
         {
             InitializeComponent();
-            PopulateTimeCombos();
+            PopulateInputs(1); // Example appointment ID
             DataContext = this;
         }
 
@@ -100,7 +96,7 @@ namespace Mentornote.Desktop
                                     MessageBoxImage.Error);
                 }
             }
-            
+
             try
             {
                 using var appointment = new MultipartFormDataContent();
@@ -111,6 +107,8 @@ namespace Mentornote.Desktop
                 appointment.Add(new StringContent(DateInput.Text), "Date");
                 appointment.Add(new StringContent(StartTimeInput.Text), "StartTime");
                 appointment.Add(new StringContent(EndTimeInput.Text), "EndTime");
+                appointment.Add(new StringContent(DateInput.Text), "Date");
+                appointment.Add(new StringContent(OrganizerInput.Text), "Organizer");
 
                 foreach (var file in uploadedFilePaths)
                 {
@@ -120,20 +118,48 @@ namespace Mentornote.Desktop
                 var response = await _http.PostAsync("http://127.0.0.1:5085/api/appointments/upload", appointment);
 
                 // 4️⃣ Handle response
-                if (response.IsSuccessStatusCode)
+                if (!response.IsSuccessStatusCode)
                 {
-                    System.Windows.MessageBox.Show($"✅ uploaded successfully!",
-                                     "Upload Complete",
-                                     MessageBoxButton.OK,
-                                     MessageBoxImage.Information);
+                    System.Windows.MessageBox.Show($"❌ Upload failed: {response.ReasonPhrase}");
+                    return;
                 }
-                else
+
+                var json = await response.Content.ReadAsStringAsync();
+                var jobInfo = JsonSerializer.Deserialize<JobResponse>(json);
+                long jobId = jobInfo!.Id;
+
+                System.Windows.MessageBox.Show($"✅ Upload started (Job #{jobId}). You can keep working.");
+
+                // 2️⃣  Start polling in background
+                _ = Task.Run(async () =>
                 {
-                    System.Windows.MessageBox.Show($"❌ Upload failed: {response.ReasonPhrase}",
-                                    "Error",
-                                    MessageBoxButton.OK,
-                                    MessageBoxImage.Error);
-                }
+                    while (true)
+                    {
+                        await Task.Delay(5000); // poll every 5 s
+
+                        var statusResponse = await _http.GetAsync($"http://127.0.0.1:5085/api/appointments/status/{jobId}");
+                        if (!statusResponse.IsSuccessStatusCode) break;
+
+                        var statusJson = await statusResponse.Content.ReadAsStringAsync();
+                        var status = JsonSerializer.Deserialize<JobResponse>(statusJson);
+
+                        if (status == null) break;
+
+                        if (status.Status.Equals("Completed", StringComparison.OrdinalIgnoreCase))
+                        {
+                            System.Windows.Application.Current.Dispatcher.Invoke(() =>
+                                 System.Windows.MessageBox.Show($"✅ {status.ResultMessage}", "Upload Complete"));
+                            break;
+                        }
+
+                        if (status.Status.Equals("Failed", StringComparison.OrdinalIgnoreCase))
+                        {
+                            System.Windows.Application.Current.Dispatcher.Invoke(() =>
+                                 System.Windows.MessageBox.Show($"❌ Upload failed: {status.ResultMessage}", "Processing Error"));
+                            break;
+                        }
+                    }
+                });
             }
             catch (Exception)
             {
@@ -159,6 +185,29 @@ namespace Mentornote.Desktop
         private void RemoveAllFile_Click(object sender, RoutedEventArgs e)
         {
             SelectedFiles.Clear();
+        }
+        
+        public void PopulateInputs(int id)
+        {
+            DBServices dbServices = new DBServices();
+
+            Appointment appointment = new();
+            appointment = dbServices.GetAppointmentById(1,1); // Example appointment ID
+
+            List<AppointmentDocuments> docs = new();
+            docs = dbServices.GetAppointmentDocumentsByAppointmentId(appointment.Id, 1); // Example appointment ID
+
+            TitleInput.Text = appointment.Title;
+            AppointmentDescription.Text = appointment.Description;
+            DateInput.Text = appointment.Date.ToString();
+            StartTimeInput.Text = appointment.StartTime.ToString();
+            EndTimeInput.Text = appointment.EndTime.ToString();
+            OrganizerInput.Text = appointment.Organizer;
+
+            if (StartTimeInput.Text == "" && EndTimeInput.Text == "")
+            {
+                PopulateTimeCombos();
+            }
         }
 
         private void PopulateTimeCombos()

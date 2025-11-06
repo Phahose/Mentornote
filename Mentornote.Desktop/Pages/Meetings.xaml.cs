@@ -37,66 +37,54 @@ namespace Mentornote.Desktop.Pages
         public Meetings()
         {
             InitializeComponent();
+            
             // Make this page its own DataContext so bindings can see properties above
             this.DataContext = this;
             var appointments = GetAppointments();
-           
-            foreach (var appointment in appointments)
+            if (appointments == null || !appointments.Any())
             {
-                if (appointment.StartTime >= DateTime.UtcNow)
-                {
-                    Upcoming.Add( new Appointment
-                    {
-                        Id = appointment.Id,
-                        Title = appointment.Title,
-                        Description = appointment.Description,
-                        StartTime = appointment.StartTime,
-                        EndTime = appointment.EndTime,
-                        Status = appointment.Status,
-                    });
-                }
-                else
-                {
-                    Past.Add(new Appointment
-                    {
-                        Id = appointment.Id,
-                        Title = appointment.Title,
-                        Description = appointment.Description,
-                        StartTime = appointment.StartTime,
-                        EndTime = appointment.EndTime,
-                        Status = appointment.Status,
-                    });
-                }
-
-                Appointments.Add(appointment);
+                NoAppointmentsPanel.Visibility = Visibility.Visible;
+                UpcomingAppointmentsList.Visibility = Visibility.Collapsed;
+                PastAppointmentsList.Visibility = Visibility.Collapsed;
             }
+            else
+            {
+                NoAppointmentsPanel.Visibility = Visibility.Collapsed;
+                UpcomingAppointmentsList.Visibility = Visibility.Visible; 
+                PastAppointmentsList.Visibility = Visibility.Visible; 
+               
+                foreach (var appointment in appointments)
+                {
+                    if (appointment.StartTime >= DateTime.UtcNow)
+                    {
+                        Upcoming.Add(new Appointment
+                        {
+                            Id = appointment.Id,
+                            Title = appointment.Title,
+                            Description = appointment.Description,
+                            StartTime = appointment.StartTime,
+                            EndTime = appointment.EndTime,
+                            Status = appointment.Status,
+                        });
+                    }
+                    else
+                    {
+                        Past.Add(new Appointment
+                        {
+                            Id = appointment.Id,
+                            Title = appointment.Title,
+                            Description = appointment.Description,
+                            StartTime = appointment.StartTime,
+                            EndTime = appointment.EndTime,
+                            Status = appointment.Status,
+                        });
+                    }
 
-            // Seed some demo items (replace later with API/DB)
-            //Upcoming.Add(new Appointment
-            //{
-            //    Title = "AAIP Evaluation Sync",
-            //    When = DateTime.Now.AddHours(2),
-            //    Status = "Upcoming"
-            //});
-            //Upcoming.Add(new Appointment
-            //{
-            //    Title = "Data Integration Review",
-            //    When = DateTime.Now.AddDays(1).AddHours(3),
-            //    Status = "Upcoming"
-            //});
+                    Appointments.Add(appointment);
+                }
+            }
+           
 
-            //Past.Add(new Appointment
-            //{
-            //    Title = "Kickoff Meeting",
-            //    When = DateTime.Now.AddDays(-5).AddHours(1),
-            //    Status = "Completed"
-            //});
-            //Past.Add(new Appointment
-            //{
-            //    Title = "Dashboard Planning",
-            //    When = DateTime.Now.AddDays(-7).AddHours(2),
-            //    Status = "Completed"
-            //});
         }
 
         private void OpenOverlay_Click(object sender, RoutedEventArgs e)
@@ -106,7 +94,7 @@ namespace Mentornote.Desktop.Pages
         }
         private void LoadMore_Click(object sender, RoutedEventArgs e)
         {
-            var meetingWindow = new MeetingWindow();
+            var meetingWindow = new AppointmentWindow();
             meetingWindow.Show();
         }
         private List<Appointment> GetAppointments()

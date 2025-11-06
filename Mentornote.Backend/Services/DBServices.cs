@@ -80,6 +80,16 @@ namespace Mentornote.Backend.Services
                         SqlValue = appointment.Notes ?? (object)DBNull.Value
                     });
 
+                    cmd.Parameters.Add(new SqlParameter("@Date", SqlDbType.Date)
+                    {
+                        Direction = ParameterDirection.Input,
+                        SqlValue = appointment.Date
+                    });
+                    cmd.Parameters.Add(new SqlParameter("@Organizer", SqlDbType.NVarChar, 200)
+                    {
+                        Direction = ParameterDirection.Input,
+                        SqlValue = appointment.Organizer ?? (object)DBNull.Value
+                    });
 
 
                     appointmentId = Convert.ToInt32((decimal)cmd.ExecuteScalar());
@@ -192,7 +202,9 @@ namespace Mentornote.Backend.Services
                             Status = reader.GetString(reader.GetOrdinal("Status")),
                             Notes = reader.IsDBNull(reader.GetOrdinal("Notes")) ? null : reader.GetString(reader.GetOrdinal("Notes")),
                             CreatedAt = reader.GetDateTime(reader.GetOrdinal("CreatedAt")),
-                          //  UpdatedAt = reader.GetDateTime(reader.GetOrdinal("UpdatedAt"))
+                            Date = reader.IsDBNull(reader.GetOrdinal("Date"))  ? (DateTime?)null: reader.GetDateTime(reader.GetOrdinal("Date")),
+                            Organizer = reader.GetString(reader.GetOrdinal("Organizer"))
+                            //  UpdatedAt = reader.GetDateTime(reader.GetOrdinal("UpdatedAt"))
                         };
                         appointments.Add(appointment);
                     }
@@ -208,7 +220,53 @@ namespace Mentornote.Backend.Services
            
         }
 
-        public List<AppointmentDocuments> GetAppointmentDocumentsByAppointmentId(int appointmentId)
+        public Appointment GetAppointmentById(int appointmentId, int userId)
+        {
+            Appointment appointment = new();
+            using SqlConnection connection = new SqlConnection(connectionString);
+            {
+                connection.Open();
+                SqlCommand cmd = new SqlCommand
+                {
+                    CommandType = CommandType.StoredProcedure,
+                    Connection = connection,
+                    CommandText = "GetAppointmentById"
+                };
+                cmd.Parameters.Add(new SqlParameter("@Id", SqlDbType.Int)
+                {
+                    Direction = ParameterDirection.Input,
+                    SqlValue = appointmentId
+                });
+                cmd.Parameters.Add(new SqlParameter("@UserId", SqlDbType.Int)
+                {
+                    Direction = ParameterDirection.Input,
+                    SqlValue = userId
+                });
+                using SqlDataReader reader = cmd.ExecuteReader();
+                if (reader.Read())
+                {
+                    appointment = new Appointment
+                    {
+                        Id = reader.GetInt32(reader.GetOrdinal("Id")),
+                        UserId = reader.GetInt32(reader.GetOrdinal("UserId")),
+                        Title = reader.GetString(reader.GetOrdinal("Title")),
+                        Description = reader.IsDBNull(reader.GetOrdinal("Description")) ? null : reader.GetString(reader.GetOrdinal("Description")),
+                        StartTime = reader.IsDBNull(reader.GetOrdinal("StartTime")) ? (DateTime?)null : reader.GetDateTime(reader.GetOrdinal("StartTime")),
+                        EndTime = reader.IsDBNull(reader.GetOrdinal("EndTime")) ? (DateTime?)null : reader.GetDateTime(reader.GetOrdinal("EndTime")),
+                        Status = reader.GetString(reader.GetOrdinal("Status")),
+                        Notes = reader.IsDBNull(reader.GetOrdinal("Notes")) ? null : reader.GetString(reader.GetOrdinal("Notes")),
+                        CreatedAt = reader.GetDateTime(reader.GetOrdinal("CreatedAt")),
+                        Date = reader.IsDBNull(reader.GetOrdinal("Date")) ? (DateTime?)null : reader.GetDateTime(reader.GetOrdinal("Date")),
+                        Organizer = reader.GetString(reader.GetOrdinal("Organizer"))
+                        // UpdatedAt = reader.GetDateTime(reader.GetOrdinal("UpdatedAt"))
+                    };
+                }
+                connection.Close();
+            }
+            return appointment;
+        }
+
+        public List<AppointmentDocuments> GetAppointmentDocumentsByAppointmentId(int appointmentId, int userId)
         {
             List<AppointmentDocuments> documents = new List<AppointmentDocuments>();
             using SqlConnection connection = new SqlConnection(connectionString);
@@ -218,12 +276,17 @@ namespace Mentornote.Backend.Services
                 {
                     CommandType = CommandType.StoredProcedure,
                     Connection = connection,
-                    CommandText = "GetAppointmentDocumentsByAppointmentId"
+                    CommandText = "GetAppointmentNotes"
                 };
                 cmd.Parameters.Add(new SqlParameter("@AppointmentId", SqlDbType.Int)
                 {
                     Direction = ParameterDirection.Input,
                     SqlValue = appointmentId
+                });
+                cmd.Parameters.Add(new SqlParameter("@UserId", SqlDbType.Int)
+                {
+                    Direction = ParameterDirection.Input,
+                    SqlValue = userId
                 });
                 using SqlDataReader reader = cmd.ExecuteReader();
                 while (reader.Read())
@@ -278,5 +341,78 @@ namespace Mentornote.Backend.Services
             }
             return embeddings;
         }
+
+        public long CreateJob(BackgroundJob job)
+        {
+            using var conn = new SqlConnection(connectionString);
+            using var cmd = new SqlCommand("CreateBackgroundJob", conn)
+            {
+                CommandType = CommandType.StoredProcedure
+            };
+
+            cmd.Parameters.AddWithValue("@JobType", job.JobType);
+            cmd.Parameters.AddWithValue("@ReferenceId", (object?)job.ReferenceId ?? DBNull.Value);
+            cmd.Parameters.AddWithValue("@ReferenceType", (object?)job.ReferenceType ?? DBNull.Value);
+            cmd.Parameters.AddWithValue("@Payload", (object?)job.Payload ?? DBNull.Value);
+
+            var output = new SqlParameter("@JobId", SqlDbType.BigInt)
+            {
+                Direction = ParameterDirection.Output
+            };
+            cmd.Parameters.Add(output);
+
+            conn.Open();
+            cmd.ExecuteNonQuery();
+
+            job.Id = (long)output.Value;  // Assign SQL-generated ID
+            return job.Id;
+        }
+
+        public void UpdateJob(BackgroundJob job)
+        {
+            using var conn = new SqlConnection(connectionString);
+            using var cmd = new SqlCommand("UpdateBackgroundJob", conn)
+            {
+                CommandType = CommandType.StoredProcedure
+            };
+
+            cmd.Parameters.AddWithValue("@JobId", job.Id);
+            cmd.Parameters.AddWithValue("@Status", job.Status);
+            cmd.Parameters.AddWithValue("@ResultMessage", (object?)job.ResultMessage ?? DBNull.Value);
+            cmd.Parameters.AddWithValue("@ErrorTrace", (object?)job.ErrorTrace ?? DBNull.Value);
+
+            conn.Open();
+            cmd.ExecuteNonQuery();
+        }
+        public BackgroundJob GetJobStatus(long jobId)
+        {
+            BackgroundJob job = new();
+
+            using var conn = new SqlConnection(connectionString);
+            using var cmd = new SqlCommand("GetBackgroundJob", conn)
+            {
+                CommandType = CommandType.StoredProcedure
+            };
+            cmd.Parameters.AddWithValue("@JobId", jobId);
+
+            conn.Open();
+            using var reader = cmd.ExecuteReader();
+            if (reader.Read())
+            {
+                job = new BackgroundJob
+                {
+                    Id = reader.GetInt64(0),
+                    JobType = reader.GetString(1),
+                    Status = reader.GetString(2),
+                    ResultMessage = reader.IsDBNull(3) ? null : reader.GetString(3),
+                    CreatedAt = reader.GetDateTime(4),
+                    StartedAt = reader.IsDBNull(5) ? null : reader.GetDateTime(5),
+                    CompletedAt = reader.IsDBNull(6) ? null : reader.GetDateTime(6)
+                };
+            }
+
+            return job;
+        }
+
     }
 }
