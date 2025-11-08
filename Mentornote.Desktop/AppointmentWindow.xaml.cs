@@ -8,8 +8,7 @@ using System.Net.Http;
 using System.Text.Json;
 using System.Windows;
 using System.Windows.Shapes;
-using static System.Net.WebRequestMethods;
-using static System.Windows.Forms.VisualStyles.VisualStyleElement.Window;
+using System.Threading;
 
 namespace Mentornote.Desktop
 {
@@ -18,7 +17,11 @@ namespace Mentornote.Desktop
     /// </summary>
     public partial class AppointmentWindow : Window
     {
-        private static readonly HttpClient _http = new HttpClient();
+        private static readonly HttpClient _http = new HttpClient()
+        {
+            Timeout = TimeSpan.FromMinutes(10) // Set timeout to 10 minutes for large file uploads
+        };
+      
         public ObservableCollection<PendingFile> SelectedFiles { get; set; } = new();
    
 
@@ -62,23 +65,22 @@ namespace Mentornote.Desktop
                 System.Windows.MessageBox.Show("No files selected to upload!");
                 return;
             }
+
             List<FileDTO> uploadedFilePaths = new List<FileDTO>();
 
        
-
-
             foreach (var pendingFile in SelectedFiles)
             {
                 string filePath = pendingFile.FilePath;
-                string fileName = System.IO.Path.GetFileName(filePath);
-                
+                string fileName = $"{Guid.NewGuid()}_{System.IO.Path.GetFileName(filePath)}";
+
                 try
                 { 
                     // Create file content
                     var fileStream = new FileStream(filePath, FileMode.Open, FileAccess.Read);
                     var fileContent = new StreamContent(fileStream);
                     fileContent.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue("application/octet-stream");
-                    
+
                     FileDTO fileDTO = new FileDTO
                     {
                         FileContent = fileContent,
@@ -124,42 +126,20 @@ namespace Mentornote.Desktop
                     return;
                 }
 
-                var json = await response.Content.ReadAsStringAsync();
-                var jobInfo = JsonSerializer.Deserialize<JobResponse>(json);
-                long jobId = jobInfo!.Id;
-
-                System.Windows.MessageBox.Show($"✅ Upload started (Job #{jobId}). You can keep working.");
-
-                // 2️⃣  Start polling in background
-                _ = Task.Run(async () =>
+                if (response.StatusCode == System.Net.HttpStatusCode.Accepted)
                 {
-                    while (true)
-                    {
-                        await Task.Delay(5000); // poll every 5 s
+                    var json = await response.Content.ReadAsStringAsync();
+                    var jobInfo = JsonSerializer.Deserialize<JobResponse>(json);
+                    long jobId = jobInfo!.jobId;
 
-                        var statusResponse = await _http.GetAsync($"http://127.0.0.1:5085/api/appointments/status/{jobId}");
-                        if (!statusResponse.IsSuccessStatusCode) break;
+                    System.Windows.MessageBox.Show($"✅ Upload started (Job #{jobId}). You can keep working.");
 
-                        var statusJson = await statusResponse.Content.ReadAsStringAsync();
-                        var status = JsonSerializer.Deserialize<JobResponse>(statusJson);
+                    StartPollingForStatus(jobId);
+                }
+               
 
-                        if (status == null) break;
-
-                        if (status.Status.Equals("Completed", StringComparison.OrdinalIgnoreCase))
-                        {
-                            System.Windows.Application.Current.Dispatcher.Invoke(() =>
-                                 System.Windows.MessageBox.Show($"✅ {status.ResultMessage}", "Upload Complete"));
-                            break;
-                        }
-
-                        if (status.Status.Equals("Failed", StringComparison.OrdinalIgnoreCase))
-                        {
-                            System.Windows.Application.Current.Dispatcher.Invoke(() =>
-                                 System.Windows.MessageBox.Show($"❌ Upload failed: {status.ResultMessage}", "Processing Error"));
-                            break;
-                        }
-                    }
-                });
+                
+               
             }
             catch (Exception)
             {
@@ -208,6 +188,54 @@ namespace Mentornote.Desktop
             {
                 PopulateTimeCombos();
             }
+        }
+
+        public void StartPollingForStatus(long jobId)
+        {
+            // 2️⃣  Start polling in background
+            _ = Task.Run(async () =>
+            {
+                while (true)
+                {
+                    await Task.Delay(5000); // poll every 5 s
+
+                    var jobResponse = await _http.GetAsync($"http://127.0.0.1:5085/api/appointments/status/{jobId}");
+                    if (!jobResponse.IsSuccessStatusCode) 
+                    {
+                        System.Windows.Application.Current.Dispatcher.Invoke(() =>
+                             System.Windows.MessageBox.Show("❌ Upload failed:, Processing Error"));
+                        break;
+                    }
+                    
+
+                    var jobInfoJson = await jobResponse.Content.ReadAsStringAsync();
+                    var jobInfo = JsonSerializer.Deserialize<JobResponse>(jobInfoJson, new JsonSerializerOptions
+                    {
+                        PropertyNameCaseInsensitive = true
+                    });
+
+                    if (jobInfo == null)
+                    {
+                        System.Windows.Application.Current.Dispatcher.Invoke(() =>
+                             System.Windows.MessageBox.Show("❌ Upload failed:, Processing Error"));
+                        break;
+                    }
+
+                    if (jobInfo.Status.Equals("Completed", StringComparison.OrdinalIgnoreCase))
+                    {
+                        System.Windows.Application.Current.Dispatcher.Invoke(() =>
+                             System.Windows.MessageBox.Show($"✅ {jobInfo.ResultMessage}", "Upload Complete"));
+                        break;
+                    }
+
+                    if (jobInfo.Status.Equals("Failed", StringComparison.OrdinalIgnoreCase))
+                    {
+                        System.Windows.Application.Current.Dispatcher.Invoke(() =>
+                             System.Windows.MessageBox.Show($"❌ Upload failed: {jobInfo.ResultMessage}", "Processing Error"));
+                        break;
+                    }
+                }
+            });
         }
 
         private void PopulateTimeCombos()

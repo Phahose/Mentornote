@@ -21,71 +21,127 @@ namespace Mentornote.Backend.Controllers
         }
 
         [HttpPost("suggest")]
-        public async Task<string> GenerateSuggestionAsync([FromBody] string transcript)
+        public async Task<IActionResult> GenerateSuggestionAsync([FromBody] string transcript)
         {
-            try
-            {
-                var url = $"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-pro:generateContent?key={_apiKey}";
+            var url = $"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-pro:generateContent?key={_apiKey}";
 
-                var prompt = new
+            var payload = new
+            {
+                contents = new[]
                 {
-                    contents = new[]
+                    new
                     {
-                        new
+                        role = "user",
+                        parts = new[]
                         {
-                            parts = new[]
-                            {
-                                new { text = $"You are sitting in this meeting. Reply with one simple friendly response to the last statment, in this transcript :\n\n{transcript}" }
-                            }
+                            new { text = $"You are in this meeting. Reply with one friendly short response to the last statement:\n\n{transcript}" }
                         }
-                    },
-                    generationConfig = new
-                    {
-                        temperature = 0.7,
-                        maxOutputTokens = 5000,
                     }
-                };
-
-                var json = JsonSerializer.Serialize(prompt);
-                using var content = new StringContent(json, Encoding.UTF8, "application/json");
-
-                Console.WriteLine("➡️ Sending request to Gemini...");
-                var response = await _httpClient.PostAsync(url, content);
-                Console.WriteLine($"⬅️ Response: {response.StatusCode}");
-
-                var body = await response.Content.ReadAsStringAsync();
-
-                if (!response.IsSuccessStatusCode)
+                },
+                generationConfig = new
                 {
-                    Console.WriteLine($"❌ Gemini error {response.StatusCode}: {body}");
-                    return $"Error: {response.StatusCode}";
-                }
+                    temperature = 0.7,
+                    maxOutputTokens = 5000
+                },
+              //  stream = true
+            };
 
-                using var doc = JsonDocument.Parse(body);
-
-                Console.WriteLine($"The Body{body}");
-                Console.WriteLine($"The Doc{doc}");
-
-                var text = doc.RootElement
-                            .GetProperty("candidates")[0]
-                            .GetProperty("content")
-                            .GetProperty("parts")[0]
-                            .GetProperty("text")
-                            .GetString();
-
-                return text ?? string.Empty;
-            }
-            catch (TaskCanceledException)
+            var json = JsonSerializer.Serialize(payload);
+            var request = new HttpRequestMessage(HttpMethod.Post, url)
             {
-                Console.WriteLine("❌ Timeout: Gemini took too long to respond.");
-                return "[Timeout]";
-            }
-            catch (Exception ex)
+                Content = new StringContent(json, Encoding.UTF8, "application/json")
+            };
+
+            var response = await _httpClient.SendAsync(request);
+            response.EnsureSuccessStatusCode();
+
+            var body = await response.Content.ReadAsStringAsync();
+
+
+
+            if (!response.IsSuccessStatusCode)
             {
-                Console.WriteLine($"❌ Gemini request failed: {ex.Message}");
-                return "[Error contacting Gemini]";
+                Console.WriteLine($"❌ Gemini error {response.StatusCode}: {body}");
+                return StatusCode((int)response.StatusCode, body);
             }
+
+            using var doc = JsonDocument.Parse(body);
+            var text = doc.RootElement
+                .GetProperty("candidates")[0]
+                .GetProperty("content")
+                .GetProperty("parts")[0]
+                .GetProperty("text")
+                .GetString();
+
+            return Content(text ?? string.Empty, "text/plain");
+        
         }
+        
+        //public async Task<string> GenerateSuggestionAsync([FromBody] string transcript)
+        //{
+        //    try
+        //    {
+        //        var url = $"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-pro:generateContent?key={_apiKey}";
+
+        //        var prompt = new
+        //        {
+        //            contents = new[]
+        //            {
+        //                new
+        //                {
+        //                    parts = new[]
+        //                    {
+        //                        new { text = $"You are sitting in this meeting. Reply with one simple friendly response to the last statment, in this transcript :\n\n{transcript}" }
+        //                    }
+        //                }
+        //            },
+        //            generationConfig = new
+        //            {
+        //                temperature = 0.7,
+        //                maxOutputTokens = 5000,
+        //            }
+        //        };
+
+        //        var json = JsonSerializer.Serialize(prompt);
+        //        using var content = new StringContent(json, Encoding.UTF8, "application/json");
+
+        //        Console.WriteLine("➡️ Sending request to Gemini...");
+        //        var response = await _httpClient.PostAsync(url, content);
+        //        Console.WriteLine($"⬅️ Response: {response.StatusCode}");
+
+        //        var body = await response.Content.ReadAsStringAsync();
+
+        //        if (!response.IsSuccessStatusCode)
+        //        {
+        //            Console.WriteLine($"❌ Gemini error {response.StatusCode}: {body}");
+        //            return $"Error: {response.StatusCode}";
+        //        }
+
+        //        using var doc = JsonDocument.Parse(body);
+
+        //        Console.WriteLine($"The Body{body}");
+        //        Console.WriteLine($"The Doc{doc}");
+
+        //        var text = doc.RootElement
+        //                    .GetProperty("candidates")[0]
+        //                    .GetProperty("content")
+        //                    .GetProperty("parts")[0]
+        //                    .GetProperty("text")
+        //                    .GetString();
+
+        //        return text ?? string.Empty;
+        //    }
+        //    catch (TaskCanceledException)
+        //    {
+        //        Console.WriteLine("❌ Timeout: Gemini took too long to respond.");
+        //        return "[Timeout]";
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        Console.WriteLine($"❌ Gemini request failed: {ex.Message}");
+        //        return "[Error contacting Gemini]";
+        //    }
+        //}
 
         [HttpPost("upload")]
         public async Task<IActionResult> UploadMeetingFile(IFormFile file)

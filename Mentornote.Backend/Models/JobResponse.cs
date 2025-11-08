@@ -2,7 +2,7 @@
 {
     public class JobResponse
     {
-        public long Id { get; set; }
+        public long jobId { get; set; }
         public string Status { get; set; } = string.Empty;
         public string? ResultMessage { get; set; }
     }

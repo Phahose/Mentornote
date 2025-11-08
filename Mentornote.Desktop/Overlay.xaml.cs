@@ -60,20 +60,55 @@ namespace Mentornote.Desktop
             }
         }
 
+        //private async void Suggestion_Click(object sender, RoutedEventArgs e)
+        //{
+        //    Helper helper = new();
+        //    StatementText.Text = "Generating suggestion...";
+        //    var transcript = await helper.GetFullTranscriptAsync();
+        //    StatementText.Text = transcript;
+        //    var json = JsonSerializer.Serialize(transcript);
+        //    var content = new StringContent(json, Encoding.UTF8, "application/json");
+
+        //    var response = await _http.PostAsync("http://localhost:5085/api/gemini/suggest", content);
+        //    response.EnsureSuccessStatusCode();
+
+
+
+        //    var suggestion = await response.Content.ReadAsStringAsync();
+        //    SuggestionText.Text = suggestion;
+        //}
+
         private async void Suggestion_Click(object sender, RoutedEventArgs e)
         {
-            Helper helper = new();
-            StatementText.Text = "Generating suggestion...";
-            var transcript = await helper.GetFullTranscriptAsync();
-            StatementText.Text = transcript;
-            var json = JsonSerializer.Serialize(transcript);
-            var content = new StringContent(json, Encoding.UTF8, "application/json");
+            try
+            {
+                Helper helper = new();
+                StatementText.Text = "Generating suggestion...";
 
-            var response = await _http.PostAsync("http://localhost:5085/api/gemini/suggest", content);
-            response.EnsureSuccessStatusCode();
+                // 1️⃣ Get transcript
+                var transcript = await helper.GetFullTranscriptAsync();
+                var cleanedTranscript = CleanTranscript(transcript);
+                StatementText.Text = string.Join(
+                    Environment.NewLine,
+                    cleanedTranscript.Split(' ')
+                                .TakeLast(30) // only show 30 most recent words
+                );
 
-            var suggestion = await response.Content.ReadAsStringAsync();
-            SuggestionText.Text = suggestion;
+                // 2️⃣ Serialize to JSON
+                var json = JsonSerializer.Serialize(cleanedTranscript);
+                using var content = new StringContent(json, Encoding.UTF8, "application/json");
+
+                // 3️⃣ POST and get streaming response
+                var response = await _http.PostAsync("http://localhost:5085/api/gemini/suggest", content);
+                response.EnsureSuccessStatusCode();
+
+                var suggestion = await response.Content.ReadAsStringAsync();
+                SuggestionText.Text = suggestion;
+            }
+            catch (Exception ex)
+            {
+                SuggestionText.Text = $"Error: {ex.Message}";
+            }
         }
 
 
@@ -103,6 +138,23 @@ namespace Mentornote.Desktop
                 Console.WriteLine($"❌ Error sending chunk: {ex.Message}");
             }
 
+        }
+
+        private string CleanTranscript(string rawTranscript)
+        {
+            if (string.IsNullOrWhiteSpace(rawTranscript))
+                return string.Empty;
+
+            // Remove duplicate lines and trim whitespace
+            var cleaned = rawTranscript
+                .Split(new[] { '\r', '\n' }, StringSplitOptions.RemoveEmptyEntries)
+                .Select(line => line.Trim())
+                .Where(line => !string.IsNullOrEmpty(line))
+                .Distinct() // remove exact duplicates
+                .ToList();
+
+            // Join back into a single paragraph
+            return string.Join(" ", cleaned);
         }
 
         private async void ProcessAudioFile(object sender, string filePath)

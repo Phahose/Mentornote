@@ -2,9 +2,7 @@
 using Mentornote.Backend.Models;
 using Mentornote.Backend.Services;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Data.SqlClient;
-using Microsoft.Extensions.Configuration;
-using System.Numerics;
+
 
 namespace Mentornote.Backend.Controllers
 {
@@ -50,39 +48,46 @@ namespace Mentornote.Backend.Controllers
 
             var AppointmentId = dBServices.AddAppointment(appointment, UserId);
 
+            foreach (var file in files)
+            {
+                if (file == null || file.Length == 0)
+                {
+                    throw new Exception("No file uploaded.");
+                }
+
+                // 1️⃣ Save to local directory
+                var uploadDir = Path.Combine(Directory.GetCurrentDirectory(), "App_Data", "UploadedFiles");
+                if (!Directory.Exists(uploadDir))
+                {
+                    Directory.CreateDirectory(uploadDir);
+                }
+                var filePath = Path.Combine(uploadDir, file.FileName);
+                documentPaths.Add(filePath);
+
+                using (var stream = new FileStream(filePath, FileMode.Create))
+                {
+                    await file.CopyToAsync(stream);
+                }
+            }
+
             _ = Task.Run(async () =>
             {
                 try
                 {
                     job.Status = "Processing";
                     dBServices.UpdateJob(job);
-                    foreach (var file in files)
-                    {
-                        if (file == null || file.Length == 0)
-                        {
-                            throw new Exception("No file uploaded.");
-                        }
-                        // 1️⃣ Save to local directory
-                        var uploadDir = Path.Combine(Directory.GetCurrentDirectory(), "App_Data", "UploadedFiles");
-                        if (!Directory.Exists(uploadDir))
-                        {
-                            Directory.CreateDirectory(uploadDir);
-                        }
-                        var filePath = Path.Combine(uploadDir, file.FileName);
-                        documentPaths.Add(filePath);
-                        using (var stream = new FileStream(filePath, FileMode.Create))
-                        {
-                            await file.CopyToAsync(stream);
-                        }
+                    foreach (var path in documentPaths)
+                    { 
                         AppointmentDocuments newDoc = new AppointmentDocuments
                         {
                             AppointmentId = AppointmentId,
                             UserId = UserId,
-                            DocumentPath = filePath,
+                            DocumentPath = path,
                         };
                         documentID = dBServices.AddAppointmentDocument(newDoc);
-                        await fileServices.ProcessFileAsync(filePath, documentID);
+                        await fileServices.ProcessFileAsync(path, documentID);
                     }
+
                     job.Status = "Completed";
                     job.ResultMessage = "Appointment uploaded and processed.";
                     dBServices.UpdateJob(job);
@@ -109,7 +114,7 @@ namespace Mentornote.Backend.Controllers
                 var job = dBServices.GetJobStatus(jobId);
 
                 if (job == null)
-                    return NotFound(new { message = "Job not found" });
+                    return NotFound(new { ResultMessage = "Job not found" });
 
                 return Ok(new
                 {
@@ -124,7 +129,7 @@ namespace Mentornote.Backend.Controllers
             }
             catch (Exception ex)
             {
-                return StatusCode(500, new { message = $"Error fetching job status: {ex.Message}" });
+                return StatusCode(500, new { ResultMessage = $"Error fetching job status: {ex.Message}"});
             }
         }
 
