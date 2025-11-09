@@ -19,7 +19,7 @@ namespace Mentornote.Desktop.MVVM
         private string _tempFile;
 
         private readonly List<byte> _buffer = new();          
-        private readonly int _chunkSeconds = 1;              
+        private readonly int _chunkSeconds = 2;              
 
         // This is an event it is not a regular declaration
         // It says "when the audio file is ready and when we have a new chunck of audi ready for processig, notify anyone who is listening"

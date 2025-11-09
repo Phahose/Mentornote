@@ -1,6 +1,7 @@
 ﻿#nullable disable
 using Mentornote.Backend.DTO;
 using Microsoft.AspNetCore.Mvc;
+using System.Diagnostics;
 using System.Net.Http;
 using System.Text;
 using System.Text.Json;
@@ -23,58 +24,84 @@ namespace Mentornote.Backend.Controllers
         [HttpPost("suggest")]
         public async Task<IActionResult> GenerateSuggestionAsync([FromBody] string transcript)
         {
-            var url = $"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-pro:generateContent?key={_apiKey}";
-
-            var payload = new
+            try
             {
-                contents = new[]
+
+                // gemini-2.5-flash-lite
+
+                var url = $"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-lite:generateContent?key={_apiKey}";
+
+                var payload = new
                 {
+                    contents = new[]
+                    {
                     new
                     {
                         role = "user",
                         parts = new[]
                         {
-                            new { text = $"You are in this meeting. Reply with one friendly short response to the last statement:\n\n{transcript}" }
+                            new { text = $"""
+                                            You are attending a live meeting. 
+                                            Read the transcript below and infer the immediate context. 
+                                            Respond **only** to the most recent question or statement, 
+                                            as if you are an active participant in the conversation.
+
+                                            Your reply should be:
+                                            - Friendly, confident, and professional in  tone.
+                                            - Relevant only to the latest message — do not summarize or repeat past content.
+                                            - You may create a persona and details if needed to make the reply sound natural, but avoid fiction or off-topic comments.
+
+                                            Transcript:
+                                            {transcript}
+                                            """ }
                         }
                     }
                 },
-                generationConfig = new
+                    generationConfig = new
+                    {
+                        temperature = 0.7,
+                        maxOutputTokens = 800
+                    },
+                    //  stream = true
+                };
+
+                var json = JsonSerializer.Serialize(payload);
+                var request = new HttpRequestMessage(HttpMethod.Post, url)
                 {
-                    temperature = 0.7,
-                    maxOutputTokens = 5000
-                },
-              //  stream = true
-            };
+                    Content = new StringContent(json, Encoding.UTF8, "application/json")
+                };
+                //var sw = Stopwatch.StartNew();
+                var response = await _httpClient.SendAsync(request);
+                //sw.Stop();
+                //Console.WriteLine($"⏱ Gemini round-trip: {sw.ElapsedMilliseconds} ms  /n {response}");
+                response.EnsureSuccessStatusCode();
 
-            var json = JsonSerializer.Serialize(payload);
-            var request = new HttpRequestMessage(HttpMethod.Post, url)
-            {
-                Content = new StringContent(json, Encoding.UTF8, "application/json")
-            };
-
-            var response = await _httpClient.SendAsync(request);
-            response.EnsureSuccessStatusCode();
-
-            var body = await response.Content.ReadAsStringAsync();
+                var body = await response.Content.ReadAsStringAsync();
 
 
 
-            if (!response.IsSuccessStatusCode)
-            {
-                Console.WriteLine($"❌ Gemini error {response.StatusCode}: {body}");
-                return StatusCode((int)response.StatusCode, body);
+                if (!response.IsSuccessStatusCode)
+                {
+                    Console.WriteLine($"❌ Gemini error {response.StatusCode}: {body}");
+                    return StatusCode((int)response.StatusCode, body);
+                }
+
+                using var doc = JsonDocument.Parse(body);
+                var text = doc.RootElement
+                    .GetProperty("candidates")[0]
+                    .GetProperty("content")
+                    .GetProperty("parts")[0]
+                    .GetProperty("text")
+                    .GetString();
+
+                return Content(text ?? string.Empty, "text/plain");
             }
+            catch (Exception ex)
+            {
 
-            using var doc = JsonDocument.Parse(body);
-            var text = doc.RootElement
-                .GetProperty("candidates")[0]
-                .GetProperty("content")
-                .GetProperty("parts")[0]
-                .GetProperty("text")
-                .GetString();
-
-            return Content(text ?? string.Empty, "text/plain");
-        
+                Console.WriteLine(ex.Message);
+                return StatusCode(500, $"❌ Gemini request failed: {ex.Message}");
+            }
         }
         
         //public async Task<string> GenerateSuggestionAsync([FromBody] string transcript)

@@ -1,3 +1,5 @@
+
+
 -- 1. Add 'AuthProvider' columns to Users table
 ALTER TABLE Users
 ADD 

@@ -88,11 +88,13 @@ namespace Mentornote.Desktop
                 // 1️⃣ Get transcript
                 var transcript = await helper.GetFullTranscriptAsync();
                 var cleanedTranscript = CleanTranscript(transcript);
-                StatementText.Text = string.Join(
-                    Environment.NewLine,
-                    cleanedTranscript.Split(' ')
-                                .TakeLast(30) // only show 30 most recent words
-                );
+                StatementText.Text = string.Join(" ", cleanedTranscript.Split(' ').TakeLast(15));
+
+                //StatementText.Text = string.Join(
+                //    Environment.NewLine,
+                //    cleanedTranscript.Split(' ')
+                //                .TakeLast(30) // only show 30 most recent words
+                //);
 
                 // 2️⃣ Serialize to JSON
                 var json = JsonSerializer.Serialize(cleanedTranscript);
