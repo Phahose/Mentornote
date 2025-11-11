@@ -6,6 +6,7 @@
       xmlns:local="clr-namespace:Mentornote.Desktop.Pages"
       mc:Ignorable="d" 
       d:DesignHeight="450" d:DesignWidth="800"
+      MinWidth="450"
       Title="Meetings">
 
     <!-- Use a Grid so we can place the Add button top-right -->
@@ -38,12 +39,9 @@
                     HorizontalAlignment="Right"
                     DockPanel.Dock="Right"
                     Margin="0,0,0,0"
-                    Click="LoadMore_Click"/>
+                    Click="LoadMore_Click"
+                    Tag="0"/>
 
-            <Button Content="Test Overlay"
-                    Width="140"
-                    Height="40"
-                    Click="OpenOverlay_Click"/>
         </DockPanel>
 
         <!-- LISTS -->
@@ -98,7 +96,9 @@
                                            Foreground="#FF7DBEFF"
                                            FontWeight="SemiBold"
                                            Margin="0,6,0,0"/>
-                                <Button Content="Load More"
+                               
+                                <Button  x:Name="LoadMoreButton"
+                                         Content="Load More"
                                          Width="120"
                                          Height="36"
                                          Background="#FF3A3A3A"
@@ -106,7 +106,28 @@
                                          BorderBrush="#FF4A4A4A"
                                          HorizontalAlignment="Right"
                                          VerticalAlignment="Top"
-                                        Click="LoadMore_Click"/>
+                                         Click="LoadMore_Click"
+                                         Tag="{Binding Id}"/>
+
+                                <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
+                                    <Button Content="Start Overlay"
+                                       Width="140"
+                                       Height="40"
+                                       Click="OpenOverlay_Click"
+                                       Background="#7df5e9"
+                                       Margin="5,0"
+                                       HorizontalAlignment="Right"
+                                       VerticalAlignment="Top"/>
+
+                                     <Button Content="Delete"
+                                       Width="100"
+                                       Height="40"
+                                       Click="OpenOverlay_Click"
+                                       Background="#f5877d"
+                                       Foreground="White"
+                                       HorizontalAlignment="Right"
+                                       VerticalAlignment="Top"/>
+                                </StackPanel>
                             </StackPanel>
                         </Border>
                     </DataTemplate>
@@ -164,15 +185,38 @@
                                            Foreground="#FF7DBEFF"
                                            FontWeight="SemiBold"
                                            Margin="0,6,0,0"/>
-                                <Button Content="Load More"
+                                <Button  Content="Load More"
                                          Width="120"
                                          Height="36"
                                          Background="#FF3A3A3A"
                                          Foreground="White"
                                          BorderBrush="#FF4A4A4A"
-                                         HorizontalAlignment="Right"
+                                         HorizontalAlignment="Left"
+                                         Margin="0,20,0,0"
                                          VerticalAlignment="Top"
-                                        Click="LoadMore_Click"/>
+                                         Click="LoadMore_Click"
+                                        Tag="{Binding Id}"/>
+
+                                <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
+                                    <Button Content="Start Overlay"
+                                     Width="140"
+                                     Height="40"
+                                     Click="OpenOverlay_Click"
+                                     Background="#7df5e9"
+                                     Margin="5,0"
+                                     HorizontalAlignment="Right"
+                                     VerticalAlignment="Top"/>
+
+                                    <Button Content="Delete"
+                                     Width="100"
+                                     Height="40"
+                                     Click="DeleteAppointment_Click"
+                                     Background="#f5877d"
+                                     Foreground="White"
+                                     HorizontalAlignment="Right"
+                                     VerticalAlignment="Top"/>
+                                </StackPanel> 
+                               
                             </StackPanel>
                         </Border>
                     </DataTemplate>

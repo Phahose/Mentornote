@@ -31,10 +31,10 @@ namespace Mentornote.Desktop
         //    DesciptionText = "We We will ber Talking about the ";
         //}
 
-        public AppointmentWindow()
+        public AppointmentWindow(int meetingId)
         {
             InitializeComponent();
-            PopulateInputs(1); // Example appointment ID
+            PopulateInputs(meetingId); // Example appointment ID
             DataContext = this;
         }
 
@@ -172,12 +172,13 @@ namespace Mentornote.Desktop
             DBServices dbServices = new DBServices();
 
             Appointment appointment = new();
-            appointment = dbServices.GetAppointmentById(1,1); // Example appointment ID
+            appointment = dbServices.GetAppointmentById(id,1); // Example appointment ID
 
             List<AppointmentDocuments> docs = new();
-            docs = dbServices.GetAppointmentDocumentsByAppointmentId(appointment.Id, 1); // Example appointment ID
+            docs = dbServices.GetAppointmentDocumentsByAppointmentId(appointment.Id, id); // Example appointment ID
 
-            TitleInput.Text = appointment.Title;
+            TitleInput.Text = appointment.Title ?? "New Appointment";
+            AppointmentInfoTitle.Text = appointment.Title ?? "New Appointment";
             AppointmentDescription.Text = appointment.Description;
             DateInput.Text = appointment.Date.ToString();
             StartTimeInput.Text = appointment.StartTime.ToString();

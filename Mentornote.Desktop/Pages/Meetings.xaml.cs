@@ -94,9 +94,37 @@ namespace Mentornote.Desktop.Pages
         }
         private void LoadMore_Click(object sender, RoutedEventArgs e)
         {
-            var meetingWindow = new AppointmentWindow();
-            meetingWindow.Show();
+            var button = (System.Windows.Controls.Button)sender;
+            Console.WriteLine(button.Tag);
+            if (button?.Tag is int meetingId)
+            {
+                var meetingWindow = new AppointmentWindow(meetingId);
+                meetingWindow.ShowDialog();
+            }
+            if (button?.Tag is "0")
+            {
+                var meetingWindow = new AppointmentWindow(0);
+                meetingWindow.ShowDialog();
+            }
+
         }
+        private void DeleteAppointment_Click(object sender, RoutedEventArgs e)
+        {
+            var button = (System.Windows.Controls.Button)sender;
+            var result = System.Windows.MessageBox.Show(
+                    $"Delete '{button.Tag}' appointment Are you sure",
+                    "Confirm Remove",
+                    MessageBoxButton.YesNo,
+                    MessageBoxImage.Question);
+
+            if (result == MessageBoxResult.Yes)
+            {
+                 
+            }
+
+        }
+
+
         private List<Appointment> GetAppointments()
         {
             var appointments = dBServices.GetAppointmentsByUserId(UserId);
@@ -105,14 +133,5 @@ namespace Mentornote.Desktop.Pages
             return appointments;
         }
     }
-    // Simple model for display
-    public class MeetingItem
-    {
-        public string Title { get; set; } = "";
-        public DateTime When { get; set; }
-        public string Status { get; set; } = "";
 
-        // Convenience property for UI display of date/time
-        public string WhenText => When.ToString("dddd, MMM d, yyyy - h:mm tt");
-    }
 }

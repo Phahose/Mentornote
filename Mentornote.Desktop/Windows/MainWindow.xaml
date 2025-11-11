@@ -5,11 +5,11 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:Mentornote.Desktop"
         mc:Ignorable="d"
-        Title="MainWindow" Height="500" Width="800" MinHeight="500" MinWidth="650">
+        Title="MainWindow" Height="500" Width="800" MinHeight="500" MinWidth="750">
     <Grid>
         <!-- Define two columns: a fixed-width sidebar and a flexible main area -->
         <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="200"/>
+            <ColumnDefinition Width="0.3*"/>
             <!-- Sidebar fixed width -->
             <ColumnDefinition Width="*"/>
             <!-- Main content takes remaining space -->
@@ -44,15 +44,7 @@
                         BorderBrush="#FF4A4A4A"
                         Click="MeetingsButton_Click" />
 
-                <Button x:Name="StudyButton"
-                        Content="Study"
-                        Margin="0,0,0,8"
-                        Height="36"
-                        Background="#FF3A3A3A"
-                        Foreground="White"
-                        BorderBrush="#FF4A4A4A"
-                        Click="StudyButton_Click"
-                        />
+
 
                 <!-- Flexible spacer pushes the items below to the bottom -->
                 <StackPanel Height="0" VerticalAlignment="Stretch"/>
@@ -67,11 +59,7 @@
                         BorderBrush="#FF444444"
                         Margin="0,0,0,8"/>
 
-                <Button Content="About"
-                        Height="36"
-                        Background="#FF2F2F2F"
-                        Foreground="#FFDDDDDD"
-                        BorderBrush="#FF444444"/>
+
                 
             </StackPanel>
         </Border>
