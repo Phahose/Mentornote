@@ -1,4 +1,5 @@
 ﻿#nullable disable
+using DocumentFormat.OpenXml.Vml;
 using Mentornote.Backend.DTO;
 using Microsoft.AspNetCore.Mvc;
 using System.Diagnostics;
@@ -6,6 +7,8 @@ using System.Net.Http;
 using System.Text;
 using System.Text.Json;
 using static System.Net.WebRequestMethods;
+using System.IO;
+using Mentornote.Backend.Services;
 
 namespace Mentornote.Backend.Controllers
 {
@@ -15,54 +18,140 @@ namespace Mentornote.Backend.Controllers
     {
         private readonly string _apiKey;
         private readonly HttpClient _httpClient;
-        public GeminiController(IConfiguration configuration)
+        private readonly RagService _ragService;
+        public GeminiController(IConfiguration configuration, RagService ragService)
         {
             _httpClient = new HttpClient();
             _apiKey = configuration["Gemini:ApiKey"];
+            _ragService = ragService;
         }
 
-        [HttpPost("suggest")]
-        public async Task<IActionResult> GenerateSuggestionAsync([FromBody] string transcript)
+        //[HttpPost("suggest")]
+        //public async Task<IActionResult> GenerateSuggestionAsync([FromBody] string transcript)
+        //{
+        //    try
+        //    {
+
+        //        // gemini-2.5-flash-lite
+        //        var url = $"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-lite:generateContent?key={_apiKey}";
+
+        //        var payload = new
+        //        {
+        //            contents = new[]
+        //            {
+        //            new
+        //            {
+        //                role = "user",
+        //                parts = new[]
+        //                {
+        //                    new { text = $"""
+        //                                    You are attending a live meeting. 
+        //                                    Read the transcript below and infer the immediate context. 
+        //                                    Respond **only** to the most recent question or statement, 
+        //                                    as if you are an active participant in the conversation.
+
+        //                                    Your reply should be:
+        //                                    - Friendly, confident, and professional in  tone.
+        //                                    - Relevant only to the latest message — do not summarize or repeat past content.
+        //                                    - You may create a persona and details if needed to make the reply sound natural, but avoid fiction or off-topic comments.
+
+        //                                    Transcript:
+        //                                    {transcript}
+        //                                    """ }
+        //                }
+        //            }
+        //        },
+        //            generationConfig = new
+        //            {
+        //                temperature = 0.7,
+        //                maxOutputTokens = 800
+        //            },
+        //            //  stream = true
+        //        };
+
+        //        var json = JsonSerializer.Serialize(payload);
+        //        var request = new HttpRequestMessage(HttpMethod.Post, url)
+        //        {
+        //            Content = new StringContent(json, Encoding.UTF8, "application/json")
+        //        };
+        //        //var sw = Stopwatch.StartNew();
+        //        var response = await _httpClient.SendAsync(request);
+        //        //sw.Stop();
+        //        //Console.WriteLine($"⏱ Gemini round-trip: {sw.ElapsedMilliseconds} ms  /n {response}");
+        //        response.EnsureSuccessStatusCode();
+
+        //        var body = await response.Content.ReadAsStringAsync();
+
+
+
+        //        if (!response.IsSuccessStatusCode)
+        //        {
+        //            Console.WriteLine($"❌ Gemini error {response.StatusCode}: {body}");
+        //            return StatusCode((int)response.StatusCode, body);
+        //        }
+
+        //        using var doc = JsonDocument.Parse(body);
+        //        var text = doc.RootElement
+        //            .GetProperty("candidates")[0]
+        //            .GetProperty("content")
+        //            .GetProperty("parts")[0]
+        //            .GetProperty("text")
+        //            .GetString();
+
+        //        return Content(text ?? string.Empty, "text/plain");
+        //    }
+        //    catch (Exception ex)
+        //    {
+
+        //        Console.WriteLine(ex.Message);
+        //        return StatusCode(500, $"❌ Gemini request failed: {ex.Message}");
+        //    }
+        //}
+
+        [HttpPost("suggest/{appointmentId}")]
+        public async Task<IActionResult> GenerateSuggestionAsync(int appointmentId, [FromBody] string transcript)
         {
             try
             {
+                // 1️⃣ Get relevant document context
+          
+                var relevantChunks = await _ragService.GetRelevantChunksAsync(transcript, appointmentId);
+                string context = _ragService.BuildContext(relevantChunks); // create your context string
 
-                // gemini-2.5-flash-lite
+                // 2️⃣ Build final RAG-enhanced prompt
+                string prompt = $"""
+                You are attending a live meeting.  
+                Read the transcript below and infer the immediate context.  
+                Respond only to the most recent question or statement.
 
+                Relevant documents for this meeting (use ONLY if actually relevant):
+                {context}
+
+                Transcript:
+                {transcript}
+                """;
+
+                // 3️⃣ Prepare Gemini request
                 var url = $"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-lite:generateContent?key={_apiKey}";
 
                 var payload = new
                 {
                     contents = new[]
                     {
-                    new
-                    {
-                        role = "user",
-                        parts = new[]
+                        new
                         {
-                            new { text = $"""
-                                            You are attending a live meeting. 
-                                            Read the transcript below and infer the immediate context. 
-                                            Respond **only** to the most recent question or statement, 
-                                            as if you are an active participant in the conversation.
-
-                                            Your reply should be:
-                                            - Friendly, confident, and professional in  tone.
-                                            - Relevant only to the latest message — do not summarize or repeat past content.
-                                            - You may create a persona and details if needed to make the reply sound natural, but avoid fiction or off-topic comments.
-
-                                            Transcript:
-                                            {transcript}
-                                            """ }
+                            role = "user",
+                            parts = new[]
+                            {
+                                new { text = prompt }
+                            }
                         }
-                    }
-                },
+                    },
                     generationConfig = new
                     {
                         temperature = 0.7,
                         maxOutputTokens = 800
-                    },
-                    //  stream = true
+                    }
                 };
 
                 var json = JsonSerializer.Serialize(payload);
@@ -70,15 +159,10 @@ namespace Mentornote.Backend.Controllers
                 {
                     Content = new StringContent(json, Encoding.UTF8, "application/json")
                 };
-                //var sw = Stopwatch.StartNew();
+
+                // 4️⃣ Send to Gemini
                 var response = await _httpClient.SendAsync(request);
-                //sw.Stop();
-                //Console.WriteLine($"⏱ Gemini round-trip: {sw.ElapsedMilliseconds} ms  /n {response}");
-                response.EnsureSuccessStatusCode();
-
                 var body = await response.Content.ReadAsStringAsync();
-
-
 
                 if (!response.IsSuccessStatusCode)
                 {
@@ -86,6 +170,7 @@ namespace Mentornote.Backend.Controllers
                     return StatusCode((int)response.StatusCode, body);
                 }
 
+                // 5️⃣ Extract model response
                 using var doc = JsonDocument.Parse(body);
                 var text = doc.RootElement
                     .GetProperty("candidates")[0]
@@ -98,77 +183,11 @@ namespace Mentornote.Backend.Controllers
             }
             catch (Exception ex)
             {
-
                 Console.WriteLine(ex.Message);
                 return StatusCode(500, $"❌ Gemini request failed: {ex.Message}");
             }
         }
-        
-        //public async Task<string> GenerateSuggestionAsync([FromBody] string transcript)
-        //{
-        //    try
-        //    {
-        //        var url = $"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-pro:generateContent?key={_apiKey}";
 
-        //        var prompt = new
-        //        {
-        //            contents = new[]
-        //            {
-        //                new
-        //                {
-        //                    parts = new[]
-        //                    {
-        //                        new { text = $"You are sitting in this meeting. Reply with one simple friendly response to the last statment, in this transcript :\n\n{transcript}" }
-        //                    }
-        //                }
-        //            },
-        //            generationConfig = new
-        //            {
-        //                temperature = 0.7,
-        //                maxOutputTokens = 5000,
-        //            }
-        //        };
-
-        //        var json = JsonSerializer.Serialize(prompt);
-        //        using var content = new StringContent(json, Encoding.UTF8, "application/json");
-
-        //        Console.WriteLine("➡️ Sending request to Gemini...");
-        //        var response = await _httpClient.PostAsync(url, content);
-        //        Console.WriteLine($"⬅️ Response: {response.StatusCode}");
-
-        //        var body = await response.Content.ReadAsStringAsync();
-
-        //        if (!response.IsSuccessStatusCode)
-        //        {
-        //            Console.WriteLine($"❌ Gemini error {response.StatusCode}: {body}");
-        //            return $"Error: {response.StatusCode}";
-        //        }
-
-        //        using var doc = JsonDocument.Parse(body);
-
-        //        Console.WriteLine($"The Body{body}");
-        //        Console.WriteLine($"The Doc{doc}");
-
-        //        var text = doc.RootElement
-        //                    .GetProperty("candidates")[0]
-        //                    .GetProperty("content")
-        //                    .GetProperty("parts")[0]
-        //                    .GetProperty("text")
-        //                    .GetString();
-
-        //        return text ?? string.Empty;
-        //    }
-        //    catch (TaskCanceledException)
-        //    {
-        //        Console.WriteLine("❌ Timeout: Gemini took too long to respond.");
-        //        return "[Timeout]";
-        //    }
-        //    catch (Exception ex)
-        //    {
-        //        Console.WriteLine($"❌ Gemini request failed: {ex.Message}");
-        //        return "[Error contacting Gemini]";
-        //    }
-        //}
 
         [HttpPost("upload")]
         public async Task<IActionResult> UploadMeetingFile(IFormFile file)
@@ -176,10 +195,10 @@ namespace Mentornote.Backend.Controllers
             if (file == null || file.Length == 0)
                 return BadRequest("No file uploaded.");
 
-            var uploadDir = Path.Combine(Directory.GetCurrentDirectory(), "UploadedFiles");
+            var uploadDir = System.IO.Path.Combine(Directory.GetCurrentDirectory(), "UploadedFiles");
             Directory.CreateDirectory(uploadDir);
 
-            var filePath = Path.Combine(uploadDir, file.FileName);
+            var filePath = System.IO.Path.Combine(uploadDir, file.FileName);
             using (var stream = new FileStream(filePath, FileMode.Create))
             {
                 await file.CopyToAsync(stream);
@@ -242,6 +261,8 @@ namespace Mentornote.Backend.Controllers
                 return $"Error: {ex.Message}";
             }            
         }
+
+        
     }
 }
 

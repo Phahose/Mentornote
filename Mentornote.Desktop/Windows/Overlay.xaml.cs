@@ -167,7 +167,7 @@ namespace Mentornote.Desktop
                 Console.WriteLine($"[Summary] Uploading final audio file: {filePath}");
 
                 using var content = new MultipartFormDataContent();
-                var fileContent = new ByteArrayContent(await File.ReadAllBytesAsync(filePath));
+                var fileContent = new ByteArrayContent(await System.IO.File.ReadAllBytesAsync(filePath));
                 fileContent.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue("audio/wav");
                 content.Add(fileContent, "file", Path.GetFileName(filePath));
 
@@ -178,7 +178,7 @@ namespace Mentornote.Desktop
                 Console.WriteLine($"[Summary] Response: {json}");
 
                 // optional: delete temp file after use
-                File.Delete(filePath);
+                System.IO.File.Delete(filePath);
             }
             catch (Exception ex)
             {

@@ -1,5 +1,7 @@
 ﻿#nullable disable
 using DocumentFormat.OpenXml.Packaging;
+using DocumentFormat.OpenXml.Vml;
+using Mentornote.Backend.DTO;
 using Mentornote.Backend.Models;
 using System.Numerics;
 using System.Text;
@@ -17,7 +19,7 @@ namespace Mentornote.Backend.Services
             _httpClient = new();
         }
 
-        public async Task ProcessFileAsync(string filePath, int documentID)
+        public async Task ProcessFileAsync(string filePath, int documentID, int appointmentId)
         {
             // 1️⃣ Extract text
             string text = ExtractText(filePath);
@@ -40,7 +42,8 @@ namespace Mentornote.Backend.Services
                         AppointmentDocumentId = documentID,
                         ChunkIndex = chunkIndex++,
                         ChunkText = chunk,
-                        Vector = vector
+                        Vector = vector,
+                        AppointmentId = appointmentId,
                     };
 
                     // Save embedding to DB
@@ -57,7 +60,7 @@ namespace Mentornote.Backend.Services
 
         public string ExtractText(string filePath)
         {
-            var ext = Path.GetExtension(filePath).ToLower();
+            var ext = System.IO.Path.GetExtension(filePath).ToLower();
             if (ext == ".txt")
             {
                 return File.ReadAllText(filePath);

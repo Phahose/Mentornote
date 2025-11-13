@@ -137,10 +137,10 @@
             <StackPanel>
 
                 <!-- 🧩 Selected Files (pre-upload) -->
-                <TextBlock Text="Selected Files"
+                <TextBlock Text="Existing Files"
                    Foreground="#FFBFBFBF"
                    FontSize="14"/>
-                <ListView ItemsSource="{Binding SelectedFiles}"
+                <ListView ItemsSource="{Binding AppointmentFiles}"
                   Margin="0,5,0,5"
                   Background="#FF2A2A2A"
                   BorderBrush="#FF333333"
@@ -150,7 +150,7 @@
                         <Style TargetType="ListView">
                             <Style.Triggers>
                                 <!-- when there are no files -->
-                                <DataTrigger Binding="{Binding SelectedFiles.Count}" Value="0">
+                                <DataTrigger Binding="{Binding AppointmentFiles.Count}" Value="0">
                                     <Setter Property="Template">
                                         <Setter.Value>
                                             <ControlTemplate>

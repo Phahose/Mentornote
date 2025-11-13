@@ -9,6 +9,7 @@ using System.Text.Json;
 using System.Windows;
 using System.Windows.Shapes;
 using System.Threading;
+using System.Text.RegularExpressions;
 
 namespace Mentornote.Desktop
 {
@@ -22,7 +23,8 @@ namespace Mentornote.Desktop
             Timeout = TimeSpan.FromMinutes(10) // Set timeout to 10 minutes for large file uploads
         };
       
-        public ObservableCollection<PendingFile> SelectedFiles { get; set; } = new();
+        public ObservableCollection<File> SelectedFiles { get; set; } = new();
+        public ObservableCollection<File> AppointmentFiles { get; set; } = new();
    
 
         //private async void Window_Loaded(object sender, RoutedEventArgs e)
@@ -52,7 +54,7 @@ namespace Mentornote.Desktop
                 foreach (var path in dialog.FileNames)
                 {
                     if (!SelectedFiles.Any(f => f.FilePath == path))
-                        SelectedFiles.Add(new PendingFile { FilePath = path });
+                        SelectedFiles.Add(new File { FilePath = path });
                 }
             }
         }
@@ -132,14 +134,10 @@ namespace Mentornote.Desktop
                     var jobInfo = JsonSerializer.Deserialize<JobResponse>(json);
                     long jobId = jobInfo!.jobId;
 
-                    System.Windows.MessageBox.Show($"✅ Upload started (Job #{jobId}). You can keep working.");
+                    System.Windows.MessageBox.Show($"✅ Upload started You can keep working.");
 
                     StartPollingForStatus(jobId);
                 }
-               
-
-                
-               
             }
             catch (Exception)
             {
@@ -150,7 +148,7 @@ namespace Mentornote.Desktop
       
         private void RemoveFile_Click(object sender, RoutedEventArgs e)
         {
-            if ((sender as FrameworkElement)?.DataContext is PendingFile file)
+            if ((sender as FrameworkElement)?.DataContext is File file)
             {
                 var result = System.Windows.MessageBox.Show(
                     $"Remove '{file.FileName}' from selected files?",
@@ -171,11 +169,20 @@ namespace Mentornote.Desktop
         {
             DBServices dbServices = new DBServices();
 
+            int userId = 1; // Example user ID
             Appointment appointment = new();
-            appointment = dbServices.GetAppointmentById(id,1); // Example appointment ID
+            appointment = dbServices.GetAppointmentById(id,userId); // Example appointment ID
 
+
+            //Populate existing documents
             List<AppointmentDocuments> docs = new();
-            docs = dbServices.GetAppointmentDocumentsByAppointmentId(appointment.Id, id); // Example appointment ID
+            docs = dbServices.GetAppointmentDocumentsByAppointmentId(appointment.Id, userId); // Example appointment ID
+            foreach (var doc in docs)
+            {
+                AppointmentFiles.Add(new File { 
+                    FilePath = doc.DocumentPath 
+                });
+            }
 
             TitleInput.Text = appointment.Title ?? "New Appointment";
             AppointmentInfoTitle.Text = appointment.Title ?? "New Appointment";
@@ -258,11 +265,21 @@ namespace Mentornote.Desktop
             StartTimeInput.Text = nearestHalfHour;
             EndTimeInput.Text = DateTime.Now.AddHours(1).ToString("h:mm tt");
         }
+
+        public static string GetDisplayFileName(string fullFileName)
+        {
+            if (string.IsNullOrWhiteSpace(fullFileName))
+                return string.Empty;
+
+            // Remove GUID + underscore (only if it looks like a GUID)
+            string pattern = @"^[0-9a-fA-F\-]{36}_";
+            return Regex.Replace(fullFileName, pattern, "");
+        }
     }
-    public class PendingFile
+    public class File
     {
         public string FilePath { get; set; } = string.Empty;
-        public string FileName => System.IO.Path.GetFileName(FilePath);
+        public string FileName => AppointmentWindow.GetDisplayFileName(System.IO.Path.GetFileName(FilePath));
     }
 
 }

@@ -17,6 +17,7 @@ namespace Mentornote.Backend
             builder.Services.AddSingleton<Transcribe>();
             builder.Services.AddSingleton<GeminiServices>();
             builder.Services.AddSingleton<ConversationMemory>();  
+            builder.Services.AddSingleton<RagService>();
 
             //Add controllers and Swagger (same as before)
             builder.Services.AddControllers();

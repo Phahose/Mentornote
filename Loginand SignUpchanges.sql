@@ -904,14 +904,20 @@ END;
 CREATE TABLE AppointmentDocumentEmbeddings (
     EmbeddingId INT IDENTITY(1,1) PRIMARY KEY,
     AppointmentDocumentId INT FOREIGN KEY REFERENCES AppointmentNotes(Id),
+	AppointmentId INT FOREIGN KEY REFERENCES Appointments(Id),
     ChunkIndex INT NOT NULL,
     ChunkText NVARCHAR(MAX),
     Vector NVARCHAR(MAX),
     CreatedAt DATETIME2 DEFAULT SYSUTCDATETIME()
 );
 
+Alter Table 
+AppointmentDocumentEmbeddings 
+ADD AppointmentId INT FOREIGN KEY REFERENCES Appointments(Id),
+
 CREATE OR ALTER PROCEDURE AddAppointmentDocumentEmbedding
     @AppointmentDocumentId INT,
+	@AppointmentId INT,
     @ChunkIndex INT,
     @ChunkText NVARCHAR(MAX),
     @Vector NVARCHAR(MAX)
@@ -920,9 +926,9 @@ BEGIN
     SET NOCOUNT ON;
 
     INSERT INTO AppointmentDocumentEmbeddings
-        (AppointmentDocumentId, ChunkIndex, ChunkText, Vector, CreatedAt)
+        (AppointmentDocumentId, AppointmentId, ChunkIndex, ChunkText, Vector, CreatedAt)
     VALUES
-        (@AppointmentDocumentId, @ChunkIndex, @ChunkText, @Vector, SYSUTCDATETIME());
+        (@AppointmentDocumentId, @AppointmentId , @ChunkIndex, @ChunkText, @Vector, SYSUTCDATETIME());
 
     -- Return the ID of the inserted embedding (if you need it in C#)
     SELECT CAST(SCOPE_IDENTITY() AS INT) AS EmbeddingId;
@@ -991,6 +997,30 @@ BEGIN
     FROM BackgroundJobs
     WHERE Id = @JobId;
 END
+
+
+CREATE OR Alter PROCEDURE GetDocumentChunksForAppointment
+    @AppointmentId INT
+AS
+BEGIN
+    SET NOCOUNT ON;
+
+    SELECT 
+        EmbeddingId,
+        AppointmentId,
+        AppointmentDocumentId,
+        ChunkText,
+		ChunkIndex
+        Vector
+    FROM 
+       AppointmentDocumentEmbeddings
+    WHERE 
+        AppointmentId = @AppointmentId;
+END
+
+
+
+
 
 
 DELETE FROM AppointmentDocumentEmbeddings;

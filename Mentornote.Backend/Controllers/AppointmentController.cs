@@ -22,6 +22,7 @@ namespace Mentornote.Backend.Controllers
             var UserId = appointmentDTO.UserId;
             List<string> documentPaths = new();
             int documentID = 0;
+          
 
             BackgroundJob job = new BackgroundJob()
             {
@@ -85,7 +86,7 @@ namespace Mentornote.Backend.Controllers
                             DocumentPath = path,
                         };
                         documentID = dBServices.AddAppointmentDocument(newDoc);
-                        await fileServices.ProcessFileAsync(path, documentID);
+                        await fileServices.ProcessFileAsync(path, documentID, AppointmentId);
                     }
 
                     job.Status = "Completed";

@@ -160,6 +160,7 @@ namespace Mentornote.Backend.Services
             command.CommandType = CommandType.StoredProcedure;
 
             command.Parameters.AddWithValue("@AppointmentDocumentId", embedding.AppointmentDocumentId);
+            command.Parameters.AddWithValue("@AppointmentId", embedding.AppointmentId);
             command.Parameters.AddWithValue("@ChunkIndex", embedding.ChunkIndex);
             command.Parameters.AddWithValue("@ChunkText", embedding.ChunkText);
             command.Parameters.AddWithValue("@Vector", embedding.Vector);
@@ -412,6 +413,45 @@ namespace Mentornote.Backend.Services
             }
 
             return job;
+        }
+
+        public async Task<List<AppointmentDocumentEmbedding>> GetChunksForAppointment(int appointmentId)
+        {
+            var results = new List<AppointmentDocumentEmbedding>();
+
+            using (var conn = new SqlConnection(connectionString))
+            using (var cmd = new SqlCommand("GetDocumentChunksForAppointment", conn))
+            {
+                cmd.CommandType = CommandType.StoredProcedure;
+                cmd.Parameters.AddWithValue("@AppointmentId", appointmentId);
+
+                await conn.OpenAsync();
+                var reader = await cmd.ExecuteReaderAsync();
+
+                while (await reader.ReadAsync())
+                {
+                    results.Add(new AppointmentDocumentEmbedding
+                    {
+                        EmbeddingId = reader.GetInt32(reader.GetOrdinal("EmbeddingId")),
+                        AppointmentId = reader.GetInt32(reader.GetOrdinal("AppointmentId")),
+                        AppointmentDocumentId = reader.GetOrdinal("AppointmentDocumentId"),
+                        ChunkText = reader.GetString(reader.GetOrdinal("ChunkText")),
+                        ChunkIndex = reader.GetInt32(reader.GetOrdinal("ChunkIndex")),
+                        Vector = ByteArrayToFloatArray((byte[])reader["Embedding"]).ToString(),
+                    });
+                }
+            }
+
+            return results;
+        }
+
+
+        private float[] ByteArrayToFloatArray(byte[] bytes)
+        {
+            int floatCount = bytes.Length / 4;
+            float[] floats = new float[floatCount];
+            Buffer.BlockCopy(bytes, 0, floats, 0, bytes.Length);
+            return floats;
         }
 
     }
