@@ -89,24 +89,36 @@ namespace Mentornote.Desktop.Pages
 
         private void OpenOverlay_Click(object sender, RoutedEventArgs e)
         {
-            var overlay = new Overlay();
-            overlay.Show();
+            var button = (System.Windows.Controls.Button)sender;
+            Console.WriteLine(button.Tag);
+
+            if (button?.Tag is int meetingId)
+            {
+                var overlay = new Overlay(meetingId);
+                overlay.Show();
+            }
+
+            
         }
         private void LoadMore_Click(object sender, RoutedEventArgs e)
         {
             var button = (System.Windows.Controls.Button)sender;
-            Console.WriteLine(button.Tag);
+            bool? pageOpen = null;
             if (button?.Tag is int meetingId)
             {
                 var meetingWindow = new AppointmentWindow(meetingId);
-                meetingWindow.ShowDialog();
+                pageOpen = meetingWindow.ShowDialog();
             }
             if (button?.Tag is "0")
             {
                 var meetingWindow = new AppointmentWindow(0);
-                meetingWindow.ShowDialog();
+                pageOpen = meetingWindow.ShowDialog();
             }
 
+            if (pageOpen == true)
+            {
+
+            }
         }
         private void DeleteAppointment_Click(object sender, RoutedEventArgs e)
         {

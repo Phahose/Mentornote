@@ -417,32 +417,41 @@ namespace Mentornote.Backend.Services
 
         public async Task<List<AppointmentDocumentEmbedding>> GetChunksForAppointment(int appointmentId)
         {
-            var results = new List<AppointmentDocumentEmbedding>();
-
-            using (var conn = new SqlConnection(connectionString))
-            using (var cmd = new SqlCommand("GetDocumentChunksForAppointment", conn))
+            try
             {
-                cmd.CommandType = CommandType.StoredProcedure;
-                cmd.Parameters.AddWithValue("@AppointmentId", appointmentId);
+                var results = new List<AppointmentDocumentEmbedding>();
 
-                await conn.OpenAsync();
-                var reader = await cmd.ExecuteReaderAsync();
-
-                while (await reader.ReadAsync())
+                using (var conn = new SqlConnection(connectionString))
+                using (var cmd = new SqlCommand("GetDocumentChunksForAppointment", conn))
                 {
-                    results.Add(new AppointmentDocumentEmbedding
-                    {
-                        EmbeddingId = reader.GetInt32(reader.GetOrdinal("EmbeddingId")),
-                        AppointmentId = reader.GetInt32(reader.GetOrdinal("AppointmentId")),
-                        AppointmentDocumentId = reader.GetOrdinal("AppointmentDocumentId"),
-                        ChunkText = reader.GetString(reader.GetOrdinal("ChunkText")),
-                        ChunkIndex = reader.GetInt32(reader.GetOrdinal("ChunkIndex")),
-                        Vector = ByteArrayToFloatArray((byte[])reader["Embedding"]).ToString(),
-                    });
-                }
-            }
+                    cmd.CommandType = CommandType.StoredProcedure;
+                    cmd.Parameters.AddWithValue("@AppointmentId", appointmentId);
 
-            return results;
+                    await conn.OpenAsync();
+                    var reader = await cmd.ExecuteReaderAsync();
+
+                    while (await reader.ReadAsync())
+                    {
+                        results.Add(new AppointmentDocumentEmbedding
+                        {
+                            EmbeddingId = reader.GetInt32(reader.GetOrdinal("EmbeddingId")),
+                            AppointmentId = reader.GetInt32(reader.GetOrdinal("AppointmentId")),
+                            AppointmentDocumentId = reader.GetOrdinal("AppointmentDocumentId"),
+                            ChunkText = reader.GetString(reader.GetOrdinal("ChunkText")),
+                            ChunkIndex = reader.GetInt32(reader.GetOrdinal("ChunkIndex")),
+                            Vector = reader.GetString(reader.GetOrdinal("Vector"))
+                        });
+                    }
+                }
+
+                return results;
+            }
+            catch (Exception)
+            {
+
+                throw;
+            }
+          
         }
 
 

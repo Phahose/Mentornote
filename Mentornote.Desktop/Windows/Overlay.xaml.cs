@@ -23,8 +23,9 @@ namespace Mentornote.Desktop
         private bool _isListening = false;
         private static readonly HttpClient _http = new HttpClient();
         private string _meetingId;
-       
-        public Overlay()
+        private int appId;
+
+        public Overlay(int appointmentId)
         {
             InitializeComponent();
 
@@ -34,6 +35,8 @@ namespace Mentornote.Desktop
             this.Top = screen.Bounds.Top;
             this.Width = screen.Bounds.Width;
             this.Height = screen.Bounds.Height;
+
+             appId = appointmentId;
 
             Loaded += (_, __) => MakeTransparentLayer();
         }
@@ -60,23 +63,6 @@ namespace Mentornote.Desktop
             }
         }
 
-        //private async void Suggestion_Click(object sender, RoutedEventArgs e)
-        //{
-        //    Helper helper = new();
-        //    StatementText.Text = "Generating suggestion...";
-        //    var transcript = await helper.GetFullTranscriptAsync();
-        //    StatementText.Text = transcript;
-        //    var json = JsonSerializer.Serialize(transcript);
-        //    var content = new StringContent(json, Encoding.UTF8, "application/json");
-
-        //    var response = await _http.PostAsync("http://localhost:5085/api/gemini/suggest", content);
-        //    response.EnsureSuccessStatusCode();
-
-
-
-        //    var suggestion = await response.Content.ReadAsStringAsync();
-        //    SuggestionText.Text = suggestion;
-        //}
 
         private async void Suggestion_Click(object sender, RoutedEventArgs e)
         {
@@ -90,18 +76,12 @@ namespace Mentornote.Desktop
                 var cleanedTranscript = CleanTranscript(transcript);
                 StatementText.Text = string.Join(" ", cleanedTranscript.Split(' ').TakeLast(15));
 
-                //StatementText.Text = string.Join(
-                //    Environment.NewLine,
-                //    cleanedTranscript.Split(' ')
-                //                .TakeLast(30) // only show 30 most recent words
-                //);
-
                 // 2️⃣ Serialize to JSON
                 var json = JsonSerializer.Serialize(cleanedTranscript);
                 using var content = new StringContent(json, Encoding.UTF8, "application/json");
 
                 // 3️⃣ POST and get streaming response
-                var response = await _http.PostAsync("http://localhost:5085/api/gemini/suggest", content);
+                var response = await _http.PostAsync($"http://localhost:5085/api/gemini/suggest/{appId}", content);
                 response.EnsureSuccessStatusCode();
 
                 var suggestion = await response.Content.ReadAsStringAsync();

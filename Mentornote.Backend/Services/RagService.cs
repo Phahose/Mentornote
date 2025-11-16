@@ -46,9 +46,9 @@ namespace Mentornote.Backend.Services
             return scored.Take(3).Select(x => x.Chunk).ToList();
         }
 
-        public double CosineSimilarity(List<double> vectorA, string vectorBString)
+        public double CosineSimilarity(List<double> vectorA, string vectorAppointmentJson)
         {
-            List<double> vectorB = JsonSerializer.Deserialize<List<double>>(vectorBString);
+            List<double> vectorB = ParseEmbeddingString(vectorAppointmentJson);
             double dot = 0.0;
             double magA = 0.0;
             double magB = 0.0;
@@ -105,6 +105,16 @@ namespace Mentornote.Backend.Services
                 return "";
 
             return string.Join("\n\n", chunks.Select(c => c.ChunkText));
+        }
+
+        public List<double> ParseEmbeddingString(string json)
+        {
+            var parsed = JsonSerializer.Deserialize<GeminiEmbeddingResponse>(json);
+
+            if (parsed == null || parsed.embedding == null || parsed.embedding.values == null)
+                throw new Exception("Invalid embedding JSON format");
+
+            return parsed.embedding.values;
         }
 
     }

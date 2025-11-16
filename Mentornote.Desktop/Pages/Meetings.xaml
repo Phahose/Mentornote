@@ -117,7 +117,8 @@
                                        Background="#7df5e9"
                                        Margin="5,0"
                                        HorizontalAlignment="Right"
-                                       VerticalAlignment="Top"/>
+                                       VerticalAlignment="Top"
+                                       Tag="{Binding Id}"/>
 
                                      <Button Content="Delete"
                                        Width="100"
@@ -126,7 +127,8 @@
                                        Background="#f5877d"
                                        Foreground="White"
                                        HorizontalAlignment="Right"
-                                       VerticalAlignment="Top"/>
+                                       VerticalAlignment="Top"
+                                       Tag="{Binding Id}"/>
                                 </StackPanel>
                             </StackPanel>
                         </Border>
@@ -205,7 +207,8 @@
                                      Background="#7df5e9"
                                      Margin="5,0"
                                      HorizontalAlignment="Right"
-                                     VerticalAlignment="Top"/>
+                                     VerticalAlignment="Top"
+                                     Tag="{Binding Id}"/>
 
                                     <Button Content="Delete"
                                      Width="100"
@@ -214,7 +217,8 @@
                                      Background="#f5877d"
                                      Foreground="White"
                                      HorizontalAlignment="Right"
-                                     VerticalAlignment="Top"/>
+                                     VerticalAlignment="Top"
+                                     Tag="{Binding Id}"/>
                                 </StackPanel> 
                                
                             </StackPanel>
