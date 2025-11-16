@@ -38,19 +38,37 @@ namespace Mentornote.Backend.Controllers
 
                 // 2️⃣ Build final RAG-enhanced prompt
                 string prompt = $"""
-                You are attending a live meeting.  
-                Read the transcript below and infer the immediate context.  
-                Respond only to the most recent question or statement.
-                Your reply should be:
-                 - Friendly, confident, and professional in  tone.
-                 - Relevant only to the latest message — do not summarize or repeat past content.
-                 - You may create a persona and details if needed to make the reply sound natural, but avoid fiction or off-topic comments.
+                You are assisting a user during a live meeting.
 
-                Relevant documents for this meeting (use ONLY if actually relevant):
+                Your job is to generate a natural, helpful reply ONLY to the most recent question or statement in the transcript. 
+                Keep the reply short, confident, and appropriate for the situation.
+
+                USE OF DOCUMENT CONTEXT:
+                - Use information from the attached documents ONLY if it is clearly relevant to the user's most recent statement.
+                - Never invent or alter factual information found in the documents (e.g., job history, dates, credentials).
+                - If the transcript does not relate to the documents, ignore them completely.
+
+                CREATIVITY RULE:
+                - You may add light conversational details (tone, friendliness, smoothness) to make the reply sound natural.
+                - You may NOT invent new factual details about the user, their background, or any content in the documents.
+                - You may invent details about the users professional experience or knowledge width if there is no relevant information in the document
+                - If context is missing, make a reasonable, generic response without fabricating specific facts.
+
+                TASK:
+                1. Understand the user's most recent message.
+                2. Decide whether document context applies.
+                3. Produce a single natural reply.
+
+                ---
+
+                Relevant documents (may be empty or unused):
                 {context}
 
                 Transcript:
                 {transcript}
+
+                Respond only with the reply the user should say next.
+                
                 """;
 
                 // 3️⃣ Prepare Gemini request

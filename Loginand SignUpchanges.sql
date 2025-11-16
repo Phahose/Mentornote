@@ -1010,7 +1010,7 @@ BEGIN
         AppointmentId,
         AppointmentDocumentId,
         ChunkText,
-		ChunkIndex
+		ChunkIndex,
         Vector
     FROM 
        AppointmentDocumentEmbeddings
@@ -1019,8 +1019,11 @@ BEGIN
 END
 
 
+Exec GetDocumentChunksForAppointment 2
 
-
+SELECT ChunkText
+FROM AppointmentDocumentEmbeddings
+WHERE AppointmentId = 2
 
 
 DELETE FROM AppointmentDocumentEmbeddings;
