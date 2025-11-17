@@ -7,6 +7,7 @@ using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
+using System.Net.Http;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
@@ -18,6 +19,7 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
+using static System.Net.WebRequestMethods;
 
 namespace Mentornote.Desktop.Pages
 {
@@ -33,6 +35,11 @@ namespace Mentornote.Desktop.Pages
         public ObservableCollection<Appointment> Past { get; } = new();
         public DBServices dBServices = new();
         public int UserId = 1; // Placeholder for current user ID
+        private static readonly HttpClient _http = new HttpClient()
+        {
+            Timeout = TimeSpan.FromMinutes(10) // Set timeout to 10 minutes for large file uploads
+        };
+
 
         public Meetings()
         {
@@ -51,22 +58,49 @@ namespace Mentornote.Desktop.Pages
             {
                 NoAppointmentsPanel.Visibility = Visibility.Collapsed;
                 UpcomingAppointmentsList.Visibility = Visibility.Visible; 
-                PastAppointmentsList.Visibility = Visibility.Visible; 
-               
+                PastAppointmentsList.Visibility = Visibility.Visible;
+
+
+                var today = DateTime.Today;
+                var now = DateTime.Now;
+
                 foreach (var appointment in appointments)
                 {
-                    if (appointment.StartTime >= DateTime.UtcNow)
+                    // FUTURE DATE → always upcoming
+                    if (appointment.Date > today)
                     {
-                        Upcoming.Add(new Appointment
-                        {
-                            Id = appointment.Id,
-                            Title = appointment.Title,
-                            Description = appointment.Description,
-                            StartTime = appointment.StartTime,
-                            EndTime = appointment.EndTime,
-                            Status = appointment.Status,
-                        });
+                        Upcoming.Add(appointment);
                     }
+                    // TODAY → compare only the time portion
+                    else if (appointment.Date == today)
+                    {
+                        if (appointment.StartTime.HasValue && appointment.StartTime.Value.TimeOfDay > now.TimeOfDay)
+
+                        {
+                            Upcoming.Add(new Appointment
+                            {
+                                Id = appointment.Id,
+                                Title = appointment.Title,
+                                Description = appointment.Description,
+                                StartTime = appointment.StartTime,
+                                EndTime = appointment.EndTime,
+                                Status = appointment.Status,
+                            });
+                        }
+                        else
+                        {
+                            Past.Add(new Appointment
+                            {
+                                Id = appointment.Id,
+                                Title = appointment.Title,
+                                Description = appointment.Description,
+                                StartTime = appointment.StartTime,
+                                EndTime = appointment.EndTime,
+                                Status = appointment.Status,
+                            });
+                        }
+                    }
+                    // PAST DATE → always past
                     else
                     {
                         Past.Add(new Appointment
@@ -83,7 +117,12 @@ namespace Mentornote.Desktop.Pages
                     Appointments.Add(appointment);
                 }
             }
-           
+
+            if (Upcoming.Count == 0)
+            {
+                NoUpcomingAppointmentsPanel.Visibility = Visibility.Visible;
+                UpcomingAppointmentsList.Visibility = Visibility.Collapsed;
+            }
 
         }
 
@@ -120,21 +159,42 @@ namespace Mentornote.Desktop.Pages
 
             }
         }
-        private void DeleteAppointment_Click(object sender, RoutedEventArgs e)
+        private async void DeleteAppointment_Click(object sender, RoutedEventArgs e)
         {
             var button = (System.Windows.Controls.Button)sender;
-            var result = System.Windows.MessageBox.Show(
-                    $"Delete '{button.Tag}' appointment Are you sure",
-                    "Confirm Remove",
-                    MessageBoxButton.YesNo,
-                    MessageBoxImage.Question);
 
-            if (result == MessageBoxResult.Yes)
+            var confirm = System.Windows.MessageBox.Show(
+                $"Delete appointment '{button.Tag}'? Are you sure? You want to delete There is NO WAY of Retriving it back",
+                "Confirm Delete",
+                MessageBoxButton.YesNo,
+                MessageBoxImage.Warning);
+
+            if (confirm != MessageBoxResult.Yes)
+                return;
+
+            int appointmentId = (int)button.Tag;   
+
+            try
             {
-                 
-            }
+                string url = $"http://localhost:5085/api/appointments/{appointmentId}";
 
+                using var response = await _http.DeleteAsync(url);  
+
+                if (!response.IsSuccessStatusCode)
+                {
+                    string error = await response.Content.ReadAsStringAsync();
+                    System.Windows.MessageBox.Show($"Delete failed: {error}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                    return;
+                }
+
+                System.Windows.MessageBox.Show("Appointment deleted successfully.", "Success");
+            }
+            catch (Exception ex)
+            {
+                System.Windows.MessageBox.Show($"An error occurred: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
         }
+
 
 
         private List<Appointment> GetAppointments()

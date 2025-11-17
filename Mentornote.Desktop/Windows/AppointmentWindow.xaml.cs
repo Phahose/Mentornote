@@ -38,6 +38,12 @@ namespace Mentornote.Desktop
             InitializeComponent();
             PopulateInputs(meetingId); // Example appointment ID
             DataContext = this;
+
+            if (meetingId != 0)
+            {
+                AddAppointmentButton.Visibility = Visibility.Collapsed;
+                UpdateAppointmentButton.Visibility = Visibility.Visible;
+            }
         }
 
         private void ChooseFiles_Click(object sender, RoutedEventArgs e)

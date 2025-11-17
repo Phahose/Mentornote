@@ -5,7 +5,8 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:Mentornote.Desktop"
         mc:Ignorable="d"
-        Title="MainWindow" Height="500" Width="800" MinHeight="500" MinWidth="750">
+        Title="MainWindow" Height="500" Width="800" MinHeight="500" MinWidth="750"
+        WindowState="Maximized">
     <Grid>
         <!-- Define two columns: a fixed-width sidebar and a flexible main area -->
         <Grid.ColumnDefinitions>
@@ -36,7 +37,7 @@
                            Margin="0,0,0,8"/>
 
                 <Button x:Name="MeetingButton"
-                        Content="MeetingsButton" 
+                        Content="Appointments" 
                         Margin="0,0,0,10"   
                         Height="36"
                         Background="#FF3A3A3A"
@@ -73,7 +74,7 @@
                 
             <!-- Page title on the left -->
             <TextBlock  x:Name="HeaderTitle"
-                        Text="Meetings"       
+                        Text="Appointments"       
                         FontSize="20"
                         FontWeight="SemiBold"
                         Foreground="White"

@@ -22,11 +22,11 @@
 
         <!-- HEADER -->
         <DockPanel Grid.Row="0" Margin="0,0,0,10">
-            <TextBlock Text="Meetings"
+            <!--<TextBlock Text="Appointments "
                        FontSize="18"
                        FontWeight="SemiBold"
                        Foreground="White"
-                       DockPanel.Dock="Left"/>
+                       DockPanel.Dock="Left"/>-->
 
             <!-- The Add Meeting button -->
             <Button Content="＋ Add Appointment"
@@ -45,201 +45,245 @@
         </DockPanel>
 
         <!-- LISTS -->
-        <StackPanel Grid.Row="1">
-            <ListView x:Name="UpcomingAppointmentsList"
-                      ItemsSource="{Binding Upcoming}"
-                      Background="#FF232323"
-                      BorderBrush="#FF333333"
-                      Foreground="White"
-                      Margin="0,0,0,20"
-                      Padding="4">
+        <ScrollViewer Grid.Row="1"
+              VerticalScrollBarVisibility="Auto"
+              HorizontalScrollBarVisibility="Disabled"
+              ScrollViewer.CanContentScroll="False">
 
 
-                <ListView.ItemContainerStyle>
-                    <Style TargetType="ListViewItem">
-                        <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
-                    </Style>
-                </ListView.ItemContainerStyle>
+            <StackPanel>
+                <TextBlock Text="Up Comming Appointments"
+                           FontSize="18"
+                           FontWeight="SemiBold"
+                           Foreground="White"
+                           DockPanel.Dock="Left"
+                           Grid.Row="0"
+                           Margin="0,20"/>
 
-                <ListView.ItemTemplate>
-                    <DataTemplate>
-                        <Border Background="#FF2A2A2A"
-                                BorderBrush="#FF3A3A3A"
-                                BorderThickness="1"
-                                CornerRadius="8"
-                                Padding="12"
-                                Margin="0,6,0,6">
+                <StackPanel x:Name="NoUpcomingAppointmentsPanel"
+                            Visibility="Collapsed"
+                            HorizontalAlignment="Center"
+                            VerticalAlignment="Center"
+                            Margin="20">
 
-                            <StackPanel>
-                                <StackPanel Orientation="Horizontal">
-                                    <TextBlock Text="{Binding Title}"
-                                     FontSize="15"
-                                     FontWeight="Bold"
-                                     Foreground="White"/>
+                    <TextBlock Text="No upcoming Appointments"
+               FontStyle="Italic"
+               Foreground="Gray"
+               TextAlignment="Center"
+               FontSize="15"/>
 
-                                    <TextBlock Text="{Binding StartTime,  StringFormat='{}{0:hh:mm tt}'}"
-                                     FontSize="15"
-                                     FontWeight="Bold"
-                                     Foreground="Olive"/>
-                                    
-                                    <TextBlock Text="{Binding EndTime, StringFormat='{}{0:hh:mm tt}'}"
-                                     FontSize="15"
-                                     FontWeight="Bold"
-                                     Foreground="Olive"/>
-                                    
-                                </StackPanel>
-                              
-                                <TextBlock Text="{Binding Description}" 
-                                           Foreground="#FFBFBFBF" 
-                                           Margin="0,2,0,0"/>
-                                <TextBlock Text="{Binding Status}" 
-                                           Foreground="#FF7DBEFF"
-                                           FontWeight="SemiBold"
-                                           Margin="0,6,0,0"/>
-                               
-                                <Button  x:Name="LoadMoreButton"
-                                         Content="Load More"
-                                         Width="120"
-                                         Height="36"
-                                         Background="#FF3A3A3A"
-                                         Foreground="White"
-                                         BorderBrush="#FF4A4A4A"
-                                         HorizontalAlignment="Right"
-                                         VerticalAlignment="Top"
-                                         Click="LoadMore_Click"
-                                         Tag="{Binding Id}"/>
+                </StackPanel>
 
-                                <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
-                                    <Button Content="Start Overlay"
-                                       Width="140"
-                                       Height="40"
-                                       Click="OpenOverlay_Click"
-                                       Background="#7df5e9"
-                                       Margin="5,0"
-                                       HorizontalAlignment="Right"
-                                       VerticalAlignment="Top"
-                                       Tag="{Binding Id}"/>
-
-                                     <Button Content="Delete"
-                                       Width="100"
-                                       Height="40"
-                                       Click="OpenOverlay_Click"
-                                       Background="#f5877d"
-                                       Foreground="White"
-                                       HorizontalAlignment="Right"
-                                       VerticalAlignment="Top"
-                                       Tag="{Binding Id}"/>
-                                </StackPanel>
-                            </StackPanel>
-                        </Border>
-                    </DataTemplate>
-                </ListView.ItemTemplate>
-                
-            </ListView>
-            <ListView x:Name="PastAppointmentsList"
-                      ItemsSource="{Binding Past}"
-                      Background="#FF232323"
-                      BorderBrush="#FF333333"
-                      Foreground="White"
-                      Margin="0,0,0,20"
-                      Padding="4">
+                <ListView x:Name="UpcomingAppointmentsList"
+                          ItemsSource="{Binding Upcoming}"
+                          Background="#FF232323"
+                          BorderBrush="#FF333333"
+                          Foreground="White"
+                          Margin="0,0,0,20"
+                          Padding="4"
+                          ScrollViewer.CanContentScroll="False"
+                          Grid.Row="1">
 
 
-                <ListView.ItemContainerStyle>
-                    <Style TargetType="ListViewItem">
-                        <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
-                    </Style>
-                </ListView.ItemContainerStyle>
+                    <ListView.ItemContainerStyle>
+                        <Style TargetType="ListViewItem">
+                            <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
+                        </Style>
+                    </ListView.ItemContainerStyle>
 
-                <ListView.ItemTemplate>
-                    <DataTemplate>
-                        <Border Background="#FF2A2A2A"
-                                BorderBrush="#FF3A3A3A"
-                                BorderThickness="1"
-                                CornerRadius="8"
-                                Padding="12"
-                                Margin="0,6,0,6">
+                    <ListView.ItemTemplate>
+                        <DataTemplate>
+                            <Border Background="#FF2A2A2A"
+                                    BorderBrush="#FF3A3A3A"
+                                    BorderThickness="1"
+                                    CornerRadius="8"
+                                    Padding="12"
+                                    Margin="0,6,0,6">
 
-                            <StackPanel>
-                                <StackPanel Orientation="Horizontal">
-                                    <TextBlock Text="{Binding Title}"
-                                               FontSize="15"
-                                               FontWeight="Bold"
-                                               Foreground="White"/>
+                                <StackPanel>
+                                    <StackPanel Orientation="Horizontal">
+                                        <TextBlock Text="{Binding Title}"
+                                                   FontSize="15"
+                                                   FontWeight="Bold"
+                                                   Foreground="White"/>
 
-                                    <TextBlock Text="{Binding StartTime, StringFormat='{}{0:hh:mm tt}'}"
-                                               FontSize="10"
-                                               FontWeight="Bold"
-                                               Foreground="LightBlue"
-                                               Margin="10,5"/>
+                                        <TextBlock Text="{Binding StartTime, StringFormat='{}{0:hh:mm tt}'}"
+                                                   FontSize="10"
+                                                   FontWeight="Bold"
+                                                   Foreground="LightBlue"
+                                                   Margin="10,5"/>
 
-                                    <TextBlock Text="{Binding EndTime, StringFormat='{}{0:hh:mm tt}'}"
-                                               FontSize="10"
-                                               FontWeight="Bold"
-                                               Foreground="LightBlue"
-                                               Margin="2,5"/>
+                                        <TextBlock Text="{Binding EndTime, StringFormat='{}{0:hh:mm tt}'}"
+                                                   FontSize="10"
+                                                   FontWeight="Bold"
+                                                   Foreground="LightBlue"
+                                                   Margin="2,5"/>       
 
-                                </StackPanel>
-                                <TextBlock Text="{Binding Description}" 
-                                           Foreground="#FFBFBFBF" 
-                                           Margin="0,2,0,0"/>
-                                <TextBlock Text="{Binding Status}" 
-                                           Foreground="#FF7DBEFF"
-                                           FontWeight="SemiBold"
-                                           Margin="0,6,0,0"/>
-                                <Button  Content="Load More"
-                                         Width="120"
-                                         Height="36"
-                                         Background="#FF3A3A3A"
-                                         Foreground="White"
-                                         BorderBrush="#FF4A4A4A"
-                                         HorizontalAlignment="Left"
-                                         Margin="0,20,0,0"
-                                         VerticalAlignment="Top"
-                                         Click="LoadMore_Click"
+                                    </StackPanel>
+
+                                    <TextBlock Text="{Binding Description}" 
+                                               Foreground="#FFBFBFBF" 
+                                               Margin="0,2,0,0"/>
+                                    <TextBlock Text="{Binding Status}" 
+                                               Foreground="#FF7DBEFF"
+                                               FontWeight="SemiBold"
+                                               Margin="0,6,0,0"/>
+
+                                    <Button  Content="Load More"
+                                             Width="120"
+                                             Height="36"
+                                             Background="#FF3A3A3A"
+                                             Foreground="White"
+                                             BorderBrush="#FF4A4A4A"
+                                             HorizontalAlignment="Left"
+                                             Margin="0,20,0,0"
+                                             VerticalAlignment="Top"
+                                             Click="LoadMore_Click"
                                         Tag="{Binding Id}"/>
 
-                                <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
-                                    <Button Content="Start Overlay"
-                                     Width="140"
-                                     Height="40"
-                                     Click="OpenOverlay_Click"
-                                     Background="#7df5e9"
-                                     Margin="5,0"
-                                     HorizontalAlignment="Right"
-                                     VerticalAlignment="Top"
-                                     Tag="{Binding Id}"/>
+                                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
+                                        <Button Content="Start Overlay"
+                                                Width="140"
+                                                Height="40"
+                                                Click="OpenOverlay_Click"
+                                                Background="#7df5e9"
+                                                Margin="5,0"
+                                                HorizontalAlignment="Right"
+                                                VerticalAlignment="Top"
+                                                Tag="{Binding Id}"/>
 
-                                    <Button Content="Delete"
-                                     Width="100"
-                                     Height="40"
-                                     Click="DeleteAppointment_Click"
-                                     Background="#f5877d"
-                                     Foreground="White"
-                                     HorizontalAlignment="Right"
-                                     VerticalAlignment="Top"
-                                     Tag="{Binding Id}"/>
-                                </StackPanel> 
-                               
-                            </StackPanel>
-                        </Border>
-                    </DataTemplate>
-                </ListView.ItemTemplate>
-                
-            </ListView>
-            <StackPanel x:Name="NoAppointmentsPanel"
-                        Visibility="Collapsed"
-                        HorizontalAlignment="Center"
-                        VerticalAlignment="Center"
-                        Margin="20">
-                
-                <TextBlock Text="No appointments created yet."
-                           FontStyle="Italic"
-                           Foreground="Gray"
-                           TextAlignment="Center"/>
-                
+                                        <Button Content="Delete"
+                                                Width="100"
+                                                Height="40"
+                                                Click="OpenOverlay_Click"
+                                                Background="#f5877d"
+                                                Foreground="White"
+                                                HorizontalAlignment="Right"
+                                                VerticalAlignment="Top"
+                                                Tag="{Binding Id}"/>
+                                    </StackPanel>
+                                </StackPanel>
+                            </Border>
+                        </DataTemplate>
+                    </ListView.ItemTemplate>
+                </ListView>
+
+                <!--Past Appointments-->
+                <TextBlock Text="Past Appointments"
+                           FontSize="18"
+                           FontWeight="SemiBold"
+                           Foreground="White"
+                           DockPanel.Dock="Left"
+                           Grid.Row="2"
+                           Margin="0,20"/>
+
+                <ListView x:Name="PastAppointmentsList"
+                          ItemsSource="{Binding Past}"
+                          Background="#FF232323"
+                          BorderBrush="#FF333333"
+                          Foreground="White"
+                          Margin="0,0,0,20"
+                          Padding="4"
+                          ScrollViewer.CanContentScroll="False"
+                          Grid.Row="3">
+
+
+                    <ListView.ItemContainerStyle>
+                        <Style TargetType="ListViewItem">
+                            <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
+                        </Style>
+                    </ListView.ItemContainerStyle>
+
+                    <ListView.ItemTemplate>
+                        <DataTemplate>
+                            <Border Background="#FF2A2A2A"
+                                    BorderBrush="#FF3A3A3A"
+                                    BorderThickness="1"
+                                    CornerRadius="8"
+                                    Padding="12"
+                                    Margin="0,6,0,6">
+                                <StackPanel>
+                                    <StackPanel Orientation="Horizontal">
+                                        <TextBlock Text="{Binding Title}"
+                                                   FontSize="15"
+                                                   FontWeight="Bold"
+                                                   Foreground="White"/>
+
+                                        <TextBlock Text="{Binding StartTime, StringFormat='{}{0:hh:mm tt}'}"
+                                                   FontSize="10"
+                                                   FontWeight="Bold"
+                                                   Foreground="LightBlue"
+                                                   Margin="10,5"/>
+
+                                        <TextBlock Text="{Binding EndTime, StringFormat='{}{0:hh:mm tt}'}"
+                                                   FontSize="10"
+                                                   FontWeight="Bold"
+                                                   Foreground="LightBlue"
+                                                   Margin="2,5"/>
+
+                                    </StackPanel>
+                                    <TextBlock Text="{Binding Description}" 
+                                               Foreground="#FFBFBFBF" 
+                                               Margin="0,2,0,0"/>
+                                    <TextBlock Text="{Binding Status}" 
+                                               Foreground="#FF7DBEFF"
+                                               FontWeight="SemiBold"
+                                               Margin="0,6,0,0"/>
+                                    <Button  Content="Load More"
+                                             Width="120"
+                                             Height="36"
+                                             Background="#FF3A3A3A"
+                                             Foreground="White"
+                                             BorderBrush="#FF4A4A4A"
+                                             HorizontalAlignment="Left"
+                                             Margin="0,20,0,0"
+                                             VerticalAlignment="Top"
+                                             Click="LoadMore_Click"
+                                             Tag="{Binding Id}"/>
+
+                                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
+                                        <Button Content="Start Overlay"
+                                                Width="140"
+                                                Height="40"
+                                                Click="OpenOverlay_Click"
+                                                Background="#7df5e9"
+                                                Margin="5,0"
+                                                HorizontalAlignment="Right"
+                                                VerticalAlignment="Top"
+                                                Tag="{Binding Id}"/>
+
+                                        <Button Content="Delete"
+                                                Width="100"
+                                                Height="40"
+                                                Click="DeleteAppointment_Click"
+                                                Background="#f5877d"
+                                                Foreground="White"
+                                                HorizontalAlignment="Right"
+                                                VerticalAlignment="Top"
+                                                Tag="{Binding Id}"/>
+                                    </StackPanel>
+
+                                </StackPanel>
+                            </Border>
+                        </DataTemplate>
+                    </ListView.ItemTemplate>
+
+                </ListView>
+                <StackPanel x:Name="NoAppointmentsPanel"
+                            Visibility="Collapsed"
+                            HorizontalAlignment="Center"
+                            VerticalAlignment="Center"
+                            Margin="20">
+
+                    <TextBlock Text="No appointments created yet."
+                               FontStyle="Italic"
+                               Foreground="Gray"
+                               TextAlignment="Center"/>
+
+                </StackPanel>
             </StackPanel>
-        </StackPanel>
+
+        </ScrollViewer>
 
     </Grid>
 </Page>

@@ -116,7 +116,9 @@
                     </StackPanel>
                 </StackPanel>
 
-                <Button Content="Input Appointment"
+                <Button 
+                        x:Name="AddAppointmentButton"
+                        Content="Add Appointment"
                         Width="320" Height="36"
                         Margin="20,0,0,0"
                         Background="MediumSeaGreen"
@@ -125,6 +127,19 @@
                         HorizontalAlignment="Center"
                         Grid.Row="1" Grid.Column="0"
                         Click="UploadAll_Click"/>
+                <Button 
+                        x:Name="UpdateAppointmentButton"
+                        Content="Update Appointment"
+                        Width="320" Height="36"
+                        Margin="20,0,0,0"
+                        Background="MediumOrchid"
+                        Foreground="White"
+                        BorderBrush="#FF4A4A4A"
+                        HorizontalAlignment="Center"
+                        Grid.Row="1" Grid.Column="0"
+                        Click="UploadAll_Click" 
+                        Visibility="Collapsed"/>
+                
             </StackPanel>
         </Border>
   

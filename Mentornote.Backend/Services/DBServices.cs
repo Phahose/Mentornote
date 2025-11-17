@@ -454,14 +454,30 @@ namespace Mentornote.Backend.Services
           
         }
 
-
-        private float[] ByteArrayToFloatArray(byte[] bytes)
+        public async Task DeleteAppointmentAsync(int appointmentId)
         {
-            int floatCount = bytes.Length / 4;
-            float[] floats = new float[floatCount];
-            Buffer.BlockCopy(bytes, 0, floats, 0, bytes.Length);
-            return floats;
-        }
+            try
+            {
+                using SqlConnection conn = new SqlConnection(connectionString);
+                using SqlCommand cmd = new SqlCommand("DeleteAppointment", conn)
+                {
+                    CommandType = CommandType.StoredProcedure
+                };
 
+                // Add parameter
+                cmd.Parameters.Add(new SqlParameter("@AppointmentId", SqlDbType.Int)
+                {
+                    Value = appointmentId
+                });
+
+                await conn.OpenAsync();
+                await cmd.ExecuteNonQueryAsync();
+            }
+            catch (Exception ex)
+            {
+                // Log error here if needed
+                throw new Exception($"Error deleting appointment {appointmentId}: {ex.Message}", ex);
+            }
+        }
     }
 }

@@ -134,6 +134,19 @@ namespace Mentornote.Backend.Controllers
             }
         }
 
+        [HttpDelete("{appointmentId}")]
+        public async Task<IActionResult> DeleteAppointment(int appointmentId)
+        {
+            try
+            {
+                await dBServices.DeleteAppointmentAsync(appointmentId);
+                return Ok(new { message = "Appointment deleted successfully." });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { error = ex.Message });
+            }
+        }
     }
 }
 
