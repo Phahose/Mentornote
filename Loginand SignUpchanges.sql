@@ -891,15 +891,42 @@ BEGIN
 END;
 
 CREATE OR ALTER PROCEDURE DeleteAppointment
-    @UserId INT,
-    @Id INT
+(
+    @AppointmentId INT
+)
 AS
 BEGIN
     SET NOCOUNT ON;
 
-    DELETE FROM Appointments
-    WHERE Id = @Id AND UserId = @UserId;
+    BEGIN TRY
+        BEGIN TRAN
+
+
+        DELETE FROM AppointmentDocumentEmbeddings
+        WHERE AppointmentId = @AppointmentId;
+
+
+        DELETE FROM AppointmentNotes
+        WHERE AppointmentId = @AppointmentId;
+
+        DELETE FROM Appointments
+        WHERE Id = @AppointmentId;
+
+        COMMIT TRAN
+    END TRY
+    BEGIN CATCH
+        IF @@TRANCOUNT > 0
+            ROLLBACK TRAN;
+
+        -- Throw an error back to C#
+        DECLARE @ErrorMessage NVARCHAR(4000) = ERROR_MESSAGE();
+        DECLARE @ErrorSeverity INT = ERROR_SEVERITY();
+        DECLARE @ErrorState INT = ERROR_STATE();
+
+        RAISERROR (@ErrorMessage, @ErrorSeverity, @ErrorState);
+    END CATCH
 END;
+GO
 
 CREATE TABLE AppointmentDocumentEmbeddings (
     EmbeddingId INT IDENTITY(1,1) PRIMARY KEY,
@@ -1017,6 +1044,10 @@ BEGIN
     WHERE 
         AppointmentId = @AppointmentId;
 END
+
+
+
+
 
 
 Exec GetDocumentChunksForAppointment 2
