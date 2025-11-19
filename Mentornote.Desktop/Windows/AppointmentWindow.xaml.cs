@@ -25,24 +25,23 @@ namespace Mentornote.Desktop
       
         public ObservableCollection<File> SelectedFiles { get; set; } = new();
         public ObservableCollection<File> AppointmentFiles { get; set; } = new();
-   
+        private List<FileDTO> uploadedFiles = new();
+        private int appointmentId;
 
-        //private async void Window_Loaded(object sender, RoutedEventArgs e)
-        //{
-        //    // Called once when window opens
-        //    DesciptionText = "We We will ber Talking about the ";
-        //}
 
-        public AppointmentWindow(int meetingId)
+        public AppointmentWindow(int appointmentId)
         {
             InitializeComponent();
-            PopulateInputs(meetingId); // Example appointment ID
+            PopulateInputs(appointmentId); // Example appointment ID
             DataContext = this;
+            
+            this.appointmentId = appointmentId;
 
-            if (meetingId != 0)
+            if (appointmentId != 0)
             {
                 AddAppointmentButton.Visibility = Visibility.Collapsed;
                 UpdateAppointmentButton.Visibility = Visibility.Visible;
+                StatusSection.Visibility = Visibility.Visible;
             }
         }
 
@@ -74,7 +73,7 @@ namespace Mentornote.Desktop
                 return;
             }
 
-            List<FileDTO> uploadedFilePaths = new List<FileDTO>();
+           
 
        
             foreach (var pendingFile in SelectedFiles)
@@ -94,9 +93,8 @@ namespace Mentornote.Desktop
                         FileContent = fileContent,
                         FileName = fileName
                     };
-                    uploadedFilePaths.Add(fileDTO);
+                    uploadedFiles.Add(fileDTO);
 
-                  
                 }
                 catch (Exception ex)
                 {
@@ -120,7 +118,7 @@ namespace Mentornote.Desktop
                 appointment.Add(new StringContent(DateInput.Text), "Date");
                 appointment.Add(new StringContent(OrganizerInput.Text), "Organizer");
 
-                foreach (var file in uploadedFilePaths)
+                foreach (var file in uploadedFiles)
                 {
                     appointment.Add(file.FileContent, "Files", file.FileName);
                 }
@@ -151,7 +149,93 @@ namespace Mentornote.Desktop
                 throw;
             }
         }
-      
+
+        private async void UpdateAppointment_Click(object sender, RoutedEventArgs e)
+        {
+            // 1️⃣ Pick a file from the user's system
+            if (SelectedFiles.Count == 0)
+            {
+                System.Windows.MessageBox.Show("No files selected to upload!");
+                return;
+            }
+
+            foreach (var pendingFile in SelectedFiles)
+            {
+                string filePath = pendingFile.FilePath;
+                string fileName = $"{Guid.NewGuid()}_{System.IO.Path.GetFileName(filePath)}";
+
+                try
+                {
+                    // Create file content
+                    var fileStream = new FileStream(filePath, FileMode.Open, FileAccess.Read);
+                    var fileContent = new StreamContent(fileStream);
+                    fileContent.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue("application/octet-stream");
+
+                    FileDTO fileDTO = new FileDTO
+                    {
+                        FileContent = fileContent,
+                        FileName = fileName
+                    };
+                    uploadedFiles.Add(fileDTO);
+
+                }
+                catch (Exception ex)
+                {
+                    System.Windows.MessageBox.Show($"❌ Error uploading file: {ex.Message}",
+                                    "Error",
+                                    MessageBoxButton.OK,
+                                    MessageBoxImage.Error);
+                }
+            }
+
+
+            try
+            {
+                using var appointment = new MultipartFormDataContent();
+                appointment.Add(new StringContent("1"), "UserId");
+                appointment.Add(new StringContent(TitleInput.Text), "Title");
+                appointment.Add(new StringContent(AppointmentDescription.Text), "Description");
+                appointment.Add(new StringContent(OrganizerInput.Text), "Organizer");
+                appointment.Add(new StringContent(DateInput.Text), "Date");
+                appointment.Add(new StringContent(StartTimeInput.Text), "StartTime");
+                appointment.Add(new StringContent(EndTimeInput.Text), "EndTime");
+                appointment.Add(new StringContent(DateInput.Text), "Date");
+                appointment.Add(new StringContent(OrganizerInput.Text), "Organizer");
+                appointment.Add(new StringContent(StatusInput.Text), "Status");
+
+                foreach (var file in uploadedFiles)
+                {
+                    appointment.Add(file.FileContent, "Files", file.FileName);
+                }
+                // 3️⃣ Send to backend API
+                var response = await _http.PostAsync($"http://127.0.0.1:5085/api/appointments/update/{appointmentId}", appointment);
+
+                // 4️⃣ Handle response
+                if (!response.IsSuccessStatusCode)
+                {
+                    System.Windows.MessageBox.Show($"❌ Update failed: {response.ReasonPhrase}");
+                    return;
+                }
+
+                if (response.StatusCode == System.Net.HttpStatusCode.Accepted)
+                {
+                    var json = await response.Content.ReadAsStringAsync();
+                    var jobInfo = JsonSerializer.Deserialize<JobResponse>(json);
+                    long jobId = jobInfo!.jobId;
+
+                    System.Windows.MessageBox.Show($"✅ Update started You can keep working.");
+
+                    StartPollingForStatus(jobId);
+                }
+            }
+            catch (Exception)
+            {
+
+                throw;
+            }
+        }
+
+
         private void RemoveFile_Click(object sender, RoutedEventArgs e)
         {
             if ((sender as FrameworkElement)?.DataContext is File file)
@@ -181,7 +265,7 @@ namespace Mentornote.Desktop
 
 
             //Populate existing documents
-            List<AppointmentDocuments> docs = new();
+            List<AppointmentDocument> docs = new();
             docs = dbServices.GetAppointmentDocumentsByAppointmentId(appointment.Id, userId); // Example appointment ID
             foreach (var doc in docs)
             {
@@ -201,6 +285,13 @@ namespace Mentornote.Desktop
             if (StartTimeInput.Text == "" && EndTimeInput.Text == "")
             {
                 PopulateTimeCombos();
+
+                // Set the Default Status
+                StatusInput.Items.Add("Scheduled");
+                StatusInput.Items.Add("Completed");
+                StatusInput.Items.Add("Cancelled");
+
+                StatusInput.Text = "Scheduled";
             }
         }
 
@@ -270,6 +361,8 @@ namespace Mentornote.Desktop
             var nearestHalfHour = now.AddMinutes(30 - now.Minute % 30).ToString("h:mm tt");
             StartTimeInput.Text = nearestHalfHour;
             EndTimeInput.Text = DateTime.Now.AddHours(1).ToString("h:mm tt");
+
+            
         }
 
         public static string GetDisplayFileName(string fullFileName)

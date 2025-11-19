@@ -29,18 +29,36 @@
                        DockPanel.Dock="Left"/>-->
 
             <!-- The Add Meeting button -->
-            <Button Content="＋ Add Appointment"
-                    Background="#FF3A6EE8"
-                    Foreground="White"
-                    BorderBrush="#FF2B56B9"
-                    Height="32"
-                    Padding="10,2"
-                    FontWeight="SemiBold"
-                    HorizontalAlignment="Right"
-                    DockPanel.Dock="Right"
-                    Margin="0,0,0,0"
-                    Click="LoadMore_Click"
-                    Tag="0"/>
+            <DockPanel>
+                <Button Content="Refresh Page"
+                  Background="Gray"
+                  Foreground="White"
+                  BorderBrush="Gray"
+                  Height="32"
+                  Padding="10,2"
+                  FontWeight="SemiBold"
+                  HorizontalAlignment="Right"
+                  DockPanel.Dock="Right"
+                  Margin="0,0,0,0"
+                  Click="RefreshAppointments_Click"
+                  Tag="0"/>
+                
+                <Button Content="＋ Add Appointment"
+                  Background="#FF3A6EE8"
+                  Foreground="White"
+                  BorderBrush="#FF2B56B9"
+                  Height="32"
+                  Padding="10,2"
+                  FontWeight="SemiBold"
+                  HorizontalAlignment="Left"
+                  DockPanel.Dock="Left"
+                  Margin="5,0,0,0"
+                  Click="LoadMore_Click"
+                  Tag="0"
+                  />
+                
+            </DockPanel>
+          
 
         </DockPanel>
 
@@ -155,7 +173,7 @@
                                         <Button Content="Delete"
                                                 Width="100"
                                                 Height="40"
-                                                Click="OpenOverlay_Click"
+                                                Click="DeleteAppointment_Click"
                                                 Background="#f5877d"
                                                 Foreground="White"
                                                 HorizontalAlignment="Right"

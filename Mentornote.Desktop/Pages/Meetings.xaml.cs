@@ -159,6 +159,72 @@ namespace Mentornote.Desktop.Pages
 
             }
         }
+        private void RefreshAppointments_Click(object sender, RoutedEventArgs e)
+        {
+            Upcoming.Clear();
+            Past.Clear();
+            Appointments.Clear();
+            var appointments = GetAppointments();
+            var today = DateTime.Today;
+            var now = DateTime.Now;
+            foreach (var appointment in appointments)
+            {
+                // FUTURE DATE → always upcoming
+                if (appointment.Date > today)
+                {
+                    Upcoming.Add(appointment);
+                }
+                // TODAY → compare only the time portion
+                else if (appointment.Date == today)
+                {
+                    if (appointment.StartTime.HasValue && appointment.StartTime.Value.TimeOfDay > now.TimeOfDay)
+                    {
+                        Upcoming.Add(new Appointment
+                        {
+                            Id = appointment.Id,
+                            Title = appointment.Title,
+                            Description = appointment.Description,
+                            StartTime = appointment.StartTime,
+                            EndTime = appointment.EndTime,
+                            Status = appointment.Status,
+                        });
+                    }
+                    else
+                    {
+                        Past.Add(new Appointment
+                        {
+                            Id = appointment.Id,
+                            Title = appointment.Title,
+                            Description = appointment.Description,
+                            StartTime = appointment.StartTime,
+                            EndTime = appointment.EndTime,
+                            Status = appointment.Status,
+                        });
+                    }
+                }
+                // PAST DATE → always past
+                else
+                {
+                    Past.Add(new Appointment
+                    {
+                        Id = appointment.Id,
+                        Title = appointment.Title,
+                        Description = appointment.Description,
+                        StartTime = appointment.StartTime,
+                        EndTime = appointment.EndTime,
+                        Status = appointment.Status,
+                    });
+                }
+                Appointments.Add(appointment);
+            }
+
+            if (Upcoming.Count == 0)
+            {
+                NoUpcomingAppointmentsPanel.Visibility = Visibility.Visible;
+                UpcomingAppointmentsList.Visibility = Visibility.Collapsed;
+            }
+        }
+
         private async void DeleteAppointment_Click(object sender, RoutedEventArgs e)
         {
             var button = (System.Windows.Controls.Button)sender;

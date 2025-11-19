@@ -810,6 +810,9 @@ CREATE TABLE AppointmentNotes
         REFERENCES dbo.Users(Id)
 );
 
+ALTER TABLE AppointmentNotes 
+ADD FileHash NVARCHAR(MAX) NULL;
+
 CREATE OR ALTER PROCEDURE AddAppointment
     @UserId INT,
     @Title NVARCHAR(200),
@@ -860,13 +863,14 @@ END;
 CREATE OR ALTER PROCEDURE AddAppointmentDocument
     @UserId INT,
     @AppointmentId INT,
-    @DocumentPath NVARCHAR(500)
+    @DocumentPath NVARCHAR(500),
+	@FileHash NVARCHAR(MAX)
 AS
 BEGIN
     SET NOCOUNT ON;
 
-    INSERT INTO AppointmentNotes (UserId, AppointmentId, DocumentPath, CreatedAt)
-    VALUES (@UserId, @AppointmentId, @DocumentPath, SYSUTCDATETIME());
+    INSERT INTO AppointmentNotes (UserId, AppointmentId, DocumentPath, CreatedAt,FileHash)
+    VALUES (@UserId, @AppointmentId, @DocumentPath, SYSUTCDATETIME(), @FileHash);
 
   
     SELECT CAST(SCOPE_IDENTITY() AS INT) AS AppointmentNoteId;
@@ -1046,8 +1050,58 @@ BEGIN
 END
 
 
+CREATE OR ALTER Procedure UpdateAppointment
+	@AppointmentId INT,
+	@Title NVARCHAR(200),
+    @Description NVARCHAR(MAX),
+    @Date DATE,
+    @StartTime DATETIME,
+    @EndTime DATETIME,
+    @Organizer NVARCHAR(200),
+    @Status NVARCHAR(50),
+	@UserId INT
+AS
+BEGIN 
+	UPDATE Appoointments 
+	SET 
+	Title = @Title,
+	Description = @Description,
+	StartTime = @StartTime,
+	EndTime = @EndTime,
+	UpdatedAt = SYSUTCDATETIME(),
+	Status = @Status,
+	Organizer = @Organizer
+
+	WHERE Appointments.Id = @AppointmentId
+	AND UserId = @UserId
 
 
+	 SELECT CAST(SCOPE_IDENTITY() AS INT) AS AppointmentId;
+END
+
+CREATE OR ALTER PROCEDURE GetAppointmentDocumentsById
+(
+    @AppointmentId INT,
+	@UserId INT 
+)
+AS
+BEGIN
+    SET NOCOUNT ON;
+
+    SELECT 
+        Id,
+        UserId,
+        AppointmentId,
+        DocumentId,
+        DocumentPath,
+        CreatedAt,
+		FileHash
+    FROM AppointmentNotes
+    WHERE AppointmentId = @AppointmentId
+	AND UserId = @UserId
+    ORDER BY CreatedAt ASC;
+END;
+GO
 
 
 Exec GetDocumentChunksForAppointment 2

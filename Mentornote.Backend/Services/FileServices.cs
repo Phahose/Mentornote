@@ -6,6 +6,7 @@ using Mentornote.Backend.Models;
 using System.Numerics;
 using System.Text;
 using System.Text.Json;
+using System.Security.Cryptography;
 
 namespace Mentornote.Backend.Services
 {
@@ -87,6 +88,21 @@ namespace Mentornote.Backend.Services
                 chunks.Add(chunk);
             }
             return chunks;
+        }
+
+        public string ComputeHashFromFilePath(string filePath)
+        {
+            using var stream = File.OpenRead(filePath);
+            using var sha = SHA256.Create();
+            var hashBytes = sha.ComputeHash(stream);
+            return Convert.ToHexString(hashBytes).ToLower();
+        }
+
+        public string ComputeFileHash(Stream fileStream)
+        {
+            using var sha = SHA256.Create();
+            byte[] hashBytes = sha.ComputeHash(fileStream);
+            return Convert.ToHexString(hashBytes).ToLower();
         }
     }
 }

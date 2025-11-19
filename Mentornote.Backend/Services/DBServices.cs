@@ -96,7 +96,6 @@ namespace Mentornote.Backend.Services
 
                     connection.Close();
 
-                    //appointmentId = (int)outputIdParam.Value;
                 }
 
                 return appointmentId;
@@ -108,7 +107,7 @@ namespace Mentornote.Backend.Services
             }
         }
 
-        public int AddAppointmentDocument(AppointmentDocuments appointmentDoc)
+        public int AddAppointmentDocument(AppointmentDocument appointmentDoc)
         {
             try
             {
@@ -136,6 +135,11 @@ namespace Mentornote.Backend.Services
                     {
                         Direction = ParameterDirection.Input,
                         SqlValue = appointmentDoc.DocumentPath ?? (object)DBNull.Value
+                    });
+                    cmd.Parameters.Add(new SqlParameter("@FileHash", SqlDbType.NVarChar)
+                    {
+                        Direction = ParameterDirection.Input,
+                        SqlValue = appointmentDoc.FileHash ?? (object)DBNull.Value
                     });
 
                     var result = cmd.ExecuteScalar();
@@ -203,7 +207,7 @@ namespace Mentornote.Backend.Services
                             Status = reader.GetString(reader.GetOrdinal("Status")),
                             Notes = reader.IsDBNull(reader.GetOrdinal("Notes")) ? null : reader.GetString(reader.GetOrdinal("Notes")),
                             CreatedAt = reader.GetDateTime(reader.GetOrdinal("CreatedAt")),
-                            Date = reader.IsDBNull(reader.GetOrdinal("Date"))  ? (DateTime?)null: reader.GetDateTime(reader.GetOrdinal("Date")),
+                            Date = reader.IsDBNull(reader.GetOrdinal("Date")) ? (DateTime?)null : reader.GetDateTime(reader.GetOrdinal("Date")),
                             Organizer = reader.GetString(reader.GetOrdinal("Organizer"))
                             //  UpdatedAt = reader.GetDateTime(reader.GetOrdinal("UpdatedAt"))
                         };
@@ -218,7 +222,7 @@ namespace Mentornote.Backend.Services
                 Console.WriteLine(ex.Message);
                 return new List<Appointment>();
             }
-           
+
         }
 
         public Appointment GetAppointmentById(int appointmentId, int userId)
@@ -267,9 +271,9 @@ namespace Mentornote.Backend.Services
             return appointment;
         }
 
-        public List<AppointmentDocuments> GetAppointmentDocumentsByAppointmentId(int appointmentId, int userId)
+        public List<AppointmentDocument> GetAppointmentDocumentsByAppointmentId(int appointmentId, int userId)
         {
-            List<AppointmentDocuments> documents = new List<AppointmentDocuments>();
+            List<AppointmentDocument> documents = new List<AppointmentDocument>();
             using SqlConnection connection = new SqlConnection(connectionString);
             {
                 connection.Open();
@@ -292,13 +296,14 @@ namespace Mentornote.Backend.Services
                 using SqlDataReader reader = cmd.ExecuteReader();
                 while (reader.Read())
                 {
-                    AppointmentDocuments document = new AppointmentDocuments
+                    AppointmentDocument document = new AppointmentDocument
                     {
                         Id = reader.GetInt32(reader.GetOrdinal("Id")),
                         UserId = reader.GetInt32(reader.GetOrdinal("UserId")),
                         AppointmentId = reader.GetInt32(reader.GetOrdinal("AppointmentId")),
                         DocumentPath = reader.GetString(reader.GetOrdinal("DocumentPath")),
-                        CreatedAt = reader.GetDateTime(reader.GetOrdinal("CreatedAt"))
+                        CreatedAt = reader.GetDateTime(reader.GetOrdinal("CreatedAt")),
+                        FileHash = reader.IsDBNull(reader.GetOrdinal("FileHash")) ? null: reader.GetString(reader.GetOrdinal("FileHash"))
                     };
                     documents.Add(document);
                 }
@@ -451,7 +456,7 @@ namespace Mentornote.Backend.Services
 
                 throw;
             }
-          
+
         }
 
         public async Task DeleteAppointmentAsync(int appointmentId)
@@ -479,5 +484,120 @@ namespace Mentornote.Backend.Services
                 throw new Exception($"Error deleting appointment {appointmentId}: {ex.Message}", ex);
             }
         }
+
+        public int UpdateAppointment(Appointment appointment, int userId)
+        {
+            try
+            {
+                int appointmentId;
+                using SqlConnection connection = new SqlConnection(connectionString);
+                {
+                    connection.Open();
+                    SqlCommand cmd = new SqlCommand
+                    {
+                        CommandType = CommandType.StoredProcedure,
+                        Connection = connection,
+                        CommandText = "UpdateAppointment"
+                    };
+                    // Parameters
+                    cmd.Parameters.Add(new SqlParameter("@AppointmentId", SqlDbType.Int)
+                    {
+                        Direction = ParameterDirection.Input,
+                        SqlValue = appointment.Id
+                    });
+                    cmd.Parameters.Add(new SqlParameter("@UserId", SqlDbType.Int)
+                    {
+                        Direction = ParameterDirection.Input,
+                        SqlValue = userId
+                    });
+                    cmd.Parameters.Add(new SqlParameter("@Title", SqlDbType.NVarChar, 200)
+                    {
+                        Direction = ParameterDirection.Input,
+                        SqlValue = appointment.Title ?? (object)DBNull.Value
+                    });
+                    cmd.Parameters.Add(new SqlParameter("@Description", SqlDbType.NVarChar)
+                    {
+                        Direction = ParameterDirection.Input,
+                        SqlValue = appointment.Description ?? (object)DBNull.Value
+                    });
+                    cmd.Parameters.Add(new SqlParameter("@StartTime", SqlDbType.DateTime2)
+                    {
+                        Direction = ParameterDirection.Input,
+                        SqlValue = appointment.StartTime ?? (object)DBNull.Value
+                    });
+                    cmd.Parameters.Add(new SqlParameter("@EndTime", SqlDbType.DateTime2)
+                    {
+                        Direction = ParameterDirection.Input,
+                        SqlValue = appointment.EndTime ?? (object)DBNull.Value
+                    });
+                    cmd.Parameters.Add(new SqlParameter("@Status", SqlDbType.NVarChar, 50)
+                    {
+                        Direction = ParameterDirection.Input,
+                        SqlValue = appointment.Status ?? (object)"Scheduled"
+                    });
+                    cmd.Parameters.Add(new SqlParameter("@Date", SqlDbType.Date)
+                    {
+                        Direction = ParameterDirection.Input,
+                        SqlValue = appointment.Date ?? (object)DBNull.Value
+                    });
+                    cmd.Parameters.Add(new SqlParameter("@Organizer", SqlDbType.NVarChar, 200)
+                    {
+                        Direction = ParameterDirection.Input,
+                        SqlValue = appointment.Organizer ?? (object)DBNull.Value
+                    });
+
+                    appointmentId = Convert.ToInt32((decimal)cmd.ExecuteScalar());
+                    connection.Close();
+
+                    return appointmentId;
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error updating appointment: {ex.Message}");
+                return 0;
+            }
+
+          
+
+        }
+
+        public async Task<List<AppointmentDocument>> GetAppointmentDocumentsById(int appointmentId, int userId)
+        {
+            var documents = new List<AppointmentDocument>();
+
+            using var conn = new SqlConnection(connectionString);
+            using var cmd = new SqlCommand("GetAppointmentDocumentsById", conn)
+            {
+                CommandType = CommandType.StoredProcedure
+            };
+
+            cmd.Parameters.Add(new SqlParameter("@AppointmentId", SqlDbType.Int)
+            {
+                Value = appointmentId
+            });
+            cmd.Parameters.Add(new SqlParameter("@UserId", SqlDbType.Int)
+            {
+                Value = userId
+            });
+
+            await conn.OpenAsync();
+            using var reader = await cmd.ExecuteReaderAsync();
+
+            while (await reader.ReadAsync())
+            {
+                documents.Add(new AppointmentDocument
+                {
+                    Id = reader.GetInt32(reader.GetOrdinal("Id")),
+                    UserId = reader.GetInt32(reader.GetOrdinal("UserId")),
+                    AppointmentId = reader.GetInt32(reader.GetOrdinal("AppointmentId")),
+                    DocumentPath = reader.GetString(reader.GetOrdinal("DocumentPath")),
+                    CreatedAt = reader.GetDateTime(reader.GetOrdinal("CreatedAt"))
+                });
+            }
+
+            return documents;
+        }
+
     }
 }
