@@ -208,7 +208,7 @@ namespace Mentornote.Desktop
                     appointment.Add(file.FileContent, "Files", file.FileName);
                 }
                 // 3️⃣ Send to backend API
-                var response = await _http.PostAsync($"http://127.0.0.1:5085/api/appointments/update/{appointmentId}", appointment);
+                var response = await _http.PutAsync($"http://127.0.0.1:5085/api/appointments/update/{appointmentId}", appointment);
 
                 // 4️⃣ Handle response
                 if (!response.IsSuccessStatusCode)
@@ -230,7 +230,6 @@ namespace Mentornote.Desktop
             }
             catch (Exception)
             {
-
                 throw;
             }
         }
@@ -282,16 +281,18 @@ namespace Mentornote.Desktop
             EndTimeInput.Text = appointment.EndTime.ToString();
             OrganizerInput.Text = appointment.Organizer;
 
+            // Set the Default Status
+            StatusInput.Items.Add("Scheduled");
+            StatusInput.Items.Add("Completed");
+            StatusInput.Items.Add("Cancelled");
+
+            StatusInput.Text = "Scheduled";
+
             if (StartTimeInput.Text == "" && EndTimeInput.Text == "")
             {
                 PopulateTimeCombos();
 
-                // Set the Default Status
-                StatusInput.Items.Add("Scheduled");
-                StatusInput.Items.Add("Completed");
-                StatusInput.Items.Add("Cancelled");
-
-                StatusInput.Text = "Scheduled";
+                
             }
         }
 

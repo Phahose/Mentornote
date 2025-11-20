@@ -239,10 +239,12 @@ namespace Mentornote.Desktop.Pages
                 return;
 
             int appointmentId = (int)button.Tag;   
+            int userId = UserId;
+
 
             try
             {
-                string url = $"http://localhost:5085/api/appointments/{appointmentId}";
+                string url = $"http://localhost:5085/api/appointments/{appointmentId}?userId={userId}";
 
                 using var response = await _http.DeleteAsync(url);  
 

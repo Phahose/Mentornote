@@ -592,7 +592,8 @@ namespace Mentornote.Backend.Services
                     UserId = reader.GetInt32(reader.GetOrdinal("UserId")),
                     AppointmentId = reader.GetInt32(reader.GetOrdinal("AppointmentId")),
                     DocumentPath = reader.GetString(reader.GetOrdinal("DocumentPath")),
-                    CreatedAt = reader.GetDateTime(reader.GetOrdinal("CreatedAt"))
+                    CreatedAt = reader.GetDateTime(reader.GetOrdinal("CreatedAt")),
+                    FileHash = reader.IsDBNull(reader.GetOrdinal("FileHash")) ? null : reader.GetString(reader.GetOrdinal("FileHash"))
                 });
             }
 

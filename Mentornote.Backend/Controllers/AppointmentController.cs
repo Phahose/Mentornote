@@ -131,11 +131,13 @@ namespace Mentornote.Backend.Controllers
 
                 job.Id = dBServices.CreateJob(job);
 
-                // Update appointment info
+                // -----------------------------------
+                // UPDATE APPOINTMENT BASIC FIELDS
+                // -----------------------------------
                 Appointment updatedAppointment = new Appointment
                 {
                     Id = appointmentId,
-                    UserId = appointmentDTO.UserId,
+                    UserId = userId,
                     Title = appointmentDTO.Title,
                     Description = appointmentDTO.Description,
                     StartTime = appointmentDTO.StartTime,
@@ -147,7 +149,43 @@ namespace Mentornote.Backend.Controllers
 
                 dBServices.UpdateAppointment(updatedAppointment, userId);
 
-                // Run async processing
+                // -----------------------------------
+                // PREPARE ALL FILES FOR BACKGROUND TASK
+                // Save physically now so background can process safely
+                // -----------------------------------
+
+                var savedFiles = new List<(string Path, string OriginalName)>();
+
+                var uploadDir = Path.Combine(Directory.GetCurrentDirectory(), "App_Data", "UploadedFiles");
+                Directory.CreateDirectory(uploadDir);
+
+                if (uploadedFiles != null)
+                {
+                    foreach (var file in uploadedFiles)
+                    {
+                        if (file == null || file.Length == 0)
+                        {
+                            continue;
+                        }
+                           
+
+                        string safeName = $"{Guid.NewGuid()}_{file.FileName}";
+                        string fullPath = Path.Combine(uploadDir, safeName);
+
+                        // SAVE FILE SAFELY NOW — BEFORE BACKGROUND THREAD
+                        using (var stream = new FileStream(fullPath, FileMode.Create))
+                        {
+                            file.CopyTo(stream);            
+                        }
+
+                        savedFiles.Add((fullPath, file.FileName));
+                    }
+                }
+
+                // -----------------------------------
+                // BACKGROUND PROCESSING
+                // -----------------------------------
+
                 _ = Task.Run(async () =>
                 {
                     try
@@ -155,63 +193,66 @@ namespace Mentornote.Backend.Controllers
                         job.Status = "Processing";
                         dBServices.UpdateJob(job);
 
-                        // Get existing documents
-                        List<AppointmentDocument> existingDocs =
-                            await dBServices.GetAppointmentDocumentsById(appointmentId, userId);
+                        // Load existing docs
+                        var existingDocs = await dBServices.GetAppointmentDocumentsById(appointmentId, userId);
 
-                        //Hash uploaded files first
-                        var uploadedInfos = new List<(IFormFile File, string Hash)>();
-
-                        foreach (var file in uploadedFiles)
+                        // Compute hashes for new files
+                        var hashedUploads = new List<(string Path, string Hash)>();
+                       
+                        
+                        foreach (var file in savedFiles)
                         {
-                            if (file == null || file.Length == 0)
-                            {
-                                continue;
-                            }
-
-                            using var stream = file.OpenReadStream();
-                            string hash = fileServices.ComputeFileHash(stream);
-                            uploadedInfos.Add((file, hash));
+                            string newHash = fileServices.ComputeHashFromFilePath(file.Path);
+                            hashedUploads.Add((file.Path, newHash));
                         }
 
-                        //Remove duplicates among uploaded files
-                        var uniqueUploaded = uploadedInfos
-                                            .GroupBy(x => x.Hash)
-                                            .Select(g => g.First())
-                                            .ToList();
 
-                        // Remove files that already exist in DB
-                        uniqueUploaded = uniqueUploaded
-                                        .Where(x => !existingDocs.Any(d => d.FileHash == x.Hash))
-                                        .ToList();
+                        // Remove duplicates among uploads
+                        var uniqueUploads = hashedUploads
+                            .GroupBy(x => x.Hash)
+                            .Select(g => g.First())
+                            .ToList();
 
-                        // Save and process each new file
-                        foreach (var (file, hash) in uniqueUploaded)
+                        // Remove files already in DB
+                        var newqueUploads = uniqueUploads
+                            .Where(u => !existingDocs.Any(d => d.FileHash == u.Hash))
+                            .ToList();
+
+                        // Find old documents to delete
+                        var badUploads = hashedUploads
+                            .Where(d => !newqueUploads.Any(u => u.Hash == d.Hash))
+                            .ToList();
+
+                        // -----------------------------------
+                        // ADD NEW UNIQUE DOCS
+                        // -----------------------------------
+                        foreach (var up in newqueUploads)
                         {
-                            // Save file to server
-                            var uploadDir = Path.Combine(Directory.GetCurrentDirectory(), "App_Data", "UploadedFiles");
-                            Directory.CreateDirectory(uploadDir);
-
-                            var savedPath = Path.Combine(uploadDir, $"{Guid.NewGuid()}_{file.FileName}");
-
-                            using (var stream = new FileStream(savedPath, FileMode.Create))
-                            {
-                                await file.CopyToAsync(stream);
-                            }
-
-                            // Insert into DB
                             var newDoc = new AppointmentDocument
                             {
                                 AppointmentId = appointmentId,
                                 UserId = userId,
-                                DocumentPath = savedPath,
-                                FileHash = hash
+                                DocumentPath = up.Path,
+                                FileHash = up.Hash
                             };
 
-                            int docId = dBServices.AddAppointmentDocument(newDoc);
+                            int newDocId = dBServices.AddAppointmentDocument(newDoc);
 
-                            // Generate embeddings
-                            await fileServices.ProcessFileAsync(savedPath, docId, appointmentId);
+                            // Process embeddings now
+                            await fileServices.ProcessFileAsync(
+                                up.Path,
+                                newDocId,
+                                appointmentId
+                            );
+                        }
+
+                        // -----------------------------------
+                        // DELETE REMOVED DOCUMENT FILES
+                        // -----------------------------------
+                        foreach (var doc in badUploads)
+                        {
+                            if (System.IO.File.Exists(doc.Path))
+                                System.IO.File.Delete(doc.Path);
                         }
 
                         job.Status = "Completed";
@@ -236,10 +277,18 @@ namespace Mentornote.Backend.Controllers
 
 
         [HttpDelete("{appointmentId}")]
-        public async Task<IActionResult> DeleteAppointment(int appointmentId)
+        public async Task<IActionResult> DeleteAppointment(int appointmentId, [FromQuery]int userId)
         {
             try
             {
+                List<AppointmentDocument> docs = await dBServices.GetAppointmentDocumentsById(appointmentId, userId);
+                foreach (var doc in docs)
+                {
+                    if (System.IO.File.Exists(doc.DocumentPath))
+                    {
+                        System.IO.File.Delete(doc.DocumentPath);
+                    }
+                }
                 await dBServices.DeleteAppointmentAsync(appointmentId);
                 return Ok(new { message = "Appointment deleted successfully." });
             }
