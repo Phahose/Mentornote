@@ -1,5 +1,6 @@
 ﻿using DocumentFormat.OpenXml.Drawing.Charts;
 using DocumentFormat.OpenXml.Drawing.Diagrams;
+using DocumentFormat.OpenXml.Spreadsheet;
 using Mentornote.Backend.Models;
 using Mentornote.Backend.Services;
 using Microsoft.Extensions.DependencyInjection;
@@ -26,7 +27,7 @@ namespace Mentornote.Desktop.Pages
     /// <summary>
     /// Interaction logic for Meetings.xaml
     /// </summary>
-    public partial class Meetings : Page
+    public partial class Meetings : System.Windows.Controls.Page
     {
         // Expose collections the XAML can bind to
         /*public ObservableCollection<MeetingItem> Upcoming { get; } = new();*/
@@ -48,81 +49,8 @@ namespace Mentornote.Desktop.Pages
             // Make this page its own DataContext so bindings can see properties above
             this.DataContext = this;
             var appointments = GetAppointments();
-            if (appointments == null || !appointments.Any())
-            {
-                NoAppointmentsPanel.Visibility = Visibility.Visible;
-                UpcomingAppointmentsList.Visibility = Visibility.Collapsed;
-                PastAppointmentsList.Visibility = Visibility.Collapsed;
-            }
-            else
-            {
-                NoAppointmentsPanel.Visibility = Visibility.Collapsed;
-                UpcomingAppointmentsList.Visibility = Visibility.Visible; 
-                PastAppointmentsList.Visibility = Visibility.Visible;
+           
 
-
-                var today = DateTime.Today;
-                var now = DateTime.Now;
-
-                foreach (var appointment in appointments)
-                {
-                    // FUTURE DATE → always upcoming
-                    if (appointment.Date > today)
-                    {
-                        Upcoming.Add(appointment);
-                    }
-                    // TODAY → compare only the time portion
-                    else if (appointment.Date == today)
-                    {
-                        if (appointment.StartTime.HasValue && appointment.StartTime.Value.TimeOfDay > now.TimeOfDay)
-
-                        {
-                            Upcoming.Add(new Appointment
-                            {
-                                Id = appointment.Id,
-                                Title = appointment.Title,
-                                Description = appointment.Description,
-                                StartTime = appointment.StartTime,
-                                EndTime = appointment.EndTime,
-                                Status = appointment.Status,
-                            });
-                        }
-                        else
-                        {
-                            Past.Add(new Appointment
-                            {
-                                Id = appointment.Id,
-                                Title = appointment.Title,
-                                Description = appointment.Description,
-                                StartTime = appointment.StartTime,
-                                EndTime = appointment.EndTime,
-                                Status = appointment.Status,
-                            });
-                        }
-                    }
-                    // PAST DATE → always past
-                    else
-                    {
-                        Past.Add(new Appointment
-                        {
-                            Id = appointment.Id,
-                            Title = appointment.Title,
-                            Description = appointment.Description,
-                            StartTime = appointment.StartTime,
-                            EndTime = appointment.EndTime,
-                            Status = appointment.Status,
-                        });
-                    }
-
-                    Appointments.Add(appointment);
-                }
-            }
-
-            if (Upcoming.Count == 0)
-            {
-                NoUpcomingAppointmentsPanel.Visibility = Visibility.Visible;
-                UpcomingAppointmentsList.Visibility = Visibility.Collapsed;
-            }
 
         }
 
@@ -165,64 +93,6 @@ namespace Mentornote.Desktop.Pages
             Past.Clear();
             Appointments.Clear();
             var appointments = GetAppointments();
-            var today = DateTime.Today;
-            var now = DateTime.Now;
-            foreach (var appointment in appointments)
-            {
-                // FUTURE DATE → always upcoming
-                if (appointment.Date > today)
-                {
-                    Upcoming.Add(appointment);
-                }
-                // TODAY → compare only the time portion
-                else if (appointment.Date == today)
-                {
-                    if (appointment.StartTime.HasValue && appointment.StartTime.Value.TimeOfDay > now.TimeOfDay)
-                    {
-                        Upcoming.Add(new Appointment
-                        {
-                            Id = appointment.Id,
-                            Title = appointment.Title,
-                            Description = appointment.Description,
-                            StartTime = appointment.StartTime,
-                            EndTime = appointment.EndTime,
-                            Status = appointment.Status,
-                        });
-                    }
-                    else
-                    {
-                        Past.Add(new Appointment
-                        {
-                            Id = appointment.Id,
-                            Title = appointment.Title,
-                            Description = appointment.Description,
-                            StartTime = appointment.StartTime,
-                            EndTime = appointment.EndTime,
-                            Status = appointment.Status,
-                        });
-                    }
-                }
-                // PAST DATE → always past
-                else
-                {
-                    Past.Add(new Appointment
-                    {
-                        Id = appointment.Id,
-                        Title = appointment.Title,
-                        Description = appointment.Description,
-                        StartTime = appointment.StartTime,
-                        EndTime = appointment.EndTime,
-                        Status = appointment.Status,
-                    });
-                }
-                Appointments.Add(appointment);
-            }
-
-            if (Upcoming.Count == 0)
-            {
-                NoUpcomingAppointmentsPanel.Visibility = Visibility.Visible;
-                UpcomingAppointmentsList.Visibility = Visibility.Collapsed;
-            }
         }
 
         private async void DeleteAppointment_Click(object sender, RoutedEventArgs e)
@@ -264,12 +134,101 @@ namespace Mentornote.Desktop.Pages
         }
 
 
-
         private List<Appointment> GetAppointments()
         {
             var appointments = dBServices.GetAppointmentsByUserId(UserId);
-            Appointments.Clear();
-          
+            var today = DateTime.Today;
+            var now = DateTime.Now;
+
+            if (appointments != null)
+            {
+                foreach (var appointment in appointments)
+                {
+                    // FUTURE DATE → always upcoming
+                    if (appointment.Date > today)
+                    {
+                        Upcoming.Add(appointment);
+                    }
+                    // TODAY → compare only the time portion
+                    else if (appointment.Date == today)
+                    {
+                        if (appointment.StartTime.HasValue && appointment.StartTime.Value.TimeOfDay > now.TimeOfDay)
+
+                        {
+                            Upcoming.Add(new Appointment
+                            {
+                                Id = appointment.Id,
+                                Title = appointment.Title,
+                                Description = appointment.Description,
+                                StartTime = appointment.StartTime,
+                                EndTime = appointment.EndTime,
+                                Status = appointment.Status,
+                            });
+                        }
+                        else
+                        {
+                            Past.Add(new Appointment
+                            {
+                                Id = appointment.Id,
+                                Title = appointment.Title,
+                                Description = appointment.Description,
+                                StartTime = appointment.StartTime,
+                                EndTime = appointment.EndTime,
+                                Status = appointment.Status,
+                            });
+                        }
+                    }
+
+                    else
+                    {
+                        Past.Add(new Appointment
+                        {
+                            Id = appointment.Id,
+                            Title = appointment.Title,
+                            Description = appointment.Description,
+                            StartTime = appointment.StartTime,
+                            EndTime = appointment.EndTime,
+                            Status = appointment.Status,
+                        });
+                    }
+
+                    Appointments.Add(appointment);
+                }
+
+                if (appointments == null || !appointments.Any())
+                {
+                    NoAppointmentsPanel.Visibility = Visibility.Visible;
+                    UpcomingAppointmentsList.Visibility = Visibility.Collapsed;
+                    PastAppointmentsList.Visibility = Visibility.Collapsed;
+                }
+                else
+                {
+                    NoAppointmentsPanel.Visibility = Visibility.Collapsed;
+                    UpcomingAppointmentsList.Visibility = Visibility.Visible;
+                    PastAppointmentsList.Visibility = Visibility.Visible;
+                }
+
+                if (Upcoming.Count == 0)
+                {
+                    NoUpcomingAppointmentsPanel.Visibility = Visibility.Visible;
+                    UpcomingAppointmentsList.Visibility = Visibility.Collapsed;
+                }
+                else
+                {
+                    NoUpcomingAppointmentsPanel.Visibility = Visibility.Collapsed;
+                    UpcomingAppointmentsList.Visibility = Visibility.Visible;
+                }
+
+                if (Past.Count == 0)
+                {
+                    NoAppointmentsPanel.Visibility = Visibility.Visible;
+                    PastAppointmentsList.Visibility = Visibility.Collapsed;
+                }
+                else{
+                    NoAppointmentsPanel.Visibility = Visibility.Collapsed;
+                    PastAppointmentsList.Visibility = Visibility.Visible;
+                }
+            }
             return appointments;
         }
     }

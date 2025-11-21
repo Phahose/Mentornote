@@ -24,6 +24,7 @@ namespace Mentornote.Desktop
         };
       
         public ObservableCollection<File> SelectedFiles { get; set; } = new();
+        public List<File> ExistingRemovedFiles { get; set; } = new();
         public ObservableCollection<File> AppointmentFiles { get; set; } = new();
         private List<FileDTO> uploadedFiles = new();
         private int appointmentId;
@@ -152,13 +153,6 @@ namespace Mentornote.Desktop
 
         private async void UpdateAppointment_Click(object sender, RoutedEventArgs e)
         {
-            // 1️⃣ Pick a file from the user's system
-            if (SelectedFiles.Count == 0)
-            {
-                System.Windows.MessageBox.Show("No files selected to upload!");
-                return;
-            }
-
             foreach (var pendingFile in SelectedFiles)
             {
                 string filePath = pendingFile.FilePath;
@@ -249,6 +243,27 @@ namespace Mentornote.Desktop
                     SelectedFiles.Remove(file);
             }
         }
+
+        private void RemoveExistingFile_Click(object sender, RoutedEventArgs e)
+        {
+            if ((sender as FrameworkElement)?.DataContext is File file)
+            {
+                var result = System.Windows.MessageBox.Show(
+                    $"Remove '{file.FileName}' from existing files?",
+                    "Confirm Remove",
+                    MessageBoxButton.YesNo,
+                    MessageBoxImage.Question);
+
+                if (result == MessageBoxResult.Yes)
+                {
+                    AppointmentFiles.Remove(file);
+                    ExistingRemovedFiles.Add(file);
+                }
+            }
+        }
+         
+
+
         private void RemoveAllFile_Click(object sender, RoutedEventArgs e)
         {
             SelectedFiles.Clear();
@@ -272,9 +287,10 @@ namespace Mentornote.Desktop
                     FilePath = doc.DocumentPath 
                 });
             }
+            
 
-            TitleInput.Text = appointment.Title ?? "New Appointment";
-            AppointmentInfoTitle.Text = appointment.Title ?? "New Appointment";
+            TitleInput.Text = appointment.Title;
+            AppointmentInfoTitle.Text = appointment.Title;
             AppointmentDescription.Text = appointment.Description;
             DateInput.Text = appointment.Date.ToString();
             StartTimeInput.Text = appointment.StartTime.ToString();
@@ -286,14 +302,22 @@ namespace Mentornote.Desktop
             StatusInput.Items.Add("Completed");
             StatusInput.Items.Add("Cancelled");
 
-            StatusInput.Text = "Scheduled";
-
-            if (StartTimeInput.Text == "" && EndTimeInput.Text == "")
+            if (!string.IsNullOrEmpty(appointment.Status))
             {
-                PopulateTimeCombos();
-
-                
+                StatusInput.Text = appointment.Status;
             }
+            else 
+            {
+                StatusInput.Text = "Scheduled";
+            }
+                
+
+            PopulateTimeCombos();
+
+            //if (StartTimeInput.Text == "" && EndTimeInput.Text == "")
+            //{
+            //    PopulateTimeCombos();
+            //}
         }
 
         public void StartPollingForStatus(long jobId)

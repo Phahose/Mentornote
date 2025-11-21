@@ -546,10 +546,12 @@ namespace Mentornote.Backend.Services
                         SqlValue = appointment.Organizer ?? (object)DBNull.Value
                     });
 
-                    appointmentId = Convert.ToInt32((decimal)cmd.ExecuteScalar());
+                    //  cmd.ExecuteNonQuery();
+
+                    cmd.ExecuteNonQuery();
                     connection.Close();
 
-                    return appointmentId;
+                    return 1;
                 }
             }
             catch (Exception ex)
@@ -601,4 +603,4 @@ namespace Mentornote.Backend.Services
         }
 
     }
-}
+}  

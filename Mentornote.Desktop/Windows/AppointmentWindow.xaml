@@ -168,11 +168,11 @@
                    Foreground="#FFBFBFBF"
                    FontSize="14"/>
                 <ListView ItemsSource="{Binding AppointmentFiles}"
-                  Margin="0,5,0,5"
-                  Background="#FF2A2A2A"
-                  BorderBrush="#FF333333"
-                  Foreground="White"
-                  Height="150">
+                          Margin="0,5,0,5"
+                          Background="#FF2A2A2A"
+                          BorderBrush="#FF333333"
+                          Foreground="White"
+                          Height="150">
                     <ListView.Style>
                         <Style TargetType="ListView">
                             <Style.Triggers>
@@ -182,10 +182,10 @@
                                         <Setter.Value>
                                             <ControlTemplate>
                                                 <TextBlock Text="No files Uploaded yet"
-                                           Foreground="#FFBFBFBF"
-                                           VerticalAlignment="Center"
-                                           HorizontalAlignment="Center"
-                                           FontStyle="Italic"/>
+                                                           Foreground="#FFBFBFBF"
+                                                           VerticalAlignment="Center"
+                                                           HorizontalAlignment="Center"
+                                                           FontStyle="Italic"/>
                                             </ControlTemplate>
                                         </Setter.Value>
                                     </Setter>
@@ -197,13 +197,13 @@
                         <DataTemplate>
                             <StackPanel Margin="4" Orientation="Horizontal">
                                 <Button Content="X"
-                                Width="22" Height="22"
-                                Margin="20,0,6,0"
-                                DockPanel.Dock="Right"
-                                CommandParameter="{Binding}"
-                                Click="RemoveFile_Click"/>
+                                        Width="22" Height="22"
+                                        Margin="20,0,6,0"
+                                        DockPanel.Dock="Right"
+                                        CommandParameter="{Binding}"
+                                        Click="RemoveExistingFile_Click"/>
                                 <TextBlock Text="{Binding FileName}"
-                                   VerticalAlignment="Center"/>
+                                           VerticalAlignment="Center"/>
                             </StackPanel>
                         </DataTemplate>
                     </ListView.ItemTemplate>
