@@ -1062,7 +1062,7 @@ CREATE OR ALTER Procedure UpdateAppointment
 	@UserId INT
 AS
 BEGIN 
-	UPDATE Appoointments 
+	UPDATE Appointments 
 	SET 
 	Title = @Title,
 	Description = @Description,
@@ -1070,13 +1070,11 @@ BEGIN
 	EndTime = @EndTime,
 	UpdatedAt = SYSUTCDATETIME(),
 	Status = @Status,
-	Organizer = @Organizer
+	Organizer = @Organizer,
+	Date = @Date
 
 	WHERE Appointments.Id = @AppointmentId
 	AND UserId = @UserId
-
-
-	 SELECT CAST(SCOPE_IDENTITY() AS INT) AS AppointmentId;
 END
 
 CREATE OR ALTER PROCEDURE GetAppointmentDocumentsById
