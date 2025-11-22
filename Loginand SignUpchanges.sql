@@ -1101,6 +1101,40 @@ BEGIN
 END;
 GO
 
+CREATE OR ALTER PROCEDURE DeleteAppointmentDocument
+    @DocumentId INT,
+    @UserId INT
+AS
+BEGIN
+    SET NOCOUNT ON;
+
+    BEGIN TRY
+        BEGIN TRANSACTION;
+
+        -- Delete embeddings/chunks FIRST
+        DELETE FROM AppointmentDocumentEmbeddings 
+        WHERE AppointmentDocumentId    = @DocumentId;
+
+        -- Delete the main document record
+        DELETE FROM AppointmentNotes
+        WHERE Id = @DocumentId
+        AND UserId = @UserId;
+
+        COMMIT TRANSACTION;
+
+        SELECT 1 AS Success;
+    END TRY
+    BEGIN CATCH
+        IF @@TRANCOUNT > 0
+            ROLLBACK TRANSACTION;
+
+        THROW;
+    END CATCH
+END;
+
+
+
+
 
 Exec GetDocumentChunksForAppointment 2
 

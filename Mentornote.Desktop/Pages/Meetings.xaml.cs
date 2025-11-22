@@ -46,12 +46,9 @@ namespace Mentornote.Desktop.Pages
         {
             InitializeComponent();
             
-            // Make this page its own DataContext so bindings can see properties above
+           // Make this page its own DataContext so bindings can see properties above
             this.DataContext = this;
             var appointments = GetAppointments();
-           
-
-
         }
 
         private void OpenOverlay_Click(object sender, RoutedEventArgs e)
@@ -64,9 +61,8 @@ namespace Mentornote.Desktop.Pages
                 var overlay = new Overlay(meetingId);
                 overlay.Show();
             }
-
-            
         }
+
         private void LoadMore_Click(object sender, RoutedEventArgs e)
         {
             var button = (System.Windows.Controls.Button)sender;
@@ -87,6 +83,7 @@ namespace Mentornote.Desktop.Pages
 
             }
         }
+
         private void RefreshAppointments_Click(object sender, RoutedEventArgs e)
         {
             Upcoming.Clear();
@@ -106,7 +103,9 @@ namespace Mentornote.Desktop.Pages
                 MessageBoxImage.Warning);
 
             if (confirm != MessageBoxResult.Yes)
+            {
                 return;
+            }
 
             int appointmentId = (int)button.Tag;   
             int userId = UserId;

@@ -119,6 +119,7 @@ namespace Mentornote.Backend.Controllers
             {
                 var uploadedFiles = appointmentDTO.Files;
                 var userId = appointmentDTO.UserId;
+                var removeFilesIds = appointmentDTO.FilesIDsToRemove;
 
                 BackgroundJob job = new BackgroundJob()
                 {
@@ -155,9 +156,12 @@ namespace Mentornote.Backend.Controllers
                 // -----------------------------------
 
                 var savedFiles = new List<(string Path, string OriginalName)>();
+                var filesToRemove = new List<(string Path, string OriginalName, int fileId)>();
 
                 var uploadDir = Path.Combine(Directory.GetCurrentDirectory(), "App_Data", "UploadedFiles");
                 Directory.CreateDirectory(uploadDir);
+
+               
 
                 if (uploadedFiles != null)
                 {
@@ -182,6 +186,8 @@ namespace Mentornote.Backend.Controllers
                     }
                 }
 
+
+
                 // -----------------------------------
                 // BACKGROUND PROCESSING
                 // -----------------------------------
@@ -198,8 +204,26 @@ namespace Mentornote.Backend.Controllers
 
                         // Compute hashes for new files
                         var hashedUploads = new List<(string Path, string Hash)>();
-                       
-                        
+
+                        if (removeFilesIds != null)
+                        {
+                            // Assume FilesToRemove contains the original file names
+                            //existingDocs = await dBServices.GetAppointmentDocumentsById(appointmentId, userId);
+                            foreach (var fileId in removeFilesIds)
+                            {
+                                var docsToRemove = existingDocs.Where(d => d.Id == fileId).FirstOrDefault();
+                                if (docsToRemove != null)
+                                {
+                                    if (System.IO.File.Exists(docsToRemove.DocumentPath))
+                                    {
+                                        System.IO.File.Delete(docsToRemove.DocumentPath);
+                                        dBServices.DeleteAppointmentDocument(docsToRemove.Id, userId);
+                                    }
+
+                                }
+                            }
+                        }
+
                         foreach (var file in savedFiles)
                         {
                             string newHash = fileServices.ComputeHashFromFilePath(file.Path);
@@ -220,8 +244,8 @@ namespace Mentornote.Backend.Controllers
 
                         // Find old documents to delete
                         var badUploads = hashedUploads
-                            .Where(d => !newqueUploads.Any(u => u.Hash == d.Hash))
-                            .ToList();
+                         .Where(upload => !newqueUploads.Any(accepted => accepted.Path == upload.Path));
+
 
                         // -----------------------------------
                         // ADD NEW UNIQUE DOCS
@@ -244,7 +268,7 @@ namespace Mentornote.Backend.Controllers
                                 newDocId,
                                 appointmentId
                             );
-                        }
+                        } 
 
                         // -----------------------------------
                         // DELETE REMOVED DOCUMENT FILES
@@ -254,6 +278,9 @@ namespace Mentornote.Backend.Controllers
                             if (System.IO.File.Exists(doc.Path))
                                 System.IO.File.Delete(doc.Path);
                         }
+
+                       
+
 
                         job.Status = "Completed";
                         job.ResultMessage = "Appointment updated and processed.";

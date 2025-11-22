@@ -27,6 +27,7 @@ namespace Mentornote.Desktop
         public List<File> ExistingRemovedFiles { get; set; } = new();
         public ObservableCollection<File> AppointmentFiles { get; set; } = new();
         private List<FileDTO> uploadedFiles = new();
+        private List<int> removedFilesID = new();
         private int appointmentId;
 
 
@@ -182,6 +183,16 @@ namespace Mentornote.Desktop
                 }
             }
 
+            foreach (var removingFile in ExistingRemovedFiles)
+            {
+                string filePath = removingFile.FilePath;
+                string fileName = $"{Guid.NewGuid()}_{System.IO.Path.GetFileName(filePath)}";
+                int fileId = removingFile.FileId;
+
+                removedFilesID.Add(fileId);
+
+               
+            }
 
             try
             {
@@ -196,6 +207,12 @@ namespace Mentornote.Desktop
                 appointment.Add(new StringContent(DateInput.Text), "Date");
                 appointment.Add(new StringContent(OrganizerInput.Text), "Organizer");
                 appointment.Add(new StringContent(StatusInput.Text), "Status");
+
+                // Add files to remove
+                foreach (var fileId in removedFilesID)
+                {
+                    appointment.Add(new StringContent(fileId.ToString()), "FilesIDsToRemove");
+                }
 
                 foreach (var file in uploadedFiles)
                 {
@@ -284,7 +301,8 @@ namespace Mentornote.Desktop
             foreach (var doc in docs)
             {
                 AppointmentFiles.Add(new File { 
-                    FilePath = doc.DocumentPath 
+                    FilePath = doc.DocumentPath,
+                    FileId = doc.Id
                 });
             }
             
@@ -404,6 +422,7 @@ namespace Mentornote.Desktop
     {
         public string FilePath { get; set; } = string.Empty;
         public string FileName => AppointmentWindow.GetDisplayFileName(System.IO.Path.GetFileName(FilePath));
+        public int FileId { get; set; }
     }
 
 }

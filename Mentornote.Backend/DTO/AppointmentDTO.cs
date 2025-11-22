@@ -14,6 +14,7 @@ namespace Mentornote.Backend.DTO
 
         //Document Info
         public List<IFormFile> Files { get; set; }
+        public List<int> FilesIDsToRemove { get; set; }
         public int UserId { get; set; }
     }
 }

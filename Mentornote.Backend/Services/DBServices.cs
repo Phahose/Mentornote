@@ -602,5 +602,42 @@ namespace Mentornote.Backend.Services
             return documents;
         }
 
+        public bool DeleteAppointmentDocument(int documentId, int userId)
+        {
+            using (SqlConnection conn = new SqlConnection(connectionString))
+            using (SqlCommand cmd = new SqlCommand("DeleteAppointmentDocument", conn))
+            {
+                cmd.CommandType = CommandType.StoredProcedure;
+
+                // Add parameters
+                cmd.Parameters.Add(new SqlParameter("@DocumentId", SqlDbType.Int)
+                {
+                    Value = documentId
+                });
+
+                cmd.Parameters.Add(new SqlParameter("@UserId", SqlDbType.Int)
+                {
+                    Value = userId
+                });
+
+                conn.Open();
+
+                try
+                {
+                    // Execute and read return value
+                    var result = cmd.ExecuteScalar();
+                    conn.Close();
+
+                    // Stored proc returns "1" on success
+                    return result != null && Convert.ToInt32(result) == 1;
+
+                }
+                catch (Exception ex)
+                {
+                    // Log or rethrow depending on your architecture
+                    throw new Exception($"Failed to delete document {documentId}. Error: {ex.Message}", ex);
+                }
+            }
+        }
     }
 }  
