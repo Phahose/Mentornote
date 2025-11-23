@@ -1,15 +1,14 @@
 ﻿using Mentornote.Backend.DTO;
 using Mentornote.Backend.Models;
 using Mentornote.Backend.Services;
-using Microsoft.Win32;
 using System.Collections.ObjectModel;
 using System.IO;
 using System.Net.Http;
 using System.Text.Json;
-using System.Windows;
-using System.Windows.Shapes;
-using System.Threading;
 using System.Text.RegularExpressions;
+using System.Windows;
+using System.Windows.Media;
+using System.Windows.Controls;   
 
 namespace Mentornote.Desktop
 {
@@ -34,6 +33,7 @@ namespace Mentornote.Desktop
         public AppointmentWindow(int appointmentId)
         {
             InitializeComponent();
+            HookValidationEvents();
             PopulateInputs(appointmentId); // Example appointment ID
             DataContext = this;
             
@@ -68,6 +68,11 @@ namespace Mentornote.Desktop
 
         private async void UploadAll_Click(object sender, RoutedEventArgs e)
         {
+            if (!ValidateLive())
+            {
+                return;
+            }
+              
             // 1️⃣ Pick a file from the user's system
             if (SelectedFiles.Count == 0)
             {
@@ -154,6 +159,10 @@ namespace Mentornote.Desktop
 
         private async void UpdateAppointment_Click(object sender, RoutedEventArgs e)
         {
+            if (!ValidateLive())
+            {
+                return;
+            }
             foreach (var pendingFile in SelectedFiles)
             {
                 string filePath = pendingFile.FilePath;
@@ -311,8 +320,8 @@ namespace Mentornote.Desktop
             AppointmentInfoTitle.Text = appointment.Title;
             AppointmentDescription.Text = appointment.Description;
             DateInput.Text = appointment.Date.ToString();
-            StartTimeInput.Text = appointment.StartTime.ToString();
-            EndTimeInput.Text = appointment.EndTime.ToString();
+            StartTimeInput.Text = appointment.StartTime?.ToString("h:mm tt") ?? "";
+            EndTimeInput.Text = appointment.EndTime?.ToString("h:mm tt") ?? "";
             OrganizerInput.Text = appointment.Organizer;
 
             // Set the Default Status
@@ -332,10 +341,6 @@ namespace Mentornote.Desktop
 
             PopulateTimeCombos();
 
-            //if (StartTimeInput.Text == "" && EndTimeInput.Text == "")
-            //{
-            //    PopulateTimeCombos();
-            //}
         }
 
         public void StartPollingForStatus(long jobId)
@@ -399,13 +404,13 @@ namespace Mentornote.Desktop
                 EndTimeInput.Items.Add(displayTime);
             }
 
-            // Optionally preselect current nearest half-hour
-            var now = DateTime.Now;
-            var nearestHalfHour = now.AddMinutes(30 - now.Minute % 30).ToString("h:mm tt");
-            StartTimeInput.Text = nearestHalfHour;
-            EndTimeInput.Text = DateTime.Now.AddHours(1).ToString("h:mm tt");
-
-            
+            if (string.IsNullOrWhiteSpace(StartTimeInput.Text) || string.IsNullOrWhiteSpace(EndTimeInput.Text))
+            {
+                var now = DateTime.Now;
+                var nearestHalfHour = now.AddMinutes(30 - now.Minute % 30).ToString("h:mm tt");
+                StartTimeInput.Text = nearestHalfHour;
+                EndTimeInput.Text = DateTime.Now.AddHours(1).ToString("h:mm tt");
+            }
         }
 
         public static string GetDisplayFileName(string fullFileName)
@@ -417,6 +422,85 @@ namespace Mentornote.Desktop
             string pattern = @"^[0-9a-fA-F\-]{36}_";
             return Regex.Replace(fullFileName, pattern, "");
         }
+
+        private void MarkInvalid(System.Windows.Controls.Control control)
+        {
+            control.BorderBrush = new SolidColorBrush(Colors.Red);
+            control.BorderThickness = new Thickness(2);
+        }
+
+        private void MarkValid(System.Windows.Controls.Control control)
+        {
+            control.BorderBrush = new SolidColorBrush(Colors.LightGreen);
+            control.BorderThickness = new Thickness(1);
+        }
+
+        private void ClearValidation(System.Windows.Controls.Control control)
+        {
+            control.ClearValue(Border.BorderBrushProperty);
+            control.ClearValue(Border.BorderThicknessProperty);
+        }
+
+        private bool ValidateLive()
+        {
+            bool isValid = true;
+
+            // TITLE
+            if (string.IsNullOrWhiteSpace(TitleInput.Text))
+            {
+                MarkInvalid(TitleInput);
+                isValid = false;
+            }
+            else MarkValid(TitleInput);
+
+            // DATE
+            if (!DateTime.TryParse(DateInput.Text, out _))
+            {
+                MarkInvalid(DateInput);
+                isValid = false;
+            }
+            else MarkValid(DateInput);
+
+            // START TIME
+            if (!DateTime.TryParse(StartTimeInput.Text, out var startTime))
+            {
+                MarkInvalid(StartTimeInput);
+                isValid = false;
+            }
+            else MarkValid(StartTimeInput);
+
+            // END TIME
+            if (!DateTime.TryParse(EndTimeInput.Text, out var endTime))
+            {
+                MarkInvalid(EndTimeInput);
+                isValid = false;
+            }
+            else MarkValid(EndTimeInput);
+
+            // CHECK ORDER
+            if (DateTime.TryParse(StartTimeInput.Text, out startTime) &&
+                DateTime.TryParse(EndTimeInput.Text, out endTime))
+            {
+                if (startTime >= endTime)
+                {
+                    MarkInvalid(StartTimeInput);
+                    MarkInvalid(EndTimeInput);
+                    isValid = false;
+                }
+            }
+
+            UpdateAppointmentButton.IsEnabled = isValid;
+            return isValid;
+        }
+
+        private void HookValidationEvents()
+        {
+            TitleInput.TextChanged += (_, __) => ValidateLive();
+            DateInput.SelectedDateChanged += (_, __) => ValidateLive();
+            StartTimeInput.SelectionChanged += (_, __) => ValidateLive();
+            EndTimeInput.SelectionChanged += (_, __) => ValidateLive();
+        }
+
     }
     public class File
     {

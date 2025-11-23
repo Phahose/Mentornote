@@ -17,10 +17,6 @@
         <!-- transparent, click-through background -->
         <Rectangle Fill="Transparent" IsHitTestVisible="False"/>
         
-        <!--<Rectangle Stroke="MediumPurple"
-               StrokeThickness="10"
-               RadiusX="12" RadiusY="12"
-               IsHitTestVisible="False"/>-->
        
         <!-- === Listening Card (top-left) === -->
         <Border x:Name="ListeningSection"
@@ -119,6 +115,8 @@
                     FontSize="24"
                     Foreground="Red"
                     Click="Close_Click"/>
+
+            
         </StackPanel>
 
     </Grid>

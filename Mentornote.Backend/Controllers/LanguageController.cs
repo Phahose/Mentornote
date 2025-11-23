@@ -78,6 +78,7 @@ namespace Mentornote.Backend.Controllers
             var resp = await http.PostAsync("http://localhost:11434/api/generate", content);
             return await resp.Content.ReadAsStringAsync();
         }
+
         /*  [HttpPost("final")]
           public async Task<IActionResult> FinalSummary()
           {

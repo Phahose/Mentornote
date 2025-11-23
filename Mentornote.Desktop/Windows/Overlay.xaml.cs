@@ -47,7 +47,7 @@ namespace Mentornote.Desktop
             {
                  _meetingId = Guid.NewGuid().ToString();
                 _listener = new AudioListener();
-               // _listener.AudioFileReady += ProcessAudioFile;
+                _listener.AudioFileReady += ProcessAudioFile;
                 _listener.AudioChunkReady += ProcessLiveAudio;
                 _listener.StartListening();
                 _isListening = true;

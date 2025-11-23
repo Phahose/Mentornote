@@ -186,8 +186,6 @@ namespace Mentornote.Backend.Controllers
                     }
                 }
 
-
-
                 // -----------------------------------
                 // BACKGROUND PROCESSING
                 // -----------------------------------
@@ -229,7 +227,6 @@ namespace Mentornote.Backend.Controllers
                             string newHash = fileServices.ComputeHashFromFilePath(file.Path);
                             hashedUploads.Add((file.Path, newHash));
                         }
-
 
                         // Remove duplicates among uploads
                         var uniqueUploads = hashedUploads
@@ -276,11 +273,12 @@ namespace Mentornote.Backend.Controllers
                         foreach (var doc in badUploads)
                         {
                             if (System.IO.File.Exists(doc.Path))
+                            {
                                 System.IO.File.Delete(doc.Path);
+                            }
                         }
 
                        
-
 
                         job.Status = "Completed";
                         job.ResultMessage = "Appointment updated and processed.";
@@ -351,8 +349,6 @@ namespace Mentornote.Backend.Controllers
                 return StatusCode(500, new { ResultMessage = $"Error fetching job status: {ex.Message}"});
             }
         }
-
-
     }
 }
 

@@ -19,7 +19,7 @@ namespace Mentornote.Desktop.MVVM
         private string _tempFile;
 
         private readonly List<byte> _buffer = new();          
-        private readonly int _chunkSeconds = 2;              
+        private readonly int _chunkSeconds = 1;              
 
         // This is an event it is not a regular declaration
         // It says "when the audio file is ready and when we have a new chunck of audi ready for processig, notify anyone who is listening"
@@ -49,20 +49,19 @@ namespace Mentornote.Desktop.MVVM
         /// The we invoke the AudioChunkReady event asynchronously to avoid blocking 
         /// This is saying "here is a chunk of audio data for you to process"
         /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
+
         private async void Capture_DataAvailable(object sender, WaveInEventArgs e)
         {
-            // 1️⃣  keep writing to the full meeting file
+            // 1️  keep writing to the full meeting file
             _writer.Write(e.Buffer, 0, e.BytesRecorded);
 
-            // 2️⃣  collect data in memory for small chunks
+            // 2️  collect data in memory for small chunks
             lock (_buffer)
             {
                 _buffer.AddRange(e.Buffer[..e.BytesRecorded]);
             }
 
-            // 3️⃣  if buffer > N seconds, fire chunk event
+            // 3️  if buffer > N seconds, fire chunk event
             int bytesPerSecond = _capture.WaveFormat.AverageBytesPerSecond;
             if (_buffer.Count >= bytesPerSecond * _chunkSeconds)
             {
@@ -84,7 +83,7 @@ namespace Mentornote.Desktop.MVVM
                     wavChunk = ms.ToArray(); // these bytes are now a proper .wav
                 }
 
-                // After creating wavChunk (as shown earlier)
+                // After creating wavChunk 
                 if (!IsSilent(chunk, _capture.WaveFormat))
                 {
                     await Task.Run(() => AudioChunkReady?.Invoke(this, wavChunk));
