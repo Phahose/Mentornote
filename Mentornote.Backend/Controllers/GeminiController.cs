@@ -19,11 +19,13 @@ namespace Mentornote.Backend.Controllers
         private readonly string _apiKey;
         private readonly HttpClient _httpClient;
         private readonly RagService _ragService;
-        public GeminiController(IConfiguration configuration, RagService ragService)
+        private readonly AudioListener _audioListener;
+        public GeminiController(IConfiguration configuration, RagService ragService, AudioListener audioListener)
         {
             _httpClient = new HttpClient();
             _apiKey = configuration["Gemini:ApiKey"];
             _ragService = ragService;
+            _audioListener = audioListener;
         }
 
         [HttpPost("suggest/{appointmentId}")]
@@ -202,7 +204,125 @@ namespace Mentornote.Backend.Controllers
             }            
         }
 
-        
+        [HttpGet("summary/{appointmentId}")]
+        public async Task<IActionResult> GenerateMeetingSummary(int appointmentId)
+        {
+            try
+            {
+                string fullTranscript = _audioListener.GetFullMeetingTranscript();
+                var summary = "zxcvb";
+
+                if (string.IsNullOrWhiteSpace(fullTranscript) || fullTranscript.Length < 50)
+                {
+                     Console.WriteLine("SKIPPING SUMMARY — transcript too short.");
+                    
+                     return Content(summary ?? string.Empty, "text/plain") ;
+                }
+
+                if (string.IsNullOrWhiteSpace(fullTranscript))
+                {
+                    return BadRequest("Transcript is empty.");
+                }
+                    
+                // 1️⃣ Build the summary prompt
+                string prompt = $"""
+                                    You are an expert meeting summarizer.
+
+                                    Your task is to produce a clear, accurate, and well-structured summary of the meeting based **entirely** on the transcript provided.
+
+                                    FOLLOW THESE RULES:
+
+                                    1. **Do not hallucinate.**  
+                                       Only use information explicitly found in the transcript.
+
+                                    2. **Be concise but complete.**  
+                                       Capture all major points:
+                                       - key topics discussed  
+                                       - decisions made  
+                                       - action items  
+                                       - risks or concerns  
+                                       - important context  
+                                       - commitments, next steps  
+
+                                    3. **Organize the summary professionally**, using headings such as:
+                                       - Overview  
+                                       - Key Discussion Points  
+                                       - Decisions  
+                                       - Action Items  
+                                       - Next Steps  
+
+                                    4. **Never fabricate information not present in the transcript.**
+
+                                    5. If the transcript is messy or fragmented (as typical speech-to-text recordings can be), interpret meaning carefully but do not invent facts.
+
+                                    ---
+
+                                    FULL TRANSCRIPT:
+                                    {fullTranscript}
+
+                                    Produce the final summary below:
+                                 """;
+
+               
+                var url = $"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-lite:generateContent?key={_apiKey}";
+
+                var payload = new
+                {
+                    contents = new[]
+                    {
+                        new
+                        {
+                            role = "user",
+                            parts = new[]
+                            {
+                                new { text = prompt }
+                            }
+                        }
+                    },
+                    generationConfig = new
+                    {
+                        temperature = 0.4,    // lower temp for accuracy & stability
+                        maxOutputTokens = 2000
+                    }
+                };
+
+                var json = JsonSerializer.Serialize(payload);
+                var request = new HttpRequestMessage(HttpMethod.Post, url)
+                {
+                    Content = new StringContent(json, Encoding.UTF8, "application/json")
+                };
+
+                // 3️⃣ Call Gemini
+                var response = await _httpClient.SendAsync(request);
+                var body = await response.Content.ReadAsStringAsync();
+
+                if (!response.IsSuccessStatusCode)
+                {
+                    Console.WriteLine($"❌ Gemini error {response.StatusCode}: {body}");
+                    return StatusCode((int)response.StatusCode, body);
+                }
+
+                // 4️⃣ Parse the model response (same as your example)
+                using var doc = JsonDocument.Parse(body);
+                summary = doc.RootElement
+                    .GetProperty("candidates")[0]
+                    .GetProperty("content")
+                    .GetProperty("parts")[0]
+                    .GetProperty("text")
+                    .GetString();
+
+
+                Console.WriteLine($"SUMMARY: {summary}");
+                return Content(summary ?? string.Empty, "text/plain");
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex.Message);
+                return StatusCode(500, $"❌ Gemini summary generation failed: {ex.Message}");
+            }
+        }
+
+
     }
 }
 

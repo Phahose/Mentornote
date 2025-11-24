@@ -27,16 +27,14 @@ namespace Mentornote.Backend
             _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Token", _deepgramApiKey);
         }
 
-        public async Task<List<string>> DeepGramLiveTranscribe(byte[] audioBytes)
+        public async Task<List<string>> DeepGramLiveTranscribe(byte[] audioBytes, int appointmentId)
         {
             var content = new ByteArrayContent(audioBytes);
-            Console.WriteLine($"Audio size: {audioBytes.Length} bytes");
 
             if (audioBytes.Length == 0)
             {
                 return _liveTranscripts;
             }
-            Console.WriteLine($"Audio Content: {content} bytes");
             content.Headers.ContentType = new MediaTypeHeaderValue("audio/wav");
 
             var response = await _httpClient.PostAsync(
@@ -58,63 +56,18 @@ namespace Mentornote.Backend
             {
                 lock (_lock)
                 {
+                    Console.WriteLine(transcript);
                     _liveTranscripts.Add(transcript);
+                    _liveUtterances.Add(new Utterance
+                    {
+                        Text = transcript,
+                        AppointmentId = appointmentId // Placeholder, set appropriately in real use
+                    });
+
                 }
             }
-
-
             return _liveTranscripts;
         }
-        //public async Task<List<Utterance>> DeepGramLiveTranscribe(byte[] audioBytes)
-        //{
-        //    var content = new ByteArrayContent(audioBytes);
-        //    Console.WriteLine($"Audio size: {audioBytes.Length} bytes");
-
-        //    if (audioBytes.Length == 0)
-        //    {
-        //        return _liveUtterances;
-        //    }
-        //    Console.WriteLine($"Audio Content: {content} bytes");
-        //    content.Headers.ContentType = new MediaTypeHeaderValue("audio/wav");
-
-        //    var response = await _httpClient.PostAsync(
-        //        "https://api.deepgram.com/v1/listen?model=nova-2-general&language=en-US&smart_format=true&diarize=true&utterances=true",
-        //        content
-        //    );
-
-        //    var json = await response.Content.ReadAsStringAsync();
-
-        //    using var doc = JsonDocument.Parse(json);
-        //    var root = doc.RootElement;
-        //    var results = root.GetProperty("results");
-
-
-        //    if (results.TryGetProperty("utterances", out var utterancesElement))
-        //    {
-        //        foreach (var u in utterancesElement.EnumerateArray())
-        //        {
-        //            var utterance = new Utterance
-        //            {
-        //                Speaker = u.GetProperty("speaker").GetInt32(),
-        //                Start = u.GetProperty("start").GetDouble(),
-        //                End = u.GetProperty("end").GetDouble(),
-        //                Text = u.GetProperty("transcript").GetString()
-        //            };
-
-        //            // Thread-safe store
-        //            if (!string.IsNullOrWhiteSpace(utterance.Text))
-        //            {
-        //                lock (_lock)
-        //                {
-        //                    _liveUtterances.Add(utterance);
-        //                }
-        //            }
-
-        //        }
-        //    }
-
-        //    return _liveUtterances;
-        //}
-
+        
     }
 }

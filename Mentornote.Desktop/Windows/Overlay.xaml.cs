@@ -1,6 +1,7 @@
 ﻿#nullable disable
 using Mentornote.Backend;
 using Mentornote.Desktop.MVVM;
+using Mentornote.Desktop.Windows;
 using Mentornote.Models;
 using Mentornote.Services;
 using System.IO;
@@ -14,6 +15,8 @@ using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Input;
 using System.Windows.Interop;
+using static System.Net.WebRequestMethods;
+using static System.Windows.Forms.VisualStyles.VisualStyleElement.Window;
 
 namespace Mentornote.Desktop
 {
@@ -36,7 +39,7 @@ namespace Mentornote.Desktop
             this.Width = screen.Bounds.Width;
             this.Height = screen.Bounds.Height;
 
-             appId = appointmentId;
+            appId = appointmentId;
 
             Loaded += (_, __) => MakeTransparentLayer();
         }
@@ -45,18 +48,17 @@ namespace Mentornote.Desktop
         {
             if (!_isListening)
             {
-                 _meetingId = Guid.NewGuid().ToString();
-                _listener = new AudioListener();
-                _listener.AudioFileReady += ProcessAudioFile;
-                _listener.AudioChunkReady += ProcessLiveAudio;
-                _listener.StartListening();
+                // _listener.AudioFileReady += ProcessAudioFile;
+
+                _http.PostAsync( $"http://localhost:5085/api/transcribe/start/{appId}", null);
+
                 _isListening = true;
                 Console.WriteLine("Started capturing system audio...");
                 ListeningSection.Visibility = Visibility.Visible;
             }
             else 
-            {                
-                _listener.StopListening();
+            {
+                _http.PostAsync($"http://localhost:5085/api/transcribe/stop/{appId}", null);
                 _isListening = false;
                 Console.WriteLine("Stopped capturing system audio.");
                 RecordingCheck.Text = "Not Recording";
@@ -72,8 +74,22 @@ namespace Mentornote.Desktop
                 StatementText.Text = "Generating suggestion...";
 
                 // 1️⃣ Get transcript
-                var transcript = await helper.GetFullTranscriptAsync();
-                var cleanedTranscript = CleanTranscript(transcript);
+                List<string> transcriptList = await _http.GetFromJsonAsync<List<string>>("http://localhost:5085/api/transcribe/gettranscript");
+
+                //  2. Safely convert to one single string
+                string fullTranscript = string.Empty;
+
+                if (transcriptList != null)
+                {
+                    fullTranscript = string.Join(" ", transcriptList);
+                }
+                var cleanedTranscript = CleanTranscript(fullTranscript);
+
+
+                //var transcript = await helper.GetFullTranscriptAsync();
+                //var cleanedTranscript = CleanTranscript(transcript);
+
+
                 StatementText.Text = string.Join(" ", cleanedTranscript.Split(' ').TakeLast(15));
 
                 // 2️⃣ Serialize to JSON
@@ -94,34 +110,6 @@ namespace Mentornote.Desktop
         }
 
 
-        private async void ProcessLiveAudio(object sender, byte[] chunk)
-        {
-            try
-            {
-                using var content = new ByteArrayContent(chunk);
-                content.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue("audio/wav");
-
-
-                _http.DefaultRequestHeaders.Remove("X-Meeting-ID");
-                _http.DefaultRequestHeaders.Add("X-Meeting-ID", _meetingId);
-
-                // send to your API endpoint (running in Speko.Backend or local ASP.NET)
-                var response = await _http.PostAsync("http://localhost:5085/api/transcribe", content);
-                response.EnsureSuccessStatusCode();
-
-                // 2️⃣ Parse JSON into usable C# object
-                var result = await response.Content.ReadFromJsonAsync<TranscibeResponse>();
-
-                string transcript = result?.Text ?? ""; 
-
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"❌ Error sending chunk: {ex.Message}");
-            }
-
-        }
-
         private string CleanTranscript(string rawTranscript)
         {
             if (string.IsNullOrWhiteSpace(rawTranscript))
@@ -139,181 +127,35 @@ namespace Mentornote.Desktop
             return string.Join(" ", cleaned);
         }
 
-        private async void ProcessAudioFile(object sender, string filePath)
+     
+
+
+        private async void Close_Click(object sender, RoutedEventArgs e)
         {
-            RecordedText.Text = "Audio Saved";
-            try
+            _listener?.StopListening(appId);
+            string summary = await  _http.GetStringAsync($"http://localhost:5085/api/gemini/summary/{appId}");
+
+            if (summary != "zxcvb")
             {
-                Console.WriteLine($"[Summary] Uploading final audio file: {filePath}");
+                var dialog = new SummaryDialog(summary);
+                bool? result = dialog.ShowDialog();
 
-                using var content = new MultipartFormDataContent();
-                var fileContent = new ByteArrayContent(await System.IO.File.ReadAllBytesAsync(filePath));
-                fileContent.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue("audio/wav");
-                content.Add(fileContent, "file", Path.GetFileName(filePath));
 
-                var response = await _http.PostAsync("https://localhost:5085/api/transcribe/final", content);
-                response.EnsureSuccessStatusCode();
-
-                var json = await response.Content.ReadAsStringAsync();
-                Console.WriteLine($"[Summary] Response: {json}");
-
-                // optional: delete temp file after use
-                System.IO.File.Delete(filePath);
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"❌ Error sending final file: {ex.Message}");
-            }
-        }
-
-        #region Embedding and Q&A (not used currently)
-
-        /*public async Task GenerateSummaryEmbedding(string chunk, int noteId, int chunkIndex)
-        {
-            try
-            {
-                var apiKey = _config["OpenAI:ApiKey"].Trim();
-
-                var requestBody = new
+                if (dialog.SaveClicked)
                 {
-                    input = chunk,
-                    model = "text-embedding-3-small"
-                };
-
-                var requestJson = JsonSerializer.Serialize(requestBody);
-                var request = new HttpRequestMessage(HttpMethod.Post, "https://api.openai.com/v1/embeddings");
-                request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", apiKey);
-                request.Content = new StringContent(requestJson, Encoding.UTF8, "application/json");
-
-                var response = await _httpClient.SendAsync(request);
-
-                if (response.IsSuccessStatusCode)
-                {
-                    var embeddingResult = await response.Content.ReadAsStringAsync();
-
-                    NoteEmbedding noteEmbedding = new()
-                    {
-                        NoteId = noteId,
-                        ChunkText = chunk,
-                        EmbeddingJson = embeddingResult,
-                        ChunkIndex = chunkIndex
-                    };
-
-                    CardsServices cardsServices = new();
-                    cardsServices.AddNoteEmbedding(noteEmbedding);
+                    // User clicked “Save”
+                    // TODO: Save to DB — you can call your backend endpoint here
+                    await _http.PostAsJsonAsync($"http://localhost:5085/api/transcribe/save/{appId}", summary);
                 }
                 else
                 {
-                    Console.WriteLine($"OpenAI Embedding API Error: {response.StatusCode}");
+                    // User clicked “Discard”
+                    // do nothing
                 }
             }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"Error generating embedding: {ex.Message}");
-            }
-        }*/
 
-        //public async Task<string> AskQuestionAsync(string question, int noteId, User user)
-        //{
-        //    var apiKey = _config["OpenAI:ApiKey"].Trim();
-        //    CardsServices cardsServices = new();
+            
 
-        //    // --- 1. Get embedding for the user question ---
-        //    List<double> questionEmbedding = await CreateQuestionEmbeddingVector(question, apiKey);
-
-        //    if (questionEmbedding == null || questionEmbedding.Count == 0)
-        //        return "Could not generate embedding for question.";
-
-        //    // --- 2. Get note embeddings from DB ---
-        //    var noteEmbeddings = cardsServices.GetNoteEmbeddingsByNoteId(noteId); //  DB method
-
-        //    // --- 3. Score each chunk against the question ---
-        //    var scoredChunks = new List<(NoteEmbedding embedding, double score)>();
-
-        //    foreach (var e in noteEmbeddings)
-        //    {
-        //        var chunkVector = _helpers.ParseEmbedding(e.EmbeddingJson); //  parser
-        //        if (chunkVector.Count == 0) continue;
-
-        //        double score = _helpers.CosineSimilarity(questionEmbedding, chunkVector);
-        //        scoredChunks.Add((e, score));
-        //    }
-
-        //    // --- 4. Pick top N chunks (e.g., 3) ---
-        //    var topChunks = scoredChunks
-        //        .OrderByDescending(x => x.score)
-        //        .Take(3)
-        //        .Select(x => x.embedding.ChunkText)
-        //        .ToList();
-
-        //    if (topChunks.Count == 0)
-        //        return "No relevant chunks found for this question.";
-
-        //    // --- 5. Build context prompt ---
-        //    var context = string.Join("\n\n", topChunks);
-        //    var finalPrompt = $@"
-        //        Use the following notes to answer the question.
-
-        //       Context:
-        //       {context}
-
-        //        Question: {question}
-        //        Answer:
-        //        ";
-
-        //    // --- 6. Call OpenAI chat completions API ---
-        //    var requestBody = new
-        //    {
-        //        model = "gpt-4",
-        //        messages = new[]
-        //        {
-        //            new { role = "system", content = "You are a helpful study assistant. and dont haallucinate outside the Notes" },
-        //            new { role = "user", content = finalPrompt }
-        //        },
-        //        max_tokens = 500
-        //    };
-
-        //    var requestJson = JsonSerializer.Serialize(requestBody);
-        //    var request = new HttpRequestMessage(HttpMethod.Post, "https://api.openai.com/v1/chat/completions");
-        //    request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", apiKey);
-        //    request.Content = new StringContent(requestJson, Encoding.UTF8, "application/json");
-
-        //    var response = await _httpClient.SendAsync(request);
-
-        //    if (!response.IsSuccessStatusCode)
-        //    {
-        //        return $"OpenAI API Error: {response.StatusCode} - {await response.Content.ReadAsStringAsync()}";
-        //    }
-
-        //    var responseContentString = await response.Content.ReadAsStringAsync();
-        //    var responseContent = JsonSerializer.Deserialize<OpenAIResponse>(responseContentString);
-
-        //    string aiAnswer = responseContent?.choices?[0]?.message?.content?.Trim()
-        //           ?? "No valid response from OpenAI.";
-
-        //    // Save chat history
-        //    TutorMessage tutorMessage = new()
-        //    {
-        //        NoteId = noteId,
-        //        UserId = user.Id,
-        //        Message = question,
-        //        Response = aiAnswer,
-        //        CreatedAt = DateTime.UtcNow
-        //    };
-
-
-        //    cardsServices.AddTutorMessage(tutorMessage);
-
-        //    return responseContent?.choices?[0]?.message?.content?.Trim()
-        //           ?? "No valid response from OpenAI.";
-        //}
-
-        #endregion
-
-
-        private void Close_Click(object sender, RoutedEventArgs e)
-        {
-            _listener?.StopListening();
             ListeningSection.Visibility = Visibility.Collapsed;
             Close();
         }
