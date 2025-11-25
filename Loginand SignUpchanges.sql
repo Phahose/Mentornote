@@ -1133,6 +1133,48 @@ BEGIN
 END;
 
 
+CREATE TABLE AppointmentSummaries (
+    Id INT IDENTITY(1,1) PRIMARY KEY,
+    AppointmentId INT NOT NULL,
+    SummaryText NVARCHAR(MAX) NOT NULL,
+    CreatedAt DATETIME2 NOT NULL DEFAULT SYSUTCDATETIME(),
+
+    CONSTRAINT FK_AppointmentSummaries_Appointments
+        FOREIGN KEY (AppointmentId) REFERENCES Appointments(Id)
+        ON DELETE CASCADE
+);
+
+
+Drop Table AppointmentSummaries
+
+CREATE OR ALTER PROCEDURE AddAppointmentSummary
+    @AppointmentId INT,
+    @SummaryText NVARCHAR(MAX)
+AS
+BEGIN
+    INSERT INTO AppointmentSummaries (AppointmentId, SummaryText)
+    VALUES (@AppointmentId, @SummaryText);
+
+    SELECT SCOPE_IDENTITY() AS SummaryId;
+END
+
+Drop Table AppointmentSummaries
+
+
+CREATE OR ALTER PROCEDURE GetAppointmentSummary
+    @AppointmentId INT
+AS
+BEGIN
+    SELECT SummaryText, CreatedAt
+    FROM AppointmentSummaries
+    WHERE AppointmentId = @AppointmentId
+    ORDER BY CreatedAt DESC;
+END
+
+
+
+
+
 
 
 

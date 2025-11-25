@@ -639,5 +639,23 @@ namespace Mentornote.Backend.Services
                 }
             }
         }
+
+        public int AddAppointmentSummary(int appointmentId, string summaryText)
+        {
+            using SqlConnection connection = new SqlConnection(connectionString);
+            connection.Open();
+
+            using SqlCommand cmd = new SqlCommand("AddAppointmentSummary", connection)
+            {
+                CommandType = CommandType.StoredProcedure
+            };
+
+            cmd.Parameters.AddWithValue("@AppointmentId", appointmentId);
+            cmd.Parameters.AddWithValue("@SummaryText", summaryText);
+
+            int newId = Convert.ToInt32(cmd.ExecuteScalar());
+            return newId;
+        }
+
     }
 }  

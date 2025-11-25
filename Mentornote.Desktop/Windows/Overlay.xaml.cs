@@ -17,6 +17,8 @@ using System.Windows.Input;
 using System.Windows.Interop;
 using static System.Net.WebRequestMethods;
 using static System.Windows.Forms.VisualStyles.VisualStyleElement.Window;
+using Newtonsoft.Json;
+using JsonSerializer = System.Text.Json.JsonSerializer;
 
 namespace Mentornote.Desktop
 {
@@ -127,8 +129,6 @@ namespace Mentornote.Desktop
             return string.Join(" ", cleaned);
         }
 
-     
-
 
         private async void Close_Click(object sender, RoutedEventArgs e)
         {
@@ -143,15 +143,29 @@ namespace Mentornote.Desktop
 
                 if (dialog.SaveClicked)
                 {
-                    // User clicked “Save”
-                    // TODO: Save to DB — you can call your backend endpoint here
-                    await _http.PostAsJsonAsync($"http://localhost:5085/api/transcribe/save/{appId}", summary);
+                    try
+                    {
+                        var body = new { summary = summary };
+
+                        var json = JsonConvert.SerializeObject(body);
+
+                        var content = new StringContent(json, Encoding.UTF8, "application/json");
+
+                        var response = await _http.PostAsync(
+                            $"http://localhost:5085/api/summary/save/{appId}",
+                            content
+                        );
+
+                        System.Windows.MessageBox.Show("Summary saved!");
+                    }
+                    catch (Exception ex)
+                    {
+
+                        System.Windows.MessageBox.Show($"Error saving summary: {ex.Message}");
+                    }
+                    
                 }
-                else
-                {
-                    // User clicked “Discard”
-                    // do nothing
-                }
+               
             }
 
             
