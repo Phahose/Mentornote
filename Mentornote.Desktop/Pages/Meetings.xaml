@@ -85,10 +85,10 @@
                             Margin="20">
 
                     <TextBlock Text="No upcoming Appointments"
-               FontStyle="Italic"
-               Foreground="Gray"
-               TextAlignment="Center"
-               FontSize="15"/>
+                               FontStyle="Italic"
+                               Foreground="Gray"
+                               TextAlignment="Center"
+                               FontSize="15"/>
 
                 </StackPanel>
 
@@ -179,6 +179,16 @@
                                                 HorizontalAlignment="Right"
                                                 VerticalAlignment="Top"
                                                 Tag="{Binding Id}"/>
+                                        
+                                        <Button Content="View Summary"
+                                                x:Name="ViewSummaryButton"
+                                                Visibility="Visible"
+                                                Click="ViewSummary_Click"
+                                                Tag="{Binding Id}"
+                                                Width="140"
+                                                Height="40"
+                                                Margin="5"
+                                                Background="#d8eddd"/>
                                     </StackPanel>
                                 </StackPanel>
                             </Border>
@@ -279,6 +289,17 @@
                                                 HorizontalAlignment="Right"
                                                 VerticalAlignment="Top"
                                                 Tag="{Binding Id}"/>
+
+                                        <Button Content="View Summary"
+        x:Name="ViewSummaryButton"
+        Click="ViewSummary_Click"
+        Loaded="ViewSummaryButton_Loaded"
+        Tag="{Binding Id}"
+        Width="140"
+        Height="40"
+        Margin="5"
+        Background="#d8eddd"/>
+
                                     </StackPanel>
 
                                 </StackPanel>

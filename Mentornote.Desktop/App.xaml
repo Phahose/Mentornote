@@ -4,6 +4,6 @@
              xmlns:local="clr-namespace:Mentornote.Desktop"
              StartupUri="Windows/MainWindow.xaml">
     <Application.Resources>
-        <BlurEffect x:Key="GlassBlur" Radius="25"/>
+        <BlurEffect x:Key="GlassBlur" Radius="25" />
     </Application.Resources>
 </Application>

@@ -792,6 +792,10 @@ Alter Table Appointments
 ADD Organizer NVARCHAR(200) NULL,
    [Date] DATE NULL;
 
+
+ALTER TABLE Appointments
+ADD SummaryExists BIT NOT NULL DEFAULT 0;
+
 DROP Table AppointmentNotesVectors
 
 CREATE TABLE AppointmentNotes
@@ -1154,6 +1158,11 @@ AS
 BEGIN
     INSERT INTO AppointmentSummaries (AppointmentId, SummaryText)
     VALUES (@AppointmentId, @SummaryText);
+
+	 -- Mark the parent appointment as having a summary
+    UPDATE Appointments
+    SET SummaryExists = 1
+    WHERE Id = @AppointmentId;
 
     SELECT SCOPE_IDENTITY() AS SummaryId;
 END

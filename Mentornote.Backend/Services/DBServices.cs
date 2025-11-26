@@ -208,8 +208,8 @@ namespace Mentornote.Backend.Services
                             Notes = reader.IsDBNull(reader.GetOrdinal("Notes")) ? null : reader.GetString(reader.GetOrdinal("Notes")),
                             CreatedAt = reader.GetDateTime(reader.GetOrdinal("CreatedAt")),
                             Date = reader.IsDBNull(reader.GetOrdinal("Date")) ? (DateTime?)null : reader.GetDateTime(reader.GetOrdinal("Date")),
-                            Organizer = reader.GetString(reader.GetOrdinal("Organizer"))
-                            //  UpdatedAt = reader.GetDateTime(reader.GetOrdinal("UpdatedAt"))
+                            Organizer = reader.GetString(reader.GetOrdinal("Organizer")),
+                            SummaryExists = reader.GetBoolean(reader.GetOrdinal("SummaryExists"))
                         };
                         appointments.Add(appointment);
                     }
@@ -262,7 +262,8 @@ namespace Mentornote.Backend.Services
                         Notes = reader.IsDBNull(reader.GetOrdinal("Notes")) ? null : reader.GetString(reader.GetOrdinal("Notes")),
                         CreatedAt = reader.GetDateTime(reader.GetOrdinal("CreatedAt")),
                         Date = reader.IsDBNull(reader.GetOrdinal("Date")) ? (DateTime?)null : reader.GetDateTime(reader.GetOrdinal("Date")),
-                        Organizer = reader.GetString(reader.GetOrdinal("Organizer"))
+                        Organizer = reader.GetString(reader.GetOrdinal("Organizer")),
+                        SummaryExists = reader.GetBoolean(reader.GetOrdinal("SummaryExists"))
                         // UpdatedAt = reader.GetDateTime(reader.GetOrdinal("UpdatedAt"))
                     };
                 }
@@ -655,6 +656,33 @@ namespace Mentornote.Backend.Services
 
             int newId = Convert.ToInt32(cmd.ExecuteScalar());
             return newId;
+        }
+
+        public AppointmentSummary GetSummaryByAppointmentId(int appointmentId)
+        {
+            using SqlConnection conn = new SqlConnection(connectionString);
+            conn.Open();
+
+            using SqlCommand cmd = new SqlCommand("GetAppointmentSummary", conn)
+            {
+                CommandType = CommandType.StoredProcedure
+            };
+
+            cmd.Parameters.AddWithValue("@AppointmentId", appointmentId);
+
+            using SqlDataReader reader = cmd.ExecuteReader();
+
+            if (reader.Read())
+            {
+                return new AppointmentSummary
+                {
+                    AppointmentId = reader.GetInt32(reader.GetOrdinal("AppointmentId")),
+                    SummaryText = reader["SummaryText"] as string ?? "",
+                    CreatedAt = reader.GetDateTime(reader.GetOrdinal("CreatedAt"))
+                };
+            }
+
+            return new AppointmentSummary(); 
         }
 
     }

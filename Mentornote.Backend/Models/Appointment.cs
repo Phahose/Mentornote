@@ -1,4 +1,6 @@
 ﻿#nullable disable
+
+
 namespace Mentornote.Backend.Models
 {
     public class Appointment
@@ -13,9 +15,8 @@ namespace Mentornote.Backend.Models
         public string Notes { get; set; }
         public DateTime? Date { get; set; }
         public string Organizer { get; set; }
+        public bool SummaryExists { get; set; }
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
         public DateTime UpdatedAt { get; set; }
-        // 🔗 Navigation property
-        public ICollection<AppointmentDocument> AppointmentNote { get; set; }
     }
 }

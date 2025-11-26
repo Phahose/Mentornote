@@ -24,13 +24,10 @@ using static System.Net.WebRequestMethods;
 
 namespace Mentornote.Desktop.Pages
 {
-    /// <summary>
-    /// Interaction logic for Meetings.xaml
-    /// </summary>
+
     public partial class Meetings : System.Windows.Controls.Page
     {
-        // Expose collections the XAML can bind to
-        /*public ObservableCollection<MeetingItem> Upcoming { get; } = new();*/
+
         public ObservableCollection<Appointment> Upcoming { get; } = new();
         public ObservableCollection<Appointment> Appointments { get; } = new();
         public ObservableCollection<Appointment> Past { get; } = new();
@@ -91,6 +88,13 @@ namespace Mentornote.Desktop.Pages
             Appointments.Clear();
             var appointments = GetAppointments();
         }
+        private void ViewSummary_Click(object sender, RoutedEventArgs e)
+        {
+            Upcoming.Clear();
+            Past.Clear();
+            Appointments.Clear();
+            var appointments = GetAppointments();
+        }
 
         private async void DeleteAppointment_Click(object sender, RoutedEventArgs e)
         {
@@ -132,6 +136,19 @@ namespace Mentornote.Desktop.Pages
             }
         }
 
+        private void ViewSummaryButton_Loaded(object sender, RoutedEventArgs e)
+        {
+            if (sender is System.Windows.Controls.Button button && button.DataContext is Appointment appointment)
+            {
+
+                button.Visibility = appointment.SummaryExists? Visibility.Visible  : Visibility.Collapsed;
+            }
+            else
+            {
+                // If for some reason it can't read the appointment, hide the button
+                ((System.Windows.Controls.Button)sender).Visibility = Visibility.Collapsed;
+            }
+        }
 
         private List<Appointment> GetAppointments()
         {
@@ -143,6 +160,7 @@ namespace Mentornote.Desktop.Pages
             {
                 foreach (var appointment in appointments)
                 {
+
                     // FUTURE DATE → always upcoming
                     if (appointment.Date > today)
                     {
