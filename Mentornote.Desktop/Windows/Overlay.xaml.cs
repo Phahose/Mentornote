@@ -19,6 +19,7 @@ using static System.Net.WebRequestMethods;
 using static System.Windows.Forms.VisualStyles.VisualStyleElement.Window;
 using Newtonsoft.Json;
 using JsonSerializer = System.Text.Json.JsonSerializer;
+using Mentornote.Backend.Services;
 
 namespace Mentornote.Desktop
 {
@@ -133,7 +134,20 @@ namespace Mentornote.Desktop
         private async void Close_Click(object sender, RoutedEventArgs e)
         {
             _listener?.StopListening(appId);
-            string summary = await  _http.GetStringAsync($"http://localhost:5085/api/gemini/summary/{appId}");
+
+            DBServices dBServices = new DBServices();
+            var appointment = dBServices.GetAppointmentById(appId, 1);
+            string summary;
+            if (appointment.SummaryExists == false)
+            {
+
+                 summary = await _http.GetStringAsync($"http://localhost:5085/api/gemini/summary/{appId}");
+
+            }
+            else
+            {
+                summary = "zxcvb";  
+            }
 
             if (summary != "zxcvb")
             {

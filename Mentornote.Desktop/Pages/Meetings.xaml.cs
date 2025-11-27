@@ -3,6 +3,7 @@ using DocumentFormat.OpenXml.Drawing.Diagrams;
 using DocumentFormat.OpenXml.Spreadsheet;
 using Mentornote.Backend.Models;
 using Mentornote.Backend.Services;
+using Mentornote.Desktop.Windows;
 using Microsoft.Extensions.DependencyInjection;
 using System;
 using System.Collections.Generic;
@@ -51,7 +52,6 @@ namespace Mentornote.Desktop.Pages
         private void OpenOverlay_Click(object sender, RoutedEventArgs e)
         {
             var button = (System.Windows.Controls.Button)sender;
-            Console.WriteLine(button.Tag);
 
             if (button?.Tag is int meetingId)
             {
@@ -90,11 +90,15 @@ namespace Mentornote.Desktop.Pages
         }
         private void ViewSummary_Click(object sender, RoutedEventArgs e)
         {
-            Upcoming.Clear();
-            Past.Clear();
-            Appointments.Clear();
-            var appointments = GetAppointments();
+            var button = sender as System.Windows.Controls.Button;
+            if (button?.Tag is int appointmentId)
+            {
+                var window = new ViewSummaryWindow(appointmentId);
+                window.Owner = Window.GetWindow(this);
+                window.ShowDialog();
+            }
         }
+
 
         private async void DeleteAppointment_Click(object sender, RoutedEventArgs e)
         {
@@ -141,7 +145,15 @@ namespace Mentornote.Desktop.Pages
             if (sender is System.Windows.Controls.Button button && button.DataContext is Appointment appointment)
             {
 
-                button.Visibility = appointment.SummaryExists? Visibility.Visible  : Visibility.Collapsed;
+                if (appointment.SummaryExists == true)
+                {
+                    button.Visibility = Visibility.Visible;
+                }
+                else
+                {
+                    button.Visibility = Visibility.Collapsed;
+                }
+
             }
             else
             {
@@ -156,11 +168,12 @@ namespace Mentornote.Desktop.Pages
             var today = DateTime.Today;
             var now = DateTime.Now;
 
+            
+
             if (appointments != null)
             {
                 foreach (var appointment in appointments)
                 {
-
                     // FUTURE DATE → always upcoming
                     if (appointment.Date > today)
                     {
@@ -180,6 +193,7 @@ namespace Mentornote.Desktop.Pages
                                 StartTime = appointment.StartTime,
                                 EndTime = appointment.EndTime,
                                 Status = appointment.Status,
+                                SummaryExists = appointment.SummaryExists
                             });
                         }
                         else
@@ -192,6 +206,7 @@ namespace Mentornote.Desktop.Pages
                                 StartTime = appointment.StartTime,
                                 EndTime = appointment.EndTime,
                                 Status = appointment.Status,
+                                SummaryExists = appointment.SummaryExists
                             });
                         }
                     }
@@ -206,6 +221,7 @@ namespace Mentornote.Desktop.Pages
                             StartTime = appointment.StartTime,
                             EndTime = appointment.EndTime,
                             Status = appointment.Status,
+                            SummaryExists = appointment.SummaryExists
                         });
                     }
 

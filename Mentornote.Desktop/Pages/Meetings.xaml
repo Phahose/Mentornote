@@ -187,8 +187,8 @@
                                                 Tag="{Binding Id}"
                                                 Width="140"
                                                 Height="40"
-                                                Margin="5"
-                                                Background="#d8eddd"/>
+                                                Margin="5,0"
+                                                Background="#8fcee3"/>
                                     </StackPanel>
                                 </StackPanel>
                             </Border>
@@ -291,17 +291,15 @@
                                                 Tag="{Binding Id}"/>
 
                                         <Button Content="View Summary"
-        x:Name="ViewSummaryButton"
-        Click="ViewSummary_Click"
-        Loaded="ViewSummaryButton_Loaded"
-        Tag="{Binding Id}"
-        Width="140"
-        Height="40"
-        Margin="5"
-        Background="#d8eddd"/>
-
+                                                x:Name="ViewSummaryButton"
+                                                Click="ViewSummary_Click"
+                                                Loaded="ViewSummaryButton_Loaded"
+                                                Tag="{Binding Id}"
+                                                Width="140"
+                                                Height="40"
+                                                Margin="5,0"
+                                                Background="#8fcee3"/>
                                     </StackPanel>
-
                                 </StackPanel>
                             </Border>
                         </DataTemplate>

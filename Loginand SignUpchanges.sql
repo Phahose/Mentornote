@@ -1174,7 +1174,7 @@ CREATE OR ALTER PROCEDURE GetAppointmentSummary
     @AppointmentId INT
 AS
 BEGIN
-    SELECT SummaryText, CreatedAt
+    SELECT*
     FROM AppointmentSummaries
     WHERE AppointmentId = @AppointmentId
     ORDER BY CreatedAt DESC;
