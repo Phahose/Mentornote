@@ -1180,7 +1180,9 @@ BEGIN
     ORDER BY CreatedAt DESC;
 END
 
+DROP PROCEDURE GetAppointmentSummary
 
+EXEC GetAppointmentSummary 3
 
 
 

@@ -22,9 +22,9 @@ namespace Mentornote.Desktop
             Timeout = TimeSpan.FromMinutes(10) // Set timeout to 10 minutes for large file uploads
         };
       
-        public ObservableCollection<File> SelectedFiles { get; set; } = new();
-        public List<File> ExistingRemovedFiles { get; set; } = new();
-        public ObservableCollection<File> AppointmentFiles { get; set; } = new();
+        public ObservableCollection<AppointmentFile> SelectedFiles { get; set; } = new();
+        public List<AppointmentFile> ExistingRemovedFiles { get; set; } = new();
+        public ObservableCollection<AppointmentFile> AppointmentFiles { get; set; } = new();
         private List<FileDTO> uploadedFiles = new();
         private List<int> removedFilesID = new();
         private int appointmentId;
@@ -61,7 +61,7 @@ namespace Mentornote.Desktop
                 foreach (var path in dialog.FileNames)
                 {
                     if (!SelectedFiles.Any(f => f.FilePath == path))
-                        SelectedFiles.Add(new File { FilePath = path });
+                        SelectedFiles.Add(new AppointmentFile { FilePath = path });
                 }
             }
         }
@@ -257,7 +257,7 @@ namespace Mentornote.Desktop
 
         private void RemoveFile_Click(object sender, RoutedEventArgs e)
         {
-            if ((sender as FrameworkElement)?.DataContext is File file)
+            if ((sender as FrameworkElement)?.DataContext is AppointmentFile file)
             {
                 var result = System.Windows.MessageBox.Show(
                     $"Remove '{file.FileName}' from selected files?",
@@ -272,7 +272,7 @@ namespace Mentornote.Desktop
 
         private void RemoveExistingFile_Click(object sender, RoutedEventArgs e)
         {
-            if ((sender as FrameworkElement)?.DataContext is File file)
+            if ((sender as FrameworkElement)?.DataContext is AppointmentFile file)
             {
                 var result = System.Windows.MessageBox.Show(
                     $"Remove '{file.FileName}' from existing files?",
@@ -309,7 +309,7 @@ namespace Mentornote.Desktop
             docs = dbServices.GetAppointmentDocumentsByAppointmentId(appointment.Id, userId); // Example appointment ID
             foreach (var doc in docs)
             {
-                AppointmentFiles.Add(new File { 
+                AppointmentFiles.Add(new AppointmentFile { 
                     FilePath = doc.DocumentPath,
                     FileId = doc.Id
                 });
@@ -502,7 +502,7 @@ namespace Mentornote.Desktop
         }
 
     }
-    public class File
+    public class AppointmentFile
     {
         public string FilePath { get; set; } = string.Empty;
         public string FileName => AppointmentWindow.GetDisplayFileName(System.IO.Path.GetFileName(FilePath));
