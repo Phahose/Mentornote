@@ -18,6 +18,9 @@ namespace Mentornote.Backend
             builder.Services.AddSingleton<ConversationMemory>();  
             builder.Services.AddSingleton<RagService>();
             builder.Services.AddSingleton<AudioListener>();
+            builder.Services.AddSingleton<AuthService>();
+            builder.Services.AddSingleton<DBServices>();
+
 
             //Add controllers and Swagger (same as before)
             builder.Services.AddControllers();

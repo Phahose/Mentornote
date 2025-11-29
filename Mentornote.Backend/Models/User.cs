@@ -11,5 +11,6 @@ namespace Mentornote.Backend.Models
         public byte[] PasswordSalt { get; set; }
         public string AuthProvider { get; set; } = "local";
         public DateTime CreatedAt { get; set; }
+        public string UserType { get; set; }
     }
 }

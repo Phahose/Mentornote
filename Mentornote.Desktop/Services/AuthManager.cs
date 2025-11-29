@@ -1,4 +1,5 @@
-﻿using System;
+﻿#nullable disable
+using System;
 using System.IO;
 using System.Security.Cryptography;
 using System.Text;
@@ -20,11 +21,7 @@ namespace Mentornote.Desktop.Services
         {
             var data = Encoding.UTF8.GetBytes(token);
 
-            var encrypted = ProtectedData.Protect(
-                data,
-                null,
-                DataProtectionScope.CurrentUser
-            );
+            var encrypted = ProtectedData.Protect(data,null, DataProtectionScope.CurrentUser);
 
             File.WriteAllBytes(TokenFilePath, encrypted);
         }
@@ -32,7 +29,9 @@ namespace Mentornote.Desktop.Services
         public static string LoadToken()
         {
             if (!File.Exists(TokenFilePath))
+            {
                 return null;
+            }
 
             try
             {

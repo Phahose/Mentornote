@@ -55,24 +55,20 @@ CREATE TABLE Flashcards (
 ALTER TABLE Flashcards
 ADD NoteId INT NULL;
 
-CREATE PROCEDURE GetUserByEmail
+CREATE OR ALTER PROCEDURE GetUserByEmail
     @Email NVARCHAR(255)
 AS
 BEGIN
     SET NOCOUNT ON;
 
     SELECT 
-        Id,
-        Email,
-        PasswordHash,
-        PasswordSalt,
-        AuthProvider,
-        FirstName,
-        LastName
+        *
     FROM dbo.Users
     WHERE Email = @Email;
 END;
 
+
+DROP PROCEDURE GetUserByEmail
 
 
 CREATE PROCEDURE GetUserFlashcards
@@ -1184,7 +1180,35 @@ DROP PROCEDURE GetAppointmentSummary
 
 EXEC GetAppointmentSummary 3
 
+ALTER TABLE Users
+ADD UserType NVARCHAR(50) NOT NULL DEFAULT 'Free';
+Add CreatedAt DATETIME2 NOT NULL DEFAULT SYSUTCDATETIME()
 
+
+CREATE OR ALTER PROCEDURE RegisterUser
+    @Email NVARCHAR(200),
+    @PasswordHash VARBINARY(MAX),
+    @PasswordSalt VARBINARY(MAX),
+    @UserId INT OUTPUT,
+	@Firstname VARCHAR(32),
+	@LastName VARCHAR(32),
+	@UserType NVARCHAR(50),
+	@AuthProvider NVARCHAR(100)
+AS
+BEGIN
+    SET NOCOUNT ON;
+
+    IF EXISTS (SELECT 1 FROM Users WHERE Email = @Email)
+    BEGIN
+        SET @UserId = -1;
+        RETURN;
+    END
+
+    INSERT INTO Users (FirstName, LastName, Email, PasswordHash, PasswordSalt, CreatedAt, UserType, AuthProvider)
+    VALUES (@FirstName, @LastName, @Email, @PasswordHash, @PasswordSalt, SYSUTCDATETIME(), @UserType, @AuthProvider);
+
+    SET @UserId = SCOPE_IDENTITY();
+END
 
 
 

@@ -1,24 +1,26 @@
-﻿using System.Net.Http;
+﻿using Mentornote.Backend.DTO;
+using Mentornote.Desktop.Services;
+using Mentornote.Desktop.Windows;
+using System.Net.Http;
 using System.Net.Http.Json;
 using System.Windows;
 using System.Windows.Controls;
-using Mentornote.Backend.DTO;
-using Mentornote.Desktop.Services;
 
-using static System.Net.WebRequestMethods;
 
-namespace Mentornote.Desktop.Windows
+namespace Mentornote.Desktop.Pages
 {
-    public partial class LoginWindow : Window
+    public partial class LoginPage : Page
     {
         HttpClient _http = new HttpClient();
-        
-        public LoginWindow()
+        private readonly AuthWindow _parent;
+
+        public LoginPage(AuthWindow parent)
         {
             InitializeComponent();
+            _parent = parent;
         }
 
-        private async void LoginButton_Click(object sender, RoutedEventArgs e)
+        private async void Login_Click(object sender, RoutedEventArgs e)
         {
             ErrorMessage.Visibility = Visibility.Collapsed;
 
@@ -34,8 +36,13 @@ namespace Mentornote.Desktop.Windows
 
             try
             {
-                var loginRequest = new { Email = email, Password = password };
-                var response = await _http.PostAsJsonAsync("auth/login", loginRequest);
+                LoginDTO loginRequest = new()
+                { 
+                    Email = email, 
+                    Password = password 
+                };
+
+                var response = await _http.PostAsJsonAsync("http://localhost:5085/api/auth/login", loginRequest);
 
                 if (!response.IsSuccessStatusCode)
                 {
@@ -48,7 +55,7 @@ namespace Mentornote.Desktop.Windows
                 AuthManager.SaveToken(result.Token);
 
                 new MainWindow().Show();
-                this.Close();
+                Window.GetWindow(this).Close();
             }
             catch (Exception ex)
             {
@@ -57,5 +64,9 @@ namespace Mentornote.Desktop.Windows
             }
         }
 
+        private void GoToSignUp_Click(object sender, RoutedEventArgs e)
+        {
+            _parent.NavigateToSignup();
+        }
     }
 }

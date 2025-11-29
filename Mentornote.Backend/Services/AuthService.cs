@@ -1,4 +1,6 @@
-﻿using Mentornote.Backend.DTO;
+﻿#nullable disable
+using Azure.Core;
+using Mentornote.Backend.DTO;
 using Mentornote.Backend.Models;
 using Microsoft.IdentityModel.Tokens;
 using System;
@@ -15,18 +17,18 @@ namespace Mentornote.Backend.Services
     {
         private readonly DBServices _dbServices = new DBServices();
         private readonly IConfiguration _config;
+        private readonly DBServices _dBServices = new DBServices();
 
-        public AuthService( IConfiguration config)
+        public AuthService( IConfiguration config, DBServices dBServices)
         {
             _config = config;
+            _dBServices = dBServices;
         }
 
-        public async Task<LoginResponseDTO> AuthenticateAsync(string email, string password)
+        public LoginResponseDTO AuthenticateAsync(string email, string password)
         {
-           // var user = await _dbServices.GetUserByEmail(u => u.Email == email);
+            var user =  _dbServices.GetUserByEmail(email);
 
-
-            var user = new User(); // Placeholder for user retrieval logic
             if (user == null)
             {
                 return null;
@@ -37,7 +39,9 @@ namespace Mentornote.Backend.Services
             var computedHash = hmac.ComputeHash(Encoding.UTF8.GetBytes(password));
 
             if (!computedHash.SequenceEqual(user.PasswordHash))
+            {
                 return null;
+            }
 
             string token = GenerateJwtToken(user);
 
@@ -50,33 +54,45 @@ namespace Mentornote.Backend.Services
             };
         }
 
-        //public async Task<bool> RegisterAsync(RegisterRequestDto dto)
-        //{
-        //    if (await _db.Users.AnyAsync(u => u.Email == dto.Email))
-        //        return false;
+        public (bool Success ,string Message) RegisterAsync(UserDto dto)
+        {
+            var existingUser = _dBServices.GetUserByEmail(dto.Email);
 
-        //    using var hmac = new HMACSHA512();
+            if (existingUser.Email != "")
+            {
+                return (false, "This User Email Already Exists");
+            }
 
-        //    var user = new User
-        //    {
-        //        Email = dto.Email,
-        //        PasswordHash = hmac.ComputeHash(Encoding.UTF8.GetBytes(dto.Password)),
-        //        PasswordSalt = hmac.Key,
-        //        CreatedAt = DateTime.UtcNow
-        //    };
 
-        //    _db.Users.Add(user);
-        //    await _db.SaveChangesAsync();
+            using var hmac = new HMACSHA512();
+            var user = new User
+            {
+                FirstName = dto.FirstName,
+                LastName = dto.LastName,
+                Email = dto.Email,
+                PasswordHash = hmac.ComputeHash(Encoding.UTF8.GetBytes(dto.Password)),
+                PasswordSalt = hmac.Key,
+                AuthProvider = "local",
+                CreatedAt = DateTime.UtcNow,
+                UserType = dto.UserType
+            };
 
-        //    return true;
-        //}
+            int userId = _dBServices.RegisterUser(user);
+
+            return (true, "Account Created Successfully");
+        }
 
         private string GenerateJwtToken(User user)
         {
             var claims = new[]
             {
                 new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),
-                new Claim(ClaimTypes.Email, user.Email)
+                new Claim(ClaimTypes.Email, user.Email),
+                new Claim("firstName", user.FirstName),
+                new Claim("lastName", user.LastName),
+                new Claim("fullName", $"{user.FirstName} {user.LastName}"),
+                new Claim("userType", user.UserType), 
+                new Claim("createdAt", user.CreatedAt.ToString()) 
             };
 
             var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_config["Jwt:Key"]));

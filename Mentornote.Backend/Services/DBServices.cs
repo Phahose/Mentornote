@@ -1,10 +1,7 @@
-﻿using Microsoft.AspNetCore.Mvc;
-using System.Data;
-using System.IO;
-using System.Numerics;
-using System.Data.SqlClient;
+﻿using Mentornote.Backend.Models;
 using Microsoft.Data.SqlClient;
-using Mentornote.Backend.Models;
+using System.Data;
+
 
 namespace Mentornote.Backend.Services
 {
@@ -683,6 +680,83 @@ namespace Mentornote.Backend.Services
             }
 
             return new AppointmentSummary(); 
+        }
+
+        public User GetUserByEmail(string email)
+        {
+            User user = new();
+            SqlConnection mentornoteCoonnection = new SqlConnection();
+            mentornoteCoonnection.ConnectionString = connectionString;
+            mentornoteCoonnection.Open();
+
+            SqlCommand GetUser = new()
+            {
+                CommandType = CommandType.StoredProcedure,
+                Connection = mentornoteCoonnection,
+                CommandText = "GetUserByEmail"
+            };
+
+            SqlParameter EmailParameter = new()
+            {
+                ParameterName = "@Email",
+                SqlDbType = SqlDbType.VarChar,
+                Direction = ParameterDirection.Input,
+                SqlValue = email
+            };
+
+            GetUser.Parameters.Add(EmailParameter);
+            SqlDataReader reader = GetUser.ExecuteReader();
+
+            if (reader.HasRows)
+            {
+                while (reader.Read())
+                {
+                    user = new User
+                    {
+                        Id = (int)reader["Id"],
+                        FirstName = (string)reader["FirstName"],
+                        LastName = (string)reader["LastName"],
+                        Email = (string)reader["Email"],
+                        PasswordSalt = (byte[])reader["PasswordSalt"],
+                        PasswordHash = (byte[])reader["PasswordHash"],
+                        UserType = (string)reader["UserType"],
+                        CreatedAt = reader.GetDateTime(reader.GetOrdinal("CreatedAt"))
+                    };
+                }
+            }
+            reader.Close();
+            mentornoteCoonnection.Close();
+            return user;
+        }
+
+        public int RegisterUser(User user)
+        {
+            using (SqlConnection conn = new SqlConnection(connectionString))
+            {
+                SqlCommand cmd = new SqlCommand("RegisterUser", conn);
+                cmd.CommandType = CommandType.StoredProcedure;
+
+                cmd.Parameters.AddWithValue("@FirstName", user.FirstName);
+                cmd.Parameters.AddWithValue("@LastName", user.LastName);
+                cmd.Parameters.AddWithValue("@Email", user.Email);
+                cmd.Parameters.AddWithValue("@PasswordHash", user.PasswordHash);
+                cmd.Parameters.AddWithValue("@PasswordSalt", user.PasswordSalt);
+                cmd.Parameters.AddWithValue("@UserType", user.UserType);
+                cmd.Parameters.AddWithValue("@AuthProvider", user.AuthProvider);
+
+
+
+                SqlParameter outputId = new SqlParameter("@UserId", SqlDbType.Int)
+                {
+                    Direction = ParameterDirection.Output
+                };
+                cmd.Parameters.Add(outputId);
+
+                conn.Open();
+                cmd.ExecuteNonQuery();
+
+                return (int)outputId.Value;
+            }
         }
 
     }
