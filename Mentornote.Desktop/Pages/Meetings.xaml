@@ -184,6 +184,7 @@
                                                 x:Name="ViewSummaryButton"
                                                 Visibility="Visible"
                                                 Click="ViewSummary_Click"
+                                                Loaded="ViewSummaryButton_Loaded"
                                                 Tag="{Binding Id}"
                                                 Width="140"
                                                 Height="40"

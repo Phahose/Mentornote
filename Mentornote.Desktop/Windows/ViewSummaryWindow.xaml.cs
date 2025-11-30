@@ -1,10 +1,13 @@
-﻿using Mentornote.Backend.Models;
+﻿using DocumentFormat.OpenXml.Office2010.Excel;
+using Mentornote.Backend.Models;
 using Mentornote.Backend.Services;
 using Mentornote.Desktop.Pages;
+using Mentornote.Desktop.Services;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
+using System.Net.Http.Json;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
@@ -43,8 +46,9 @@ namespace Mentornote.Desktop.Windows
             {
 
                 await MarkdownBrowser.EnsureCoreWebView2Async();
-                var Summaryresponse = dBServices.GetSummaryByAppointmentId(_appointmentId);
-                var appointments = dBServices.GetAppointmentById(_appointmentId, UserId);
+                var Summaryresponse = await ApiClient.Client.GetFromJsonAsync<AppointmentSummary>($"appointments/getSummaryByAppointmentId/{_appointmentId}");
+                
+                var appointments = await ApiClient.Client.GetFromJsonAsync<Appointment>($"appointments/getAppointmentById/{_appointmentId}");
 
 
                 var html = Markdig.Markdown.ToHtml(Summaryresponse.SummaryText);

@@ -1,7 +1,9 @@
 ﻿#nullable disable
 using Mentornote.Desktop.Services;
 using Mentornote.Desktop.Windows;
+using NuGet.Common;
 using System.Windows;
+using System.Windows.Forms;
 
 namespace Mentornote.Desktop
 {
@@ -22,12 +24,17 @@ namespace Mentornote.Desktop
 
             if (AuthManager.IsLoggedIn())
             {
-                // Token exists → go straight to main dashboard
+                string token = AuthManager.LoadToken();
+
+                ApiClient.SetToken(token);
+                UserSession.SetUser(token);
+                      
+
+
                 new MainWindow().Show();
             }
             else
             {
-                // No token → show login/signup flow
                 new AuthWindow().Show();
             }
         }

@@ -20,6 +20,14 @@
                     Margin="0,0,0,20">
 
                 <StackPanel>
+                    <TextBlock Text="UserId"
+                               FontSize="14"
+                               Foreground="#AAAAAA"/>
+                    <TextBlock x:Name="UserIdText"
+                               FontSize="20"
+                               Foreground="White"
+                               Margin="0,0,0,10"/>
+                    
                     <TextBlock Text="Full Name"
                                FontSize="14"
                                Foreground="#AAAAAA"/>

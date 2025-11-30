@@ -1,4 +1,5 @@
 ﻿#nullable disable
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Diagnostics;
 
@@ -20,6 +21,7 @@ namespace Mentornote.Backend.Controllers
         }
 
         [HttpGet("context")]
+        [Authorize]
         public string GetFullTranscript()
         {
             IEnumerable<string> meetingIDList = _memory.GetAllMeetingIds();
@@ -35,6 +37,7 @@ namespace Mentornote.Backend.Controllers
         }
 
         [HttpGet("gettranscript")]
+        [Authorize]
         public List<string> GetTranscriptHistory()
         {
             foreach (var transcript in _audioListener.GetTranscriptHistory())
@@ -45,6 +48,7 @@ namespace Mentornote.Backend.Controllers
         }
 
         [HttpPost("start/{appointmentId}")]
+        [Authorize]
         public IActionResult Start(int appointmentId)
         {
             _audioListener.StartListening(appointmentId);
@@ -52,6 +56,7 @@ namespace Mentornote.Backend.Controllers
         }
 
         [HttpPost("stop/{appointmentId}")]
+        [Authorize]
         public IActionResult Stop(int appointmentId)
         {
             _audioListener.StopListening(appointmentId);

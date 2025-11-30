@@ -9,11 +9,13 @@ using System.Text.Json;
 using static System.Net.WebRequestMethods;
 using System.IO;
 using Mentornote.Backend.Services;
+using Microsoft.AspNetCore.Authorization;
 
 namespace Mentornote.Backend.Controllers
 {
     [ApiController]
     [Route("api/gemini")]
+   
     public class GeminiController : Controller
     {
         private readonly string _apiKey;
@@ -29,6 +31,7 @@ namespace Mentornote.Backend.Controllers
         }
 
         [HttpPost("suggest/{appointmentId}")]
+        [Authorize]
         public async Task<IActionResult> GenerateSuggestionAsync(int appointmentId, [FromBody] string transcript)
         {
             try
@@ -155,54 +158,6 @@ namespace Mentornote.Backend.Controllers
             });
         }
 
-        [HttpPost("notevector")]
-        public async Task<string> GetEmbeddingAsync([FromBody] NoteContentDTO noteContentDTO)
-        {
-            try
-            {
-                Console.WriteLine($"Received payload: {JsonSerializer.Serialize(noteContentDTO)}");
-                if (noteContentDTO == null || string.IsNullOrWhiteSpace(noteContentDTO.Content))
-                {
-                    return "Error: Text is null or empty.";
-                }
-                // 1️⃣ Define endpoint correctly
-                var endpoint = $"https://generativelanguage.googleapis.com/v1beta/models/embedding-001:embedContent?key={_apiKey}";
-
-                var body = new
-                {
-                    model = "models/embedding-001",
-                    content = new
-                    {
-                        parts = new[]
-                        {
-                             new { text = noteContentDTO.Content }
-                        }
-                    }
-                };
-
-                Console.WriteLine(JsonSerializer.Serialize(body, new JsonSerializerOptions
-                {
-                    WriteIndented = true
-                }));
-                // 3️⃣ Make request
-                var res = await _httpClient.PostAsJsonAsync(endpoint, body);
-
-                // 4️⃣ Log or handle detailed error info before throwing
-                var responseJson = await res.Content.ReadAsStringAsync();
-
-                if (!res.IsSuccessStatusCode)
-                {
-                    throw new Exception($"Embedding request failed: {res.StatusCode} - {responseJson}");
-                }
-                return responseJson;
-
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"❌ Embedding request failed: {ex.Message}");
-                return $"Error: {ex.Message}";
-            }            
-        }
 
         [HttpGet("summary/{appointmentId}")]
         public async Task<IActionResult> GenerateMeetingSummary(int appointmentId)

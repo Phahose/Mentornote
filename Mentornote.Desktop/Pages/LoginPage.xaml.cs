@@ -1,6 +1,7 @@
 ﻿using Mentornote.Backend.DTO;
 using Mentornote.Desktop.Services;
 using Mentornote.Desktop.Windows;
+using NuGet.Common;
 using System.Net.Http;
 using System.Net.Http.Json;
 using System.Windows;
@@ -52,7 +53,11 @@ namespace Mentornote.Desktop.Pages
                 }
 
                 var result = await response.Content.ReadFromJsonAsync<LoginResponseDTO>();
+               
                 AuthManager.SaveToken(result.Token);
+                UserSession.SetUser(result.Token);
+                ApiClient.SetToken(result.Token);
+
 
                 new MainWindow().Show();
                 Window.GetWindow(this).Close();

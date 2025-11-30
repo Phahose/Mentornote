@@ -1,27 +1,11 @@
-﻿using DocumentFormat.OpenXml.Drawing.Charts;
-using DocumentFormat.OpenXml.Drawing.Diagrams;
-using DocumentFormat.OpenXml.Spreadsheet;
+﻿#nullable disable
 using Mentornote.Backend.Models;
-using Mentornote.Backend.Services;
+using Mentornote.Desktop.Services;
 using Mentornote.Desktop.Windows;
-using Microsoft.Extensions.DependencyInjection;
-using System;
-using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using System.Linq;
-using System.Net.Http;
-using System.Text;
-using System.Threading.Tasks;
+using System.Net.Http.Json;
 using System.Windows;
-using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
-using System.Windows.Input;
-using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Navigation;
-using System.Windows.Shapes;
-using static System.Net.WebRequestMethods;
+
 
 namespace Mentornote.Desktop.Pages
 {
@@ -32,19 +16,16 @@ namespace Mentornote.Desktop.Pages
         public ObservableCollection<Appointment> Upcoming { get; } = new();
         public ObservableCollection<Appointment> Appointments { get; } = new();
         public ObservableCollection<Appointment> Past { get; } = new();
-        public DBServices dBServices = new();
-        public int UserId = 1; // Placeholder for current user ID
-        private static readonly HttpClient _http = new HttpClient()
-        {
-            Timeout = TimeSpan.FromMinutes(10) // Set timeout to 10 minutes for large file uploads
-        };
-
+        public int UserId;
 
         public Meetings()
         {
             InitializeComponent();
-            
-           // Make this page its own DataContext so bindings can see properties above
+            var user = UserSession.CurrentUser;
+
+            UserId = user.UserId;
+            string email = user.Email;
+
             this.DataContext = this;
             var appointments = GetAppointments();
         }
@@ -121,9 +102,10 @@ namespace Mentornote.Desktop.Pages
 
             try
             {
-                string url = $"http://localhost:5085/api/appointments/{appointmentId}?userId={userId}";
+               
+                string endpoint = $"appointments/deleteAppointment/{appointmentId}";
 
-                using var response = await _http.DeleteAsync(url);  
+                using var response = await ApiClient.Client.DeleteAsync(endpoint);  
 
                 if (!response.IsSuccessStatusCode)
                 {
@@ -162,9 +144,10 @@ namespace Mentornote.Desktop.Pages
             }
         }
 
-        private List<Appointment> GetAppointments()
+        private async Task<List<Appointment>> GetAppointments()
         {
-            var appointments = dBServices.GetAppointmentsByUserId(UserId);
+            var appointments = await ApiClient.Client.GetFromJsonAsync<List<Appointment>>($"appointments/getAppointmentsByUserId");
+            Console.WriteLine(appointments);
             var today = DateTime.Today;
             var now = DateTime.Now;
 

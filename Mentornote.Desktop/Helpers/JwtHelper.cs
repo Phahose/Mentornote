@@ -28,7 +28,7 @@ namespace Mentornote.Desktop.Helpers
 
             var model = new UserToken
             {
-                UserId = TryGetInt(jwt, "nameid"),
+                UserId = TryGetInt(jwt, ClaimTypes.NameIdentifier),
                 Email = TryGet(jwt, ClaimTypes.Email),
                 FirstName = TryGet(jwt, "firstName"),
                 LastName = TryGet(jwt, "lastName"),

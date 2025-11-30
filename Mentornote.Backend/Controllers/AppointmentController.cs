@@ -1,8 +1,11 @@
-﻿using Mentornote.Backend.DTO;
+﻿#nullable disable
+using Mentornote.Backend.DTO;
 using Mentornote.Backend.Models;
 using Mentornote.Backend.Services;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.IO;
+using System.Security.Claims;
 
 
 namespace Mentornote.Backend.Controllers
@@ -11,16 +14,23 @@ namespace Mentornote.Backend.Controllers
     [Route("api/appointments")]
     public class AppointmentController : Controller
     {
-        DBServices dBServices = new DBServices();
-        FileServices fileServices = new FileServices();
+        private readonly FileServices _fileServices;
+        private readonly DBServices _dBServices;
+        
 
-
+        public AppointmentController(FileServices fileServices, DBServices dBServices)
+        {
+            _fileServices = fileServices;   
+            _dBServices = dBServices;
+        }
+        
 
         [HttpPost("upload")]
+        [Authorize]
         public async Task<IActionResult> UploadFile([FromForm] AppointmentDTO appointmentDTO)
         {
+            int userId = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier).Value);
             var files = appointmentDTO.Files;
-            var userId = appointmentDTO.UserId;
             List<string> documentPaths = new();
             int documentID = 0;
 
@@ -33,7 +43,7 @@ namespace Mentornote.Backend.Controllers
                 Payload = $"UserId: {userId}, Title: {appointmentDTO.Title}"
             };
 
-            job.Id = dBServices.CreateJob(job);
+            job.Id = _dBServices.CreateJob(job);
 
             Appointment appointment = new Appointment()
             {
@@ -47,7 +57,7 @@ namespace Mentornote.Backend.Controllers
                 Status = "Scheduled"
             };
 
-            var appointmentId = dBServices.AddAppointment(appointment, userId);
+            var appointmentId = _dBServices.AddAppointment(appointment, userId);
 
             // Save files to disk (synchronous)
             foreach (var file in files)
@@ -76,12 +86,12 @@ namespace Mentornote.Backend.Controllers
                 try
                 {
                     job.Status = "Processing";
-                    dBServices.UpdateJob(job);
+                    _dBServices.UpdateJob(job);
 
                     foreach (var path in documentPaths)
                     {
                         // compute hash SAFELY
-                        string hash = fileServices.ComputeHashFromFilePath(path);
+                        string hash = _fileServices.ComputeHashFromFilePath(path);
 
                         var newDoc = new AppointmentDocument
                         {
@@ -91,20 +101,20 @@ namespace Mentornote.Backend.Controllers
                             FileHash = hash
                         };
 
-                        documentID = dBServices.AddAppointmentDocument(newDoc);
+                        documentID = _dBServices.AddAppointmentDocument(newDoc);
 
-                        await fileServices.ProcessFileAsync(path, documentID, appointmentId);
+                        await _fileServices.ProcessFileAsync(path, documentID, appointmentId);
                     }
 
                     job.Status = "Completed";
                     job.ResultMessage = "Appointment uploaded and processed.";
-                    dBServices.UpdateJob(job);
+                    _dBServices.UpdateJob(job);
                 }
                 catch (Exception ex)
                 {
                     job.Status = "Failed";
                     job.ResultMessage = ex.Message;
-                    dBServices.UpdateJob(job);
+                    _dBServices.UpdateJob(job);
                 }
             });
 
@@ -113,12 +123,13 @@ namespace Mentornote.Backend.Controllers
 
 
         [HttpPut("update/{appointmentId}")]
+        [Authorize]
         public IActionResult UpdateAppointment(int appointmentId, [FromForm] AppointmentDTO appointmentDTO)
         {
             try
             {
                 var uploadedFiles = appointmentDTO.Files;
-                var userId = appointmentDTO.UserId;
+                int userId = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier).Value);
                 var removeFilesIds = appointmentDTO.FilesIDsToRemove;
 
                 BackgroundJob job = new BackgroundJob()
@@ -130,7 +141,7 @@ namespace Mentornote.Backend.Controllers
                     Payload = $"UserId: {userId}, Title: {appointmentDTO.Title}"
                 };
 
-                job.Id = dBServices.CreateJob(job);
+                job.Id = _dBServices.CreateJob(job);
 
                 // -----------------------------------
                 // UPDATE APPOINTMENT BASIC FIELDS
@@ -148,7 +159,7 @@ namespace Mentornote.Backend.Controllers
                     Status = appointmentDTO.Status
                 };
 
-                dBServices.UpdateAppointment(updatedAppointment, userId);
+                _dBServices.UpdateAppointment(updatedAppointment, userId);
 
                 // -----------------------------------
                 // PREPARE ALL FILES FOR BACKGROUND TASK
@@ -195,10 +206,10 @@ namespace Mentornote.Backend.Controllers
                     try
                     {
                         job.Status = "Processing";
-                        dBServices.UpdateJob(job);
+                        _dBServices.UpdateJob(job);
 
                         // Load existing docs
-                        var existingDocs = await dBServices.GetAppointmentDocumentsById(appointmentId, userId);
+                        var existingDocs = await _dBServices.GetAppointmentDocumentsById(appointmentId, userId);
 
                         // Compute hashes for new files
                         var hashedUploads = new List<(string Path, string Hash)>();
@@ -215,7 +226,7 @@ namespace Mentornote.Backend.Controllers
                                     if (System.IO.File.Exists(docsToRemove.DocumentPath))
                                     {
                                         System.IO.File.Delete(docsToRemove.DocumentPath);
-                                        dBServices.DeleteAppointmentDocument(docsToRemove.Id, userId);
+                                        _dBServices.DeleteAppointmentDocument(docsToRemove.Id, userId);
                                     }
 
                                 }
@@ -224,7 +235,7 @@ namespace Mentornote.Backend.Controllers
 
                         foreach (var file in savedFiles)
                         {
-                            string newHash = fileServices.ComputeHashFromFilePath(file.Path);
+                            string newHash = _fileServices.ComputeHashFromFilePath(file.Path);
                             hashedUploads.Add((file.Path, newHash));
                         }
 
@@ -257,10 +268,10 @@ namespace Mentornote.Backend.Controllers
                                 FileHash = up.Hash
                             };
 
-                            int newDocId = dBServices.AddAppointmentDocument(newDoc);
+                            int newDocId = _dBServices.AddAppointmentDocument(newDoc);
 
                             // Process embeddings now
-                            await fileServices.ProcessFileAsync(
+                            await _fileServices.ProcessFileAsync(
                                 up.Path,
                                 newDocId,
                                 appointmentId
@@ -282,13 +293,13 @@ namespace Mentornote.Backend.Controllers
 
                         job.Status = "Completed";
                         job.ResultMessage = "Appointment updated and processed.";
-                        dBServices.UpdateJob(job);
+                        _dBServices.UpdateJob(job);
                     }
                     catch (Exception ex)
                     {
                         job.Status = "Failed";
                         job.ResultMessage = ex.Message;
-                        dBServices.UpdateJob(job);
+                        _dBServices.UpdateJob(job);
                     }
                 });
 
@@ -301,12 +312,14 @@ namespace Mentornote.Backend.Controllers
         }
 
 
-        [HttpDelete("{appointmentId}")]
-        public async Task<IActionResult> DeleteAppointment(int appointmentId, [FromQuery]int userId)
+        [HttpDelete("deleteAppointment/{appointmentId}")]
+        [Authorize]
+        public async Task<IActionResult> DeleteAppointment(int appointmentId)
         {
             try
             {
-                List<AppointmentDocument> docs = await dBServices.GetAppointmentDocumentsById(appointmentId, userId);
+                int userId = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier).Value);
+                List<AppointmentDocument> docs = await _dBServices.GetAppointmentDocumentsById(appointmentId, userId);
                 foreach (var doc in docs)
                 {
                     if (System.IO.File.Exists(doc.DocumentPath))
@@ -314,7 +327,7 @@ namespace Mentornote.Backend.Controllers
                         System.IO.File.Delete(doc.DocumentPath);
                     }
                 }
-                await dBServices.DeleteAppointmentAsync(appointmentId);
+                await _dBServices.DeleteAppointmentAsync(appointmentId);
                 return Ok(new { message = "Appointment deleted successfully." });
             }
             catch (Exception ex)
@@ -328,7 +341,7 @@ namespace Mentornote.Backend.Controllers
         {
             try
             {
-                var job = dBServices.GetJobStatus(jobId);
+                var job = _dBServices.GetJobStatus(jobId);
 
                 if (job == null)
                     return NotFound(new { ResultMessage = "Job not found" });
@@ -349,6 +362,88 @@ namespace Mentornote.Backend.Controllers
                 return StatusCode(500, new { ResultMessage = $"Error fetching job status: {ex.Message}"});
             }
         }
+
+        [HttpGet("getAppointmentById/{id}")]
+        [Authorize]
+        public IActionResult GetAppointmentById(int id)
+        {
+            int userId = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier).Value);
+
+            var appointment = _dBServices.GetAppointmentById(id, userId); // backend service, not WPF
+
+            if (appointment == null)
+            {
+                return NotFound();
+            }
+                
+
+            return Ok(appointment);
+        }
+
+
+        [HttpGet("getAppointmentDocumentsByAppointmentId/{appointmentid}")]
+        [Authorize]
+        public IActionResult GetAppointmentDocumentsByAppointmentId(int appointmentId)
+        {
+            int userId = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier).Value);
+
+            var appointmentdocuments = _dBServices.GetAppointmentDocumentsByAppointmentId(appointmentId, userId);
+
+            if (appointmentdocuments == null)
+            {
+                return NotFound();
+            }
+                
+
+            return Ok(appointmentdocuments);
+        }
+
+        [HttpGet("getAppointmentsByUserId")]
+        [Authorize]
+        public IActionResult GetAppointmentsByUserId()
+        {
+            int userId = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier).Value);
+
+            var appointments = _dBServices.GetAppointmentsByUserId(userId); 
+
+            if (appointments == null)
+            {
+                return NotFound();
+            }
+                
+
+            return Ok(appointments);
+        }
+
+        [HttpGet("getSummaryByAppointmentId/{appointmentId}")]
+        [Authorize]
+        public IActionResult GetSummaryByAppointmentId(int appointmentId)
+        {
+            int userId = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier).Value);
+
+            var Summaryresponse = _dBServices.GetSummaryByAppointmentId(appointmentId);
+
+            if (Summaryresponse == null)
+            {
+                return NotFound();
+            }
+                
+
+            return Ok(Summaryresponse);
+        }
+
+
+        [Authorize]
+        [HttpGet("debug-token")]
+        public IActionResult DebugToken()
+        {
+            return Ok(new
+            {
+                auth = User.Identity.IsAuthenticated,
+                userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value
+            });
+        }
+
     }
 }
 

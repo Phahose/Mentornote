@@ -23,10 +23,12 @@ namespace Mentornote.Desktop.Pages
             FullNameText.Text = $"{user.FirstName} {user.LastName}";
             EmailText.Text = user.Email;
             CreatedAtText.Text = user.CreatedAt.ToString();
+            UserIdText.Text = user.UserId.ToString();
         }
 
         private void Logout_Click(object sender, RoutedEventArgs e)
         {
+            UserSession.Clear();
             AuthManager.Logout();
 
             // take user back to AuthWindow

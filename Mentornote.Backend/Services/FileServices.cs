@@ -13,11 +13,13 @@ namespace Mentornote.Backend.Services
     public class FileServices
     {
         private readonly HttpClient _httpClient;
+        private readonly RagService _ragService;
         DBServices dBServices = new DBServices();
 
-        public FileServices()
+        public FileServices(RagService ragService)
         {
             _httpClient = new();
+            _ragService = ragService;
         }
 
         public async Task ProcessFileAsync(string filePath, int documentID, int appointmentId)
@@ -30,13 +32,7 @@ namespace Mentornote.Backend.Services
             {
                 foreach (var chunk in chunks)
                 {
-                    var json = JsonSerializer.Serialize(new { Content = chunk });
-                    using var content = new StringContent(json, Encoding.UTF8, "application/json");
-
-                    // 2️⃣ Send to embedding API (Gemini, OpenAI, etc.)
-                    var response = await _httpClient.PostAsync("http://localhost:5085/api/gemini/notevector", content);
-
-                    var vector = await response.Content.ReadAsStringAsync();
+                    var vector = await _ragService.GetDocumentEmbeddingAsync(chunk);
 
                     AppointmentDocumentEmbedding embedding = new AppointmentDocumentEmbedding
                     {

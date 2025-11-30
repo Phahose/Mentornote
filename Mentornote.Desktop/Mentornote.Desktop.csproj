@@ -21,4 +21,8 @@
     <ProjectReference Include="..\Mentornote\Mentornote.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="MVVM\" />
+  </ItemGroup>
+
 </Project>

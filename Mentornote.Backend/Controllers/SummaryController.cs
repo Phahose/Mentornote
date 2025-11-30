@@ -1,5 +1,6 @@
 ﻿using Mentornote.Backend.Models;
 using Mentornote.Backend.Services;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Mentornote.Backend.Controllers
@@ -11,6 +12,7 @@ namespace Mentornote.Backend.Controllers
         DBServices dBServices = new DBServices();
        
         [HttpPost("save/{appointmentId}")]
+        [Authorize]
         public IActionResult SaveSummary(int appointmentId, [FromBody] SummaryRequest request)
         {
             try
@@ -25,6 +27,7 @@ namespace Mentornote.Backend.Controllers
         }
 
         [HttpGet("getsummary/{appointmentId}")]
+        [Authorize]
         public IActionResult GetSummary(int appointmentId)
         {
             var summary = dBServices.GetSummaryByAppointmentId(appointmentId);

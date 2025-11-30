@@ -14,7 +14,9 @@ namespace Mentornote.Desktop.Services
         {
             var dir = Path.GetDirectoryName(TokenFilePath);
             if (!Directory.Exists(dir))
+            {
                 Directory.CreateDirectory(dir);
+            }
         }
 
         public static void SaveToken(string token)
@@ -55,7 +57,6 @@ namespace Mentornote.Desktop.Services
         {
             var token = LoadToken();
             return !string.IsNullOrEmpty(token);
-            // Optionally: check JWT expiry here
         }
 
         public static void Logout()

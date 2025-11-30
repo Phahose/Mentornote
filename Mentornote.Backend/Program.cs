@@ -3,6 +3,10 @@ using System.Text;
 using Mentornote.Backend;
 using Mentornote.Backend.Services;
 using Microsoft.Extensions.Options;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.IdentityModel.Tokens;
+
+
 
 namespace Mentornote.Backend
 {
@@ -20,12 +24,32 @@ namespace Mentornote.Backend
             builder.Services.AddSingleton<AudioListener>();
             builder.Services.AddSingleton<AuthService>();
             builder.Services.AddSingleton<DBServices>();
+            builder.Services.AddSingleton<FileServices>();
 
 
             //Add controllers and Swagger (same as before)
             builder.Services.AddControllers();
             builder.Services.AddEndpointsApiExplorer();
             builder.Services.AddSwaggerGen();
+
+            // JWT Authentication
+            builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+                .AddJwtBearer(options =>
+                {
+                    options.TokenValidationParameters = new TokenValidationParameters
+                    {
+                        ValidateIssuer = true,
+                        ValidateAudience = true,
+                        ValidateLifetime = true,
+                        ValidateIssuerSigningKey = true,
+
+                        ValidIssuer = builder.Configuration["Jwt:Issuer"],
+                        ValidAudience = builder.Configuration["Jwt:Audience"],
+                        IssuerSigningKey = new SymmetricSecurityKey(
+                            Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Key"]))
+                    };
+                });
+
 
             var app = builder.Build();
 
@@ -36,6 +60,7 @@ namespace Mentornote.Backend
                 app.UseSwaggerUI();
             }
 
+            app.UseAuthentication();
             app.UseAuthorization();
             app.MapControllers();
             app.Run();

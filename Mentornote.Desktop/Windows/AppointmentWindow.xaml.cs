@@ -1,14 +1,17 @@
-﻿using Mentornote.Backend.DTO;
+﻿#nullable disable
+using Mentornote.Backend.DTO;
 using Mentornote.Backend.Models;
 using Mentornote.Backend.Services;
+using Mentornote.Desktop.Services;
 using System.Collections.ObjectModel;
 using System.IO;
 using System.Net.Http;
+using System.Net.Http.Json;
 using System.Text.Json;
 using System.Text.RegularExpressions;
 using System.Windows;
-using System.Windows.Media;
 using System.Windows.Controls;   
+using System.Windows.Media;
 
 namespace Mentornote.Desktop
 {
@@ -33,8 +36,9 @@ namespace Mentornote.Desktop
         public AppointmentWindow(int appointmentId)
         {
             InitializeComponent();
+            PopulateInputs(appointmentId); 
             HookValidationEvents();
-            PopulateInputs(appointmentId); // Example appointment ID
+           
             DataContext = this;
             
             this.appointmentId = appointmentId;
@@ -115,7 +119,6 @@ namespace Mentornote.Desktop
             try
             {
                 using var appointment = new MultipartFormDataContent();
-                appointment.Add(new StringContent("1"), "UserId");
                 appointment.Add(new StringContent(TitleInput.Text), "Title");
                 appointment.Add(new StringContent(AppointmentDescription.Text), "Description");
                 appointment.Add(new StringContent(OrganizerInput.Text), "Organizer");
@@ -129,8 +132,10 @@ namespace Mentornote.Desktop
                 {
                     appointment.Add(file.FileContent, "Files", file.FileName);
                 }
+
+
                 // 3️⃣ Send to backend API
-                var response = await _http.PostAsync("http://127.0.0.1:5085/api/appointments/upload", appointment);
+                var response = await ApiClient.Client.PostAsync("http://127.0.0.1:5085/api/appointments/upload", appointment);
 
                 // 4️⃣ Handle response
                 if (!response.IsSuccessStatusCode)
@@ -206,7 +211,6 @@ namespace Mentornote.Desktop
             try
             {
                 using var appointment = new MultipartFormDataContent();
-                appointment.Add(new StringContent("1"), "UserId");
                 appointment.Add(new StringContent(TitleInput.Text), "Title");
                 appointment.Add(new StringContent(AppointmentDescription.Text), "Description");
                 appointment.Add(new StringContent(OrganizerInput.Text), "Organizer");
@@ -228,7 +232,7 @@ namespace Mentornote.Desktop
                     appointment.Add(file.FileContent, "Files", file.FileName);
                 }
                 // 3️⃣ Send to backend API
-                var response = await _http.PutAsync($"http://127.0.0.1:5085/api/appointments/update/{appointmentId}", appointment);
+                var response = await ApiClient.Client.PutAsync($"http://127.0.0.1:5085/api/appointments/update/{appointmentId}", appointment);
 
                 // 4️⃣ Handle response
                 if (!response.IsSuccessStatusCode)
@@ -295,18 +299,13 @@ namespace Mentornote.Desktop
             SelectedFiles.Clear();
         }
         
-        public void PopulateInputs(int id)
+        public async void PopulateInputs(int id)
         {
-            DBServices dbServices = new DBServices();
 
-            int userId = 1; // Example user ID
-            Appointment appointment = new();
-            appointment = dbServices.GetAppointmentById(id,userId); // Example appointment ID
+            var appointment = await ApiClient.Client.GetFromJsonAsync<Appointment>($"appointments/getAppointmentById/{id}");
 
-
-            //Populate existing documents
-            List<AppointmentDocument> docs = new();
-            docs = dbServices.GetAppointmentDocumentsByAppointmentId(appointment.Id, userId); // Example appointment ID
+            var docs = await ApiClient.Client.GetFromJsonAsync<List<AppointmentDocument>>($"appointments/getAppointmentDocumentsByAppointmentId/{appointment.Id}");
+           
             foreach (var doc in docs)
             {
                 AppointmentFiles.Add(new AppointmentFile { 
@@ -314,7 +313,8 @@ namespace Mentornote.Desktop
                     FileId = doc.Id
                 });
             }
-            
+
+            PopulateTimeCombos();
 
             TitleInput.Text = appointment.Title;
             AppointmentInfoTitle.Text = appointment.Title;
@@ -337,10 +337,6 @@ namespace Mentornote.Desktop
             {
                 StatusInput.Text = "Scheduled";
             }
-                
-
-            PopulateTimeCombos();
-
         }
 
         public void StartPollingForStatus(long jobId)
