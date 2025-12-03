@@ -1,4 +1,5 @@
 ﻿using Mentornote.Desktop.Helpers;
+using Mentornote.Desktop.Models;
 using Mentornote.Desktop.Services;
 using Mentornote.Desktop.Windows;
 using System.Windows;
@@ -17,8 +18,8 @@ namespace Mentornote.Desktop.Pages
 
         private void LoadUser()
         {
-            var token = AuthManager.LoadToken();
-            var user = JwtHelper.DecodeToken(token); 
+            TokenResponse token = AuthManager.LoadTokens();
+            var user = JwtHelper.DecodeToken(token.AccessToken); 
 
             FullNameText.Text = $"{user.FirstName} {user.LastName}";
             EmailText.Text = user.Email;

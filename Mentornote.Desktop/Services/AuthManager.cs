@@ -3,12 +3,16 @@ using System;
 using System.IO;
 using System.Security.Cryptography;
 using System.Text;
+using System.Text.Json;
+using Mentornote.Desktop.Models;
 
 namespace Mentornote.Desktop.Services
 {
     public static class AuthManager
     {
-        private static string TokenFilePath =>Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "MentorNote", "auth.dat");
+        private static string TokenFilePath =>
+            Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
+                "MentorNote", "auth.dat");
 
         static AuthManager()
         {
@@ -19,33 +23,33 @@ namespace Mentornote.Desktop.Services
             }
         }
 
-        public static void SaveToken(string token)
+        public static void SaveTokens(string accessToken, string refreshToken)
         {
-            var data = Encoding.UTF8.GetBytes(token);
+            var data = new TokenResponse
+            {
+                AccessToken = accessToken,
+                RefreshToken = refreshToken
+            };
 
-            var encrypted = ProtectedData.Protect(data,null, DataProtectionScope.CurrentUser);
+            var json = JsonSerializer.Serialize(data);
+            var bytes = Encoding.UTF8.GetBytes(json);
 
+            var encrypted = ProtectedData.Protect(bytes, null, DataProtectionScope.CurrentUser);
             File.WriteAllBytes(TokenFilePath, encrypted);
         }
 
-        public static string LoadToken()
+        public static TokenResponse LoadTokens()
         {
             if (!File.Exists(TokenFilePath))
-            {
                 return null;
-            }
 
             try
             {
                 var encrypted = File.ReadAllBytes(TokenFilePath);
+                var decrypted = ProtectedData.Unprotect(encrypted, null, DataProtectionScope.CurrentUser);
 
-                var decrypted = ProtectedData.Unprotect(
-                    encrypted,
-                    null,
-                    DataProtectionScope.CurrentUser
-                );
-
-                return Encoding.UTF8.GetString(decrypted);
+                var json = Encoding.UTF8.GetString(decrypted);
+                return JsonSerializer.Deserialize<TokenResponse>(json);
             }
             catch
             {
@@ -55,16 +59,16 @@ namespace Mentornote.Desktop.Services
 
         public static bool IsLoggedIn()
         {
-            var token = LoadToken();
-            return !string.IsNullOrEmpty(token);
+            var tokens = LoadTokens();
+            return tokens != null &&
+                   !string.IsNullOrWhiteSpace(tokens.AccessToken) &&
+                   !string.IsNullOrWhiteSpace(tokens.RefreshToken);
         }
 
         public static void Logout()
         {
             if (File.Exists(TokenFilePath))
-            {
                 File.Delete(TokenFilePath);
-            }
         }
     }
 }

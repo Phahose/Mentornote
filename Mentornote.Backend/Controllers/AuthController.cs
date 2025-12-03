@@ -4,6 +4,7 @@ using Mentornote.Backend.Models;
 using Mentornote.Backend.Services;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.AspNetCore.Identity.Data;
 using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
 using System.Security.Cryptography;
@@ -16,6 +17,7 @@ namespace Mentornote.Backend.Controllers
     public class AuthController : Controller
     {
         private readonly AuthService _authService;
+        private readonly DBServices _dbService = new DBServices();
 
         public AuthController(AuthService authService)
         {
@@ -58,5 +60,34 @@ namespace Mentornote.Backend.Controllers
 
             return Ok($"User registered successfully.");
         }
+
+        [HttpPost("refresh")]
+        public IActionResult Refresh([FromBody] RefreshRequest request)
+        {
+            var existingToken = _dbService.GetRefreshToken(request.RefreshToken);
+
+            if (existingToken == null || !existingToken.IsActive)
+            {
+                return Unauthorized("Invalid or expired refresh token.");
+            }
+            // Rotate refresh token
+            var user = _dbService.GetUserByEmail(existingToken.Email);
+
+            var newRefreshToken = _authService.CreateRefreshToken(user);
+
+            _dbService.RevokeToken(existingToken.Id, newRefreshToken.Token);
+            _dbService.SaveRefreshToken(newRefreshToken);
+
+           
+            var newAccessToken = _authService.GenerateJwtToken(user);
+
+            return Ok(new
+            {
+                accessToken = newAccessToken,
+                refreshToken = newRefreshToken.Token,
+                expiresIn = 3600
+            });
+        }
+
     }
 }

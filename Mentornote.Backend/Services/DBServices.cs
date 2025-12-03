@@ -759,5 +759,64 @@ namespace Mentornote.Backend.Services
             }
         }
 
+        public void SaveRefreshToken(RefreshToken token)
+        {
+            using var conn = new SqlConnection(connectionString);
+            conn.Open();
+
+            using var cmd = new SqlCommand("SaveRefreshToken", conn);
+            cmd.CommandType = CommandType.StoredProcedure;
+
+            cmd.Parameters.AddWithValue("@UserId", token.UserId);
+            cmd.Parameters.AddWithValue("@Token", token.Token);
+            cmd.Parameters.AddWithValue("@Email", token.Email);
+            cmd.Parameters.AddWithValue("@ExpiresAt", token.ExpiresAt);
+            cmd.Parameters.AddWithValue("@CreatedAt", token.CreatedAt);
+
+            cmd.ExecuteNonQuery();
+        }
+
+        public RefreshToken GetRefreshToken(string token)
+        {
+            using var conn = new SqlConnection(connectionString);
+            conn.Open();
+
+            using var cmd = new SqlCommand("GetRefreshToken", conn);
+            cmd.CommandType = CommandType.StoredProcedure;
+            cmd.Parameters.AddWithValue("@Token", token);
+
+            using var reader = cmd.ExecuteReader();
+
+            if (!reader.Read())
+                return null;
+
+            return new RefreshToken
+            {
+                Id = Convert.ToInt32(reader["Id"]),
+                UserId = Convert.ToInt32(reader["UserId"]),
+                Token = reader["Token"].ToString(),
+                ExpiresAt = Convert.ToDateTime(reader["ExpiresAt"]),
+                CreatedAt = Convert.ToDateTime(reader["CreatedAt"]),
+                Email = reader["Email"].ToString(),
+                RevokedAt = reader["RevokedAt"] == DBNull.Value ? null : Convert.ToDateTime(reader["RevokedAt"]),
+                ReplacedByToken = reader["ReplacedByToken"] == DBNull.Value ? null : reader["ReplacedByToken"].ToString()
+            };
+        }
+
+        public void RevokeToken(int id, string replacedByToken)
+        {
+            using var conn = new SqlConnection(connectionString);
+            conn.Open();
+
+            using var cmd = new SqlCommand("RevokeRefreshToken", conn);
+            cmd.CommandType = CommandType.StoredProcedure;
+
+            cmd.Parameters.AddWithValue("@Id", id);
+            cmd.Parameters.AddWithValue("@ReplacedByToken", replacedByToken);
+
+            cmd.ExecuteNonQuery();
+        }
+
+
     }
 }  

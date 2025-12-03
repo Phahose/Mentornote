@@ -1,6 +1,11 @@
 ﻿#nullable disable
+using DocumentFormat.OpenXml.Office2010.Excel;
 using Mentornote.Backend;
+using Mentornote.Backend.Models;
+using Mentornote.Backend.Services;
+using Mentornote.Desktop.Services;
 using Mentornote.Desktop.Windows;
+using Newtonsoft.Json;
 using System.Net.Http;
 using System.Net.Http.Json;
 using System.Runtime.InteropServices;
@@ -8,10 +13,7 @@ using System.Text;
 using System.Windows;
 using System.Windows.Input;
 using System.Windows.Interop;
-using Newtonsoft.Json;
 using JsonSerializer = System.Text.Json.JsonSerializer;
-using Mentornote.Backend.Services;
-using Mentornote.Desktop.Services;
 
 namespace Mentornote.Desktop
 {
@@ -19,9 +21,10 @@ namespace Mentornote.Desktop
     {
         private AudioListener _listener;
         private bool _isListening = false;
-       // private static readonly HttpClient _http = new HttpClient();
-        private string _meetingId;
+
         private int appId;
+        private bool _dragFromSuggestionPanel = false;
+
 
         public Overlay(int appointmentId)
         {
@@ -121,10 +124,10 @@ namespace Mentornote.Desktop
 
         private async void Close_Click(object sender, RoutedEventArgs e)
         {
-            _listener?.StopListening(appId);
+            await ApiClient.Client.PostAsync($"http://localhost:5085/api/transcribe/stop/{appId}", null);
+            _isListening = false;
 
-            DBServices dBServices = new DBServices();
-            var appointment = dBServices.GetAppointmentById(appId, 1);
+            var appointment = await ApiClient.Client.GetFromJsonAsync<Appointment>($"appointments/getAppointmentById/{appId}");
             string summary;
             if (appointment.SummaryExists == false)
             {
@@ -187,6 +190,26 @@ namespace Mentornote.Desktop
             base.OnMouseLeftButtonDown(e);
             DragMove();
         }
+        private void Suggestion_PreviewMouseLeftButtonDown(object sender, MouseButtonEventArgs e)
+        {
+            _dragFromSuggestionPanel = true;
+        }
+        private void Suggestion_MouseMove(object sender, System.Windows.Input.MouseEventArgs e)
+        {
+            if (_dragFromSuggestionPanel && e.LeftButton == MouseButtonState.Pressed)
+            {
+                _dragFromSuggestionPanel = false; // reset
+                DragMove();
+            }
+        }
+        protected override void OnMouseLeftButtonUp(MouseButtonEventArgs e)
+        {
+            base.OnMouseLeftButtonUp(e);
+            _dragFromSuggestionPanel = false;
+        }
+
+
+
 
         private const int GWL_EXSTYLE = -20;
         private const int WS_EX_LAYERED = 0x80000;

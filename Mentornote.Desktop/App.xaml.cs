@@ -4,6 +4,7 @@ using Mentornote.Desktop.Windows;
 using NuGet.Common;
 using System.Windows;
 using System.Windows.Forms;
+using Mentornote.Desktop.Models;
 
 namespace Mentornote.Desktop
 {
@@ -24,10 +25,10 @@ namespace Mentornote.Desktop
 
             if (AuthManager.IsLoggedIn())
             {
-                string token = AuthManager.LoadToken();
+                TokenResponse token = AuthManager.LoadTokens();
 
-                ApiClient.SetToken(token);
-                UserSession.SetUser(token);
+                ApiClient.SetToken(token.AccessToken, token.RefreshToken);
+                UserSession.SetUser(token.AccessToken);
                       
 
 

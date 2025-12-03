@@ -23,9 +23,9 @@ namespace Mentornote.Desktop.Helpers
             {
                 return null;
             }
+            
 
             var jwt = handler.ReadJwtToken(token);
-
             var model = new UserToken
             {
                 UserId = TryGetInt(jwt, ClaimTypes.NameIdentifier),
@@ -40,6 +40,22 @@ namespace Mentornote.Desktop.Helpers
 
             return model;
         }
+
+        public static bool IsTokenExpired(string token)
+        {
+            if (string.IsNullOrWhiteSpace(token))
+                return true;
+
+            var handler = new JwtSecurityTokenHandler();
+
+            if (!handler.CanReadToken(token))
+                return true;
+
+            var jwt = handler.ReadJwtToken(token);
+
+            return jwt.ValidTo < DateTime.UtcNow;
+        }
+
 
         private static string TryGet(JwtSecurityToken token, string claimType)
         {

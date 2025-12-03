@@ -1,5 +1,6 @@
 ﻿#nullable disable
 using Mentornote.Backend.Models;
+using Mentornote.Desktop.Helpers;
 using Mentornote.Desktop.Services;
 using Mentornote.Desktop.Windows;
 using System.Collections.ObjectModel;
@@ -146,6 +147,11 @@ namespace Mentornote.Desktop.Pages
 
         private async Task<List<Appointment>> GetAppointments()
         {
+
+            if (JwtHelper.IsTokenExpired(ApiClient.AccessToken))
+            {
+                await ApiClient.RefreshAccessTokenAsync();
+            }
             var appointments = await ApiClient.Client.GetFromJsonAsync<List<Appointment>>($"appointments/getAppointmentsByUserId");
             Console.WriteLine(appointments);
             var today = DateTime.Today;

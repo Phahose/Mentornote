@@ -42,39 +42,74 @@ namespace Mentornote.Backend.Controllers
                 string context = _ragService.BuildContext(relevantChunks); // create your context string
 
                 // 2️⃣ Build final RAG-enhanced prompt
+                //string prompt = $"""
+                //You are assisting a user during a live meeting.
+
+                //Your job is to generate a natural, helpful reply ONLY to the most recent question or statement in the transcript. 
+                //Keep the reply short, confident, and appropriate for the situation.
+
+                //USE OF DOCUMENT CONTEXT:
+                //- Use information from the attached documents ONLY if it is clearly relevant to the user's most recent statement.
+                //- Never invent or alter factual information found in the documents (e.g., job history, dates, credentials).
+                //- If the transcript does not relate to the documents, ignore them completely.
+
+                //CREATIVITY RULE:
+                //- You may add light conversational details (tone, friendliness, smoothness) to make the reply sound natural.
+                //- You may NOT invent new factual details about the user, their background, or any content in the documents.
+                //- You may invent details about the users professional experience or knowledge width if there is no relevant information in the document
+                //- If context is missing, make a reasonable, generic response without fabricating specific facts.
+
+                //TASK:
+                //1. Understand the user's most recent message.
+                //2. Decide whether document context applies.
+                //3. Produce a single natural reply.
+
+                //---
+
+                //Relevant documents (may be empty or unused):
+                //{context}
+
+                //Transcript:
+                //{transcript}
+
+                //Respond only with the reply the user should say next.
+
+                //""";
+
                 string prompt = $"""
-                You are assisting a user during a live meeting.
+                                You are assisting a user during a live interview.
 
-                Your job is to generate a natural, helpful reply ONLY to the most recent question or statement in the transcript. 
-                Keep the reply short, confident, and appropriate for the situation.
+                                Your job is to generate a confident, natural verbal reply to the user's most recent message.
 
-                USE OF DOCUMENT CONTEXT:
-                - Use information from the attached documents ONLY if it is clearly relevant to the user's most recent statement.
-                - Never invent or alter factual information found in the documents (e.g., job history, dates, credentials).
-                - If the transcript does not relate to the documents, ignore them completely.
+                                ASSUMPTIONS:
+                                - The documents represent the user's own background (e.g., resume, work history, accomplishments).
+                                - You may speak in the first person as if these documents belong to the user.
 
-                CREATIVITY RULE:
-                - You may add light conversational details (tone, friendliness, smoothness) to make the reply sound natural.
-                - You may NOT invent new factual details about the user, their background, or any content in the documents.
-                - You may invent details about the users professional experience or knowledge width if there is no relevant information in the document
-                - If context is missing, make a reasonable, generic response without fabricating specific facts.
+                                USE OF DOCUMENT CONTEXT:
+                                - Use details from the resume when relevant.
+                                - You may rephrase, summarize, or expand those details into smooth, natural interview answers.
+                                - Do NOT invent new companies, job titles, degrees, or dates.
+                                - You MAY infer reasonable strengths, soft skills, and general capabilities if the resume implies them.
+                                - If a specific detail is missing, give a strong, general answer rather than freezing.
 
-                TASK:
-                1. Understand the user's most recent message.
-                2. Decide whether document context applies.
-                3. Produce a single natural reply.
+                                INTERVIEW MODE:
+                                - If the message is a common interview question (e.g., “Tell me about yourself”), craft a polished, structured answer using the resume as source material.
+                                - Keep the tone confident, conversational, and concise.
 
-                ---
+                                TASK:
+                                1. Understand the user’s most recent message.
+                                2. Pull in relevant resume context if appropriate.
+                                3. Produce a smooth, natural spoken reply.
 
-                Relevant documents (may be empty or unused):
-                {context}
+                                Relevant documents:
+                                {context}
 
-                Transcript:
-                {transcript}
+                                Transcript:
+                                {transcript}
 
-                Respond only with the reply the user should say next.
-                
-                """;
+                                Respond only with the reply the user should say next.
+                                """;
+
 
                 // 3️⃣ Prepare Gemini request
                 var url = $"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-lite:generateContent?key={_apiKey}";

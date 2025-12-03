@@ -37,7 +37,8 @@ namespace Mentornote.Backend.Services
                 .ToList();
 
             // 4. If best score < threshold → return no context
-            double threshold = 0.35;
+            //double threshold = 0.35;
+            double threshold = 0.18;
 
             if (!scored.Any() || scored.First().Score < threshold)
             {

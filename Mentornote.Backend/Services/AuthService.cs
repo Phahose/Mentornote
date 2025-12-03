@@ -43,12 +43,17 @@ namespace Mentornote.Backend.Services
                 return null;
             }
 
-            string token = GenerateJwtToken(user);
+            string accesstoken = GenerateJwtToken(user);
+
+            var refreshToken = CreateRefreshToken(user);
+            
+            _dbServices.SaveRefreshToken(refreshToken);
 
             return new LoginResponseDTO
             {
-                Token = token,
+                Token = accesstoken,
                 UserId = user.Id,
+                RefreshToken = refreshToken.Token,
                 Email = user.Email,
                 ExpiresAt = DateTime.UtcNow.AddHours(12)
             };
@@ -82,7 +87,7 @@ namespace Mentornote.Backend.Services
             return (true, "Account Created Successfully");
         }
 
-        private string GenerateJwtToken(User user)
+        public string GenerateJwtToken(User user)
         {
             var claims = new[]
             {
@@ -108,5 +113,18 @@ namespace Mentornote.Backend.Services
 
             return new JwtSecurityTokenHandler().WriteToken(token);
         }
+
+        public RefreshToken CreateRefreshToken(User user)
+        {
+            return new RefreshToken
+            {
+                UserId = user.Id,
+                Email = user.Email,   
+                Token = Convert.ToBase64String(RandomNumberGenerator.GetBytes(64)),
+                ExpiresAt = DateTime.UtcNow.AddDays(120),
+                CreatedAt = DateTime.UtcNow
+            };
+        }
+
     }
 }
