@@ -51,12 +51,12 @@ namespace Mentornote.Backend
             var alternatives = channels.GetProperty("alternatives")[0];
             string transcript = alternatives.GetProperty("transcript").GetString();
 
-            // ✅ Add new transcript to the list (thread-safe)
+            // Add new transcript to the list (thread-safe)
             if (!string.IsNullOrWhiteSpace(transcript))
             {
                 lock (_lock)
                 {
-                    Console.WriteLine(transcript);
+                  //  Console.WriteLine(transcript);
                     _liveTranscripts.Add(transcript);
                     _liveUtterances.Add(new Utterance
                     {
@@ -68,6 +68,5 @@ namespace Mentornote.Backend
             }
             return _liveTranscripts;
         }
-        
     }
 }

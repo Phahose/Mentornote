@@ -25,6 +25,7 @@ namespace Mentornote.Backend
             builder.Services.AddSingleton<AuthService>();
             builder.Services.AddSingleton<DBServices>();
             builder.Services.AddSingleton<FileServices>();
+            builder.Services.AddSingleton<GeminiServices>();
 
 
             //Add controllers and Swagger (same as before)

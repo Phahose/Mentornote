@@ -37,6 +37,16 @@ namespace Mentornote.Desktop.Pages
 
             if (button?.Tag is int meetingId)
             {
+                // Check if Overlay for this meeting is already open
+                var existingOverlay = System.Windows.Application.Current.Windows
+                    .OfType<Overlay>()
+                    .FirstOrDefault();
+
+                if (existingOverlay != null)
+                {
+                    existingOverlay.Activate(); // Bring it to front
+                    return;
+                }
                 var overlay = new Overlay(meetingId);
                 overlay.Show();
             }

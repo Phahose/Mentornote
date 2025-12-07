@@ -788,7 +788,9 @@ namespace Mentornote.Backend.Services
             using var reader = cmd.ExecuteReader();
 
             if (!reader.Read())
+            {
                 return null;
+            }
 
             return new RefreshToken
             {
@@ -817,6 +819,19 @@ namespace Mentornote.Backend.Services
             cmd.ExecuteNonQuery();
         }
 
+        public void DeleteRefreshToken(int tokenId)
+        {
+            using (var conn = new SqlConnection(connectionString))
+            using (var cmd = new SqlCommand("DeleteRefreshToken", conn))
+            {
+                cmd.CommandType = CommandType.StoredProcedure;
+
+                cmd.Parameters.AddWithValue("@TokenId", tokenId);
+
+                conn.Open();
+                cmd.ExecuteNonQuery();
+            }
+        }
 
     }
 }  

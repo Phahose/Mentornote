@@ -169,6 +169,17 @@ CREATE TABLE PracticeQuestionChoices (
     FOREIGN KEY (PracticeExamQuestionId) REFERENCES PracticeExamQuestions(Id)
 );
 
+CREATE TABLE RefreshTokens (
+    Id INT IDENTITY(1,1) PRIMARY KEY,
+    UserId INT NOT NULL,
+    Token NVARCHAR(500) NOT NULL,
+    ExpiresAt DATETIME NOT NULL,
+    CreatedAt DATETIME NOT NULL,
+    RevokedAt DATETIME NULL,
+    ReplacedByToken NVARCHAR(500) NULL
+);
+
+
 CREATE PROCEDURE AddNote
 	@UserId INT,
     @Title NVARCHAR(255),
@@ -1211,6 +1222,50 @@ BEGIN
 END
 
 
+
+CREATE OR ALTER PROCEDURE SaveRefreshToken
+    @UserId INT,
+    @Email NVARCHAR(200),
+    @Token NVARCHAR(500),
+    @ExpiresAt DATETIME,
+    @CreatedAt DATETIME
+AS
+BEGIN
+    INSERT INTO RefreshTokens (UserId, Email, Token, ExpiresAt, CreatedAt)
+    VALUES (@UserId, @Email, @Token, @ExpiresAt, @CreatedAt);
+END
+
+
+CREATE OR ALTER PROCEDURE GetRefreshToken
+    @Token NVARCHAR(500)
+AS
+BEGIN
+    SELECT TOP 1 *
+    FROM RefreshTokens
+    WHERE Token = @Token;
+END
+
+
+
+CREATE OR ALTER PROCEDURE RevokeRefreshToken
+    @Id INT,
+    @ReplacedByToken NVARCHAR(500)
+AS
+BEGIN
+    UPDATE RefreshTokens
+    SET 
+        RevokedAt = SYSUTCDATETIME(),
+        ReplacedByToken = @ReplacedByToken
+    WHERE Id = @Id;
+END
+
+
+
+
+
+
+ALTER TABLE RefreshTokens
+ADD Email NVARCHAR(200) NULL;
 
 
 Exec GetDocumentChunksForAppointment 2

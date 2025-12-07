@@ -127,51 +127,65 @@ namespace Mentornote.Desktop
             await ApiClient.Client.PostAsync($"http://localhost:5085/api/transcribe/stop/{appId}", null);
             _isListening = false;
 
-            var appointment = await ApiClient.Client.GetFromJsonAsync<Appointment>($"appointments/getAppointmentById/{appId}");
-            string summary;
-            if (appointment.SummaryExists == false)
+
+            //Get transcript
+            List<string> transcriptList = await ApiClient.Client.GetFromJsonAsync<List<string>>("http://localhost:5085/api/transcribe/gettranscript");
+            string fullTranscript = string.Join(" ", transcriptList);
+
+            if (string.IsNullOrWhiteSpace(fullTranscript))
             {
-                summary = await ApiClient.Client.GetStringAsync($"http://localhost:5085/api/gemini/summary/{appId}");
+                System.Windows.MessageBox.Show("No transcript available to generate summary.");
+                ListeningSection.Visibility = Visibility.Collapsed;
+                Close();
+                return;
             }
             else
             {
-                summary = "zxcvb";  
-            }
-
-            if (summary != "zxcvb")
-            {
-                var dialog = new SummaryDialog(summary);
-                bool? result = dialog.ShowDialog();
+                // Prepare transcript JSON
+                var transcriptBody = new { Transcript = fullTranscript };
+                var transcriptJson = JsonConvert.SerializeObject(transcriptBody);
+                var transcriptContent = new StringContent(transcriptJson, Encoding.UTF8, "application/json");
 
 
-                if (dialog.SaveClicked)
+
+                // Generate or retrieve summary
+                var appointment = await ApiClient.Client.GetFromJsonAsync<Appointment>($"appointments/getAppointmentById/{appId}");
+                string summary;
+                if (appointment.SummaryExists == false)
                 {
-                    try
-                    {
-                        var body = new { summary = summary };
-
-                        var json = JsonConvert.SerializeObject(body);
-
-                        var content = new StringContent(json, Encoding.UTF8, "application/json");
-
-                        var response = await ApiClient.Client.PostAsync( $"http://localhost:5085/api/summary/save/{appId}",content );
-
-                        System.Windows.MessageBox.Show("Summary saved!");
-                    }
-                    catch (Exception ex)
-                    {
-
-                        System.Windows.MessageBox.Show($"Error saving summary: {ex.Message}");
-                    }
-                    
+                    summary = await ApiClient.Client.PostAsync($"http://localhost:5085/api/gemini/summary/{appId}", transcriptContent).Result.Content.ReadAsStringAsync();
                 }
-               
+                else
+                {
+                    summary = "zxcvb";
+                }
+
+                if (summary != "zxcvb")
+                {
+                    var dialog = new SummaryDialog(summary);
+                    bool? result = dialog.ShowDialog();
+
+                    if (dialog.SaveClicked)
+                    {
+                        try
+                        {
+                            var body = new { summary = summary };
+                            var json = JsonConvert.SerializeObject(body);
+                            var content = new StringContent(json, Encoding.UTF8, "application/json");
+                            var response = await ApiClient.Client.PostAsync($"http://localhost:5085/api/summary/save/{appId}", content);
+                            System.Windows.MessageBox.Show("Summary saved!");
+                        }
+                        catch (Exception ex)
+                        {
+                            System.Windows.MessageBox.Show($"Error saving summary: {ex.Message}");
+                        }
+                    }
+                }
+
+                ListeningSection.Visibility = Visibility.Collapsed;
+                Close();
             }
-
             
-
-            ListeningSection.Visibility = Visibility.Collapsed;
-            Close();
         }
 
         // --- make the background transparent but still allow button clicks ---

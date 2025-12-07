@@ -2,6 +2,9 @@
 using System.Net.Http.Headers;
 using System.Net.Http.Json;
 using Mentornote.Desktop.Models;
+using System.Windows;
+using Mentornote.Desktop.Windows;
+
 
 namespace Mentornote.Desktop.Services
 {
@@ -29,7 +32,9 @@ namespace Mentornote.Desktop.Services
         public static async Task<bool> RefreshAccessTokenAsync()
         {
             if (string.IsNullOrWhiteSpace(RefreshToken))
+            {
                 return false;
+            }           
 
             var requestBody = new
             {
@@ -38,16 +43,34 @@ namespace Mentornote.Desktop.Services
 
             var response = await Client.PostAsJsonAsync("auth/refresh", requestBody);
 
+
             if (!response.IsSuccessStatusCode)
+            {
+                // Refresh token dead → full logout required
+                AuthManager.Logout();
+                System.Windows.Application.Current.Dispatcher.Invoke(() =>
+                {
+                    // Redirect user to login window
+                    var login = new AuthWindow();
+                    login.Show();
+
+                    // Close the main window
+                    System.Windows.Application.Current.MainWindow.Close();
+                });
+
                 return false;
+            }
+
 
             var tokenResult = await response.Content.ReadFromJsonAsync<TokenResponse>();
             if (tokenResult == null)
+            {
                 return false;
-
+            }
             // Apply the new tokens
+            AuthManager.SaveTokens(tokenResult.AccessToken, tokenResult.RefreshToken);
             SetToken(tokenResult.AccessToken, tokenResult.RefreshToken);
-
+           
             return true;
         }
     }

@@ -38,10 +38,6 @@ namespace Mentornote.Backend
 
         public string FullMeetingTranscript;
 
-
-
-
-
         public int _appointmentId;
         public AudioListener(Transcribe transcribe)
         {
@@ -59,11 +55,26 @@ namespace Mentornote.Backend
             _appointmentId = appointmentId;
             _capture.DataAvailable += Capture_DataAvailable;
 
-            _capture.RecordingStopped += Capture_RecordingStopped;
+            //_capture.RecordingStopped += Capture_RecordingStopped;
 
 
             _capture.StartRecording();
             Console.WriteLine("Listening started...");
+        }
+
+        public void StopListening(int appointnmentid)
+        {
+
+            if (_capture!=null)
+            {
+                _capture.StopRecording();
+                Console.WriteLine("Listening stopped. File saved.");
+            }
+            else
+            {
+               Console.WriteLine("No active capture to stop.");
+            }
+          
         }
 
         private async void  Capture_DataAvailable(object sender, WaveInEventArgs e)
@@ -80,7 +91,7 @@ namespace Mentornote.Backend
                     _buffer.AddRange(e.Buffer[..e.BytesRecorded]);
                 }
 
-                // 3️  if buffer > N seconds, fire chunk event
+                // 3️  if buffer > 1 second, fire chunk event
                 int bytesPerSecond = _capture.WaveFormat.AverageBytesPerSecond;
                 if (_buffer.Count >= bytesPerSecond * _chunkSeconds)
                 {
@@ -134,7 +145,6 @@ namespace Mentornote.Backend
             return _transcriptHistory.ToList(); // return a copy for safety
         }
 
-
         private bool IsSilent(byte[] buffer, WaveFormat format, double threshold = 0.01)
         {
             // assumes 16-bit PCM
@@ -152,49 +162,6 @@ namespace Mentornote.Backend
 
             double rms = Math.Sqrt(sumSquares / samples);
             return rms < threshold;
-        }
-
-
-        private void Capture_RecordingStopped(object sender, StoppedEventArgs e)
-        {
-            // When recording stops, finalize and clean up
-            _writer?.Dispose();
-            _capture?.Dispose();
-
-            Console.WriteLine("🛑 Recording stopped.");
-
-            // Notify overlay that file is ready
-            _ = GetEndOfMeetingTranscript(_tempFile, _appointmentId);
-        }
-
-        private async Task GetEndOfMeetingTranscript(string filePath, int appointmentId)
-        {
-            try
-            {
-                byte[] audioBytes = await System.IO.File.ReadAllBytesAsync(filePath);
-
-                // 1️⃣ Full transcription
-                 List<string> fullList = await _transcribe.DeepGramLiveTranscribe(audioBytes, appointmentId);
-                 string fullTranscript = string.Join(" ", fullList);
-
-                FullMeetingTranscript = fullTranscript;
-                Console.WriteLine("✔ Final summary generated.");
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine("❌ Error generating final summary: " + ex.Message);
-            }
-
-        }
-
-        public string GetFullMeetingTranscript()
-        {
-            return FullMeetingTranscript;
-        }
-        public void StopListening(int appointnmentid)
-        {
-            _capture?.StopRecording();
-            Console.WriteLine("Listening stopped. File saved.");
         }
 
         public void Dispose()

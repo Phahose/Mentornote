@@ -76,6 +76,7 @@ namespace Mentornote.Backend.Controllers
             var newRefreshToken = _authService.CreateRefreshToken(user);
 
             _dbService.RevokeToken(existingToken.Id, newRefreshToken.Token);
+            _dbService.DeleteRefreshToken(existingToken.Id);
             _dbService.SaveRefreshToken(newRefreshToken);
 
            

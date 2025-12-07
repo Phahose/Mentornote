@@ -42,7 +42,7 @@ namespace Mentornote.Backend.Controllers
         {
             foreach (var transcript in _audioListener.GetTranscriptHistory())
             {
-                Console.WriteLine(transcript);
+                //Console.WriteLine(transcript);
             }
             return _audioListener.GetTranscriptHistory();
         }
@@ -57,9 +57,10 @@ namespace Mentornote.Backend.Controllers
 
         [HttpPost("stop/{appointmentId}")]
         [Authorize]
-        public IActionResult Stop(int appointmentId)
+        public async Task<IActionResult> Stop(int appointmentId)
         {
             _audioListener.StopListening(appointmentId);
+
             return Ok("Listening stopped");
         }
 
