@@ -56,12 +56,12 @@ namespace Mentornote.Backend
             {
                 lock (_lock)
                 {
-                  //  Console.WriteLine(transcript);
                     _liveTranscripts.Add(transcript);
                     _liveUtterances.Add(new Utterance
                     {
                         Text = transcript,
-                        AppointmentId = appointmentId // Placeholder, set appropriately in real use
+                        AppointmentId = appointmentId ,
+                        TimeStamp = DateTime.UtcNow
                     });
 
                 }

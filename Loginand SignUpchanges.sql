@@ -1259,6 +1259,17 @@ BEGIN
     WHERE Id = @Id;
 END
 
+CREATE OR ALTER PROCEDURE DeleteRefreshToken
+    @TokenId INT
+AS
+BEGIN
+    SET NOCOUNT ON;
+
+    DELETE FROM RefreshTokens
+    WHERE Id = @TokenId;
+END
+
+
 
 
 

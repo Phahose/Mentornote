@@ -120,7 +120,7 @@ namespace Mentornote.Desktop
             {
                 using var appointment = new MultipartFormDataContent();
                 appointment.Add(new StringContent(TitleInput.Text), "Title");
-                appointment.Add(new StringContent(AppointmentDescription.Text), "Description");
+                //appointment.Add(new StringContent(AppointmentDescription.Text), "Description");
                 appointment.Add(new StringContent(OrganizerInput.Text), "Organizer");
                 appointment.Add(new StringContent(DateInput.Text), "Date");
                 appointment.Add(new StringContent(StartTimeInput.Text), "StartTime");
@@ -212,7 +212,7 @@ namespace Mentornote.Desktop
             {
                 using var appointment = new MultipartFormDataContent();
                 appointment.Add(new StringContent(TitleInput.Text), "Title");
-                appointment.Add(new StringContent(AppointmentDescription.Text), "Description");
+                //appointment.Add(new StringContent(AppointmentDescription.Text), "Description");
                 appointment.Add(new StringContent(OrganizerInput.Text), "Organizer");
                 appointment.Add(new StringContent(DateInput.Text), "Date");
                 appointment.Add(new StringContent(StartTimeInput.Text), "StartTime");
@@ -318,7 +318,7 @@ namespace Mentornote.Desktop
 
             TitleInput.Text = appointment.Title;
             AppointmentInfoTitle.Text = appointment.Title;
-            AppointmentDescription.Text = appointment.Description;
+            //AppointmentDescription.Text = appointment.Description;
             DateInput.Text = appointment.Date.ToString();
             StartTimeInput.Text = appointment.StartTime?.ToString("h:mm tt") ?? "";
             EndTimeInput.Text = appointment.EndTime?.ToString("h:mm tt") ?? "";

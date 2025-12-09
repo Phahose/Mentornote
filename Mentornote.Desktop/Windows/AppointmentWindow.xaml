@@ -58,7 +58,7 @@
                             Padding="2"
                             Text="Tennis Meet"/>
                 
-                <TextBlock Text="Appointment Description"
+                <!--<TextBlock Text="Appointment Description"
                            Foreground="#FFBFBFBF"
                            FontSize="14"
                            Margin="0,0,0,5"/>
@@ -71,7 +71,7 @@
                          Foreground="White"
                          BorderBrush="#FF3A3A3A"
                          Padding="8"
-                         Text="The Meeting with tennis this is a test appointment to see ow the program works"/>
+                         Text="The Meeting with tennis this is a test appointment to see ow the program works"/>-->
                 
                 <TextBlock Text="Organizer Name:"
                            Foreground="#FFBFBFBF"
@@ -91,8 +91,7 @@
                 <DatePicker x:Name="DateInput" Margin="0,5,0,15" Background="#FF2A2A2A"
                             Foreground="black"
                             BorderBrush="#FF3A3A3A"
-                            Padding="2"
-                            Text="02-11-2025"/>
+                            Padding="2"/>
 
                 <StackPanel Orientation="Horizontal" Margin="0,5,0,15">
                     <StackPanel Margin="0,0,20,0">

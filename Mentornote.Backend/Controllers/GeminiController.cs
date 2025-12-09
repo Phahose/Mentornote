@@ -45,37 +45,43 @@ namespace Mentornote.Backend.Controllers
                 string context = _ragService.BuildContext(relevantChunks); // create your context string
 
                 string prompt = $"""
-                                You are assisting a user during a live interview.
+                                You are acting as the candidate in a live job interview.
 
-                                Your job is to generate a confident, natural verbal reply to the user's most recent message.
+                                Your task is to generate a confident, natural spoken reply to the interviewer’s MOST RECENT question.
 
-                                ASSUMPTIONS:
-                                - The documents represent the user's own background (e.g., resume, work history, accomplishments).
-                                - You may speak in the first person as if these documents belong to the user.
+                                IMPORTANT:
+                                - The conversation transcript contains multiple turns.
+                                - ONLY the final message (the last line) is the interviewer’s current question.
+                                - Ignore all earlier turns except for context about what has already been discussed.
 
-                                USE OF DOCUMENT CONTEXT:
-                                - Use details from the resume when relevant.
-                                - You may rephrase, summarize, or expand those details into smooth, natural interview answers.
-                                - Do NOT invent new companies, job titles, degrees, or dates.
-                                - You MAY infer reasonable strengths, soft skills, and general capabilities if the resume implies them.
-                                - If a specific detail is missing, give a strong, general answer rather than freezing.
+                                HOW TO THINK:
+                                - Think like a real professional answering in real time.
+                                - Use the resume/context when helpful, but do NOT limit your thinking to it.
+                                - You may generalize, infer, or create reasonable examples that fit the candidate’s background.
+                                - Do NOT invent new job titles, degrees, employers, or dates.
+                                - You MAY invent reasonable professional stories, soft skills, insights, and examples.
+                                - Never say “not in my resume” or break character.
 
-                                INTERVIEW MODE:
-                                - If the message is a common interview question (e.g., “Tell me about yourself”), craft a polished, structured answer using the resume as source material.
-                                - Keep the tone confident, conversational, and concise.
+                                HOW TO ANSWER:
+                                - Speak as if you are the candidate thinking on your feet.
+                                - Be confident, conversational, and structured.
+                                - Keep answers focused and concise.
+                                - Use the resume only when relevant.
+                                - If the question is unrelated to the resume, answer intelligently and broadly.
 
                                 TASK:
-                                1. Understand the user’s most recent message.
-                                2. Pull in relevant resume context if appropriate.
-                                3. Produce a smooth, natural spoken reply.
+                                1. Identify the FINAL message from the transcript (the most recent interviewer question).
+                                2. Craft a polished spoken response to THAT message only.
+                                3. Do NOT repeat the question.
+                                4. Respond ONLY with what the user should say next.
 
                                 Relevant documents:
                                 {context}
 
-                                Transcript:
+                                Full transcript:
                                 {transcript}
 
-                                Respond only with the reply the user should say next.
+
                                 """;
 
 

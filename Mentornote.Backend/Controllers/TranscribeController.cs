@@ -42,7 +42,7 @@ namespace Mentornote.Backend.Controllers
         {
             foreach (var transcript in _audioListener.GetTranscriptHistory())
             {
-                //Console.WriteLine(transcript);
+                Console.WriteLine(transcript);
             }
             return _audioListener.GetTranscriptHistory();
         }
