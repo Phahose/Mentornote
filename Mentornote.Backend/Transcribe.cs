@@ -27,13 +27,13 @@ namespace Mentornote.Backend
             _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Token", _deepgramApiKey);
         }
 
-        public async Task<List<string>> DeepGramLiveTranscribe(byte[] audioBytes, int appointmentId)
+        public async Task<List<Utterance>> DeepGramLiveTranscribe(byte[] audioBytes, int appointmentId)
         {
             var content = new ByteArrayContent(audioBytes);
 
             if (audioBytes.Length == 0)
             {
-                return _liveTranscripts;
+                return _liveUtterances;
             }
             content.Headers.ContentType = new MediaTypeHeaderValue("audio/wav");
 
@@ -66,7 +66,7 @@ namespace Mentornote.Backend
 
                 }
             }
-            return _liveTranscripts;
+            return _liveUtterances;
         }
     }
 }

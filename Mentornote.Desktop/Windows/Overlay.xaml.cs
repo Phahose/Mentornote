@@ -1,6 +1,7 @@
 ﻿#nullable disable
 using DocumentFormat.OpenXml.Office2010.Excel;
 using Mentornote.Backend;
+using Mentornote.Backend.DTO;
 using Mentornote.Backend.Models;
 using Mentornote.Backend.Services;
 using Mentornote.Desktop.Services;
@@ -70,7 +71,8 @@ namespace Mentornote.Desktop
                 StatementText.Text = "Generating suggestion...";
 
                 // 1️ Get transcript
-                List<string> transcriptList = await ApiClient.Client.GetFromJsonAsync<List<string>>("http://localhost:5085/api/transcribe/gettranscript");
+                List<Utterance> UtteraceList = await ApiClient.Client.GetFromJsonAsync<List<Utterance>>("http://localhost:5085/api/transcribe/gettranscript");
+                List<string> transcriptList = UtteraceList?.Select(u => u.Text).ToList();
 
                 // 2. Safely convert to one single string
                 string fullTranscript = string.Empty;
@@ -84,11 +86,29 @@ namespace Mentornote.Desktop
 
                 StatementText.Text = string.Join(" ", cleanedTranscript.Split(' ').TakeLast(15));
 
-                // 2️ Serialize to JSON
-                var json = JsonSerializer.Serialize(cleanedTranscript);
+                string userQuestion = transcriptList.LastOrDefault();
+                string cleanedQuestion = CleanTranscript(userQuestion);
+                var recentUtterances = transcriptList
+                                        .TakeLast(15)
+                                        .Select(CleanTranscript)
+                                        .ToList();
+
+                var memorySummaries =  await ApiClient.Client.GetFromJsonAsync<List<string>>("http://localhost:5085/api/transcribe/memory");
+
+                //Build SuggestionRequest
+                var requestPayload = new SuggestionRequest
+                {
+                    UserQuestion = userQuestion,
+                    RecentUtterances = recentUtterances,
+                    MemorySummaries = memorySummaries
+                };
+
+                //  Serialize to JSON
+                var json = JsonSerializer.Serialize(requestPayload);
                 using var content = new StringContent(json, Encoding.UTF8, "application/json");
 
-                // 3️ POST and get streaming response
+
+                // POST and get streaming response
                 var response = await ApiClient.Client.PostAsync($"http://localhost:5085/api/gemini/suggest/{appId}", content);
                 response.EnsureSuccessStatusCode();
 

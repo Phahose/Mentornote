@@ -1,4 +1,6 @@
 ﻿#nullable disable
+using Mentornote.Backend.Models;
+using Mentornote.Backend.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Diagnostics;
@@ -12,12 +14,14 @@ namespace Mentornote.Backend.Controllers
         private readonly ConversationMemory _memory = new();
         private readonly Transcribe _transcribe;
         private readonly AudioListener _audioListener;
+        private readonly GeminiServices _geminiServices;
 
-        public TranscribeController(ConversationMemory memory, Transcribe transcribe, AudioListener audioListener)
+        public TranscribeController(ConversationMemory memory, Transcribe transcribe, AudioListener audioListener, GeminiServices geminiServices)
         {
             _memory = memory;
             _transcribe = transcribe;
             _audioListener = audioListener;
+            _geminiServices = geminiServices;
         }
 
         [HttpGet("context")]
@@ -38,13 +42,15 @@ namespace Mentornote.Backend.Controllers
 
         [HttpGet("gettranscript")]
         [Authorize]
-        public List<string> GetTranscriptHistory()
+        public List<Utterance> GetTranscriptHistory()
         {
-            foreach (var transcript in _audioListener.GetTranscriptHistory())
+            var transcripts = _audioListener.GetTranscriptHistory();
+            transcripts = transcripts.Where(u => u != null).ToList();
+            foreach (var transcript in transcripts)
             {
-                Console.WriteLine(transcript);
+                Console.WriteLine(transcript.Text);
             }
-            return _audioListener.GetTranscriptHistory();
+            return transcripts;
         }
 
         [HttpPost("start/{appointmentId}")]
@@ -64,6 +70,13 @@ namespace Mentornote.Backend.Controllers
             return Ok("Listening stopped");
         }
 
+        
+        [HttpGet("memory")]
+        public ActionResult<List<string>> GetMemory()
+        {
+            var summaries = _geminiServices.GetSummaries() ?? new List<string>();
+            return Ok(summaries);
+        }
     }
 }
 

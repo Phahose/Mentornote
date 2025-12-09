@@ -3,6 +3,7 @@ using Azure.Core;
 using DocumentFormat.OpenXml.Office2010.ExcelAc;
 using Mentornote.Backend;
 using Mentornote.Backend.Models;
+using Mentornote.Backend.Services;
 using Microsoft.AspNetCore.Mvc;
 using NAudio.Wave;
 using System;
@@ -33,17 +34,20 @@ namespace Mentornote.Backend
         public event EventHandler<string> AudioFileReady;     // full file ready
         public event EventHandler<byte[]> AudioChunkReady;    // chunk ready for real-time processing
         private readonly Transcribe _transcribe;
+        private readonly GeminiServices _geminiServices;
         public event EventHandler<string> TranscriptReady;
-        private readonly List<string> _transcriptHistory = new();
-
+        private readonly List<Utterance> _transcriptHistory = new();
         public string FullMeetingTranscript;
-
+        public Timer _summaryTimer;
         public int _appointmentId;
-        public AudioListener(Transcribe transcribe)
+
+        public AudioListener(Transcribe transcribe, GeminiServices geminiServices)
         {
             _transcribe = transcribe;
+            _geminiServices = geminiServices;
         }
 
+      
         public void StartListening(int appointmentId)
         {
             _tempFile = Path.Combine(Path.GetTempPath(), $"meeting_{Guid.NewGuid()}.wav");
@@ -54,8 +58,7 @@ namespace Mentornote.Backend
 
             _appointmentId = appointmentId;
             _capture.DataAvailable += Capture_DataAvailable;
-
-            //_capture.RecordingStopped += Capture_RecordingStopped;
+            _summaryTimer = new Timer(async _ => await _geminiServices.GenerateRollingSummary(GetTranscriptHistory()), null, 15000, 15000);
 
 
             _capture.StartRecording();
@@ -116,18 +119,20 @@ namespace Mentornote.Backend
                     // After creating wavChunk 
                     if (!IsSilent(chunk, _capture.WaveFormat))
                     {
-                        // await Task.Run(() => AudioChunkReady?.Invoke(this, wavChunk));
 
-                        List<string> transcriptList =  await _transcribe.DeepGramLiveTranscribe(wavChunk, _appointmentId);
+                        List<Utterance> transcriptList =  await _transcribe.DeepGramLiveTranscribe(wavChunk, _appointmentId);
 
-                        string transcript = transcriptList.LastOrDefault() ?? "[No speech detected]";
+                       foreach (var utterance in transcriptList)
+                       {
+                            if (string.IsNullOrWhiteSpace(utterance.Text))
+                            {
+                               utterance.Text = "[No speech detected]";
+                            }
+                       }
 
-                        if (!string.IsNullOrWhiteSpace(transcript))
-                        {
-                            _transcriptHistory.Add(transcript);
-                            TranscriptReady?.Invoke(this, transcript);
-                        }
-
+                        Utterance transcript = transcriptList.LastOrDefault();
+                        _transcriptHistory.Add(transcript);
+                        TranscriptReady?.Invoke(this, transcript.ToString());
                     }
                 }
             }
@@ -140,9 +145,10 @@ namespace Mentornote.Backend
             
         }
 
-        public List<string> GetTranscriptHistory()
+
+        public List<Utterance> GetTranscriptHistory()
         {
-            return _transcriptHistory.ToList(); // return a copy for safety
+            return _transcriptHistory; 
         }
 
         private bool IsSilent(byte[] buffer, WaveFormat format, double threshold = 0.01)
@@ -164,10 +170,12 @@ namespace Mentornote.Backend
             return rms < threshold;
         }
 
+      
         public void Dispose()
         {
             _writer?.Dispose();
             _capture?.Dispose();
         }
     }
+
 }
