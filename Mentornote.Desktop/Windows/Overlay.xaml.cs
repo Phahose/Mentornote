@@ -22,6 +22,7 @@ namespace Mentornote.Desktop
     {
         private AudioListener _listener;
         private bool _isListening = false;
+        private bool _isPaused = false;
 
         private int appId;
         private bool _dragFromSuggestionPanel = false;
@@ -45,21 +46,32 @@ namespace Mentornote.Desktop
 
         private void Mic_Click(object sender, RoutedEventArgs e)
         {
-            if (!_isListening)
+            if (_isListening == false)
             {
-
-                ApiClient.Client.PostAsync( $"http://localhost:5085/api/transcribe/start/{appId}", null);
-
+                ApiClient.Client.PostAsync($"http://localhost:5085/api/transcribe/start/{appId}", null);
+                RecordingCheck.Text = "Listening In Ready To Help!!";
                 _isListening = true;
-                Console.WriteLine("Started capturing system audio...");
                 ListeningSection.Visibility = Visibility.Visible;
+                SuggestionSection.Visibility = Visibility.Visible;
             }
-            else 
+            else if (_isListening == true)
             {
-                ApiClient.Client.PostAsync($"http://localhost:5085/api/transcribe/stop/{appId}", null);
-                _isListening = false;
-                Console.WriteLine("Stopped capturing system audio.");
-                RecordingCheck.Text = "Not Recording";
+                if (_isPaused == false)
+                {
+                    _isPaused = true;
+                    ApiClient.Client.PostAsync($"http://localhost:5085/api/transcribe/pause", null);
+                    RecordingCheck.Text = "Listening Paused";
+                    SuggestionSection.Visibility = Visibility.Collapsed;
+                }
+                else
+                {
+                    _isPaused = false;
+                    ApiClient.Client.PostAsync($"http://localhost:5085/api/transcribe/resume", null);
+                    RecordingCheck.Text = "Listening In Ready To Help!!";
+                    SuggestionSection.Visibility = Visibility.Visible;
+
+                }
+
             }
         }
 

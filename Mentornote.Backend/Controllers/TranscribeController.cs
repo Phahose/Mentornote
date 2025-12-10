@@ -70,6 +70,25 @@ namespace Mentornote.Backend.Controllers
             return Ok("Listening stopped");
         }
 
+        [HttpPost("pause")]
+        [Authorize]
+        public async Task<IActionResult> Pause()
+        {
+            _audioListener.PauseListening();
+
+            return Ok("Listening paused");
+        }
+
+        
+        [HttpPost("resume")]
+        [Authorize]
+        public IActionResult Resune()
+        {
+            _audioListener.ResumeListening();
+
+            return Ok("Listening Resumed");
+        }
+
         
         [HttpGet("memory")]
         public ActionResult<List<string>> GetMemory()

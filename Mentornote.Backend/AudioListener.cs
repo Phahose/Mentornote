@@ -40,7 +40,7 @@ namespace Mentornote.Backend
         public string FullMeetingTranscript;
         public Timer _summaryTimer;
         public int _appointmentId;
-
+        public bool _isPaused = false;
         public AudioListener(Transcribe transcribe, GeminiServices geminiServices)
         {
             _transcribe = transcribe;
@@ -78,6 +78,18 @@ namespace Mentornote.Backend
                Console.WriteLine("No active capture to stop.");
             }
           
+        }
+
+        public void PauseListening()
+        {
+            _isPaused = true;
+            Console.WriteLine("🎧 Listening paused");
+        }
+
+        public void ResumeListening()
+        {
+            _isPaused = false;
+            Console.WriteLine("🎧 Listening resumed");
         }
 
         private async void  Capture_DataAvailable(object sender, WaveInEventArgs e)
@@ -119,20 +131,22 @@ namespace Mentornote.Backend
                     // After creating wavChunk 
                     if (!IsSilent(chunk, _capture.WaveFormat))
                     {
+                        if (_isPaused == false)
+                        {
+                            List<Utterance> transcriptList = await _transcribe.DeepGramLiveTranscribe(wavChunk, _appointmentId);
 
-                        List<Utterance> transcriptList =  await _transcribe.DeepGramLiveTranscribe(wavChunk, _appointmentId);
-
-                       foreach (var utterance in transcriptList)
-                       {
-                            if (string.IsNullOrWhiteSpace(utterance.Text))
+                            foreach (var utterance in transcriptList)
                             {
-                               utterance.Text = "[No speech detected]";
+                                if (string.IsNullOrWhiteSpace(utterance.Text))
+                                {
+                                    utterance.Text = "[No speech detected]";
+                                }
                             }
-                       }
 
-                        Utterance transcript = transcriptList.LastOrDefault();
-                        _transcriptHistory.Add(transcript);
-                        TranscriptReady?.Invoke(this, transcript.ToString());
+                            Utterance transcript = transcriptList.LastOrDefault();
+                            _transcriptHistory.Add(transcript);
+                            TranscriptReady?.Invoke(this, transcript.ToString());
+                        }
                     }
                 }
             }
