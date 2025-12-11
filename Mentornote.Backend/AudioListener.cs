@@ -1,17 +1,8 @@
 ﻿#nullable disable
-using Azure.Core;
-using DocumentFormat.OpenXml.Office2010.ExcelAc;
-using Mentornote.Backend;
 using Mentornote.Backend.Models;
 using Mentornote.Backend.Services;
-using Microsoft.AspNetCore.Mvc;
+using NAudio.CoreAudioApi;
 using NAudio.Wave;
-using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.IO;
-using System.Threading.Tasks;
-using static System.Net.WebRequestMethods;
 
 namespace Mentornote.Backend
 {
@@ -23,15 +14,16 @@ namespace Mentornote.Backend
     public class AudioListener : IDisposable
     {
         private WasapiLoopbackCapture _capture;
+        private string _currentDeviceId;
         private WaveFileWriter _writer;
         private string _tempFile;
+        private Timer _deviceMonitor;
 
         private readonly List<byte> _buffer = new();          
         private readonly int _chunkSeconds = 1;              
 
         // This is an event it is not a regular declaration
         // It says "when the audio file is ready and when we have a new chunck of audi ready for processig, notify anyone who is listening"
-        public event EventHandler<string> AudioFileReady;     // full file ready
         public event EventHandler<byte[]> AudioChunkReady;    // chunk ready for real-time processing
         private readonly Transcribe _transcribe;
         private readonly GeminiServices _geminiServices;
@@ -50,27 +42,30 @@ namespace Mentornote.Backend
       
         public void StartListening(int appointmentId)
         {
-            _tempFile = Path.Combine(Path.GetTempPath(), $"meeting_{Guid.NewGuid()}.wav");
-
-
-            _capture = new WasapiLoopbackCapture(); //start  capture system audio
-            _writer = new WaveFileWriter(_tempFile, _capture.WaveFormat);
-
             _appointmentId = appointmentId;
+            var device = GetDefaultOutputDevice();
+            _currentDeviceId = device.ID;
+
+            // _tempFile = Path.Combine(Path.GetTempPath(), $"meeting_{Guid.NewGuid()}.wav");
+            // _writer = new WaveFileWriter(_tempFile, _capture.WaveFormat);
+
+            // start  capture system audio   
+            _capture = new WasapiLoopbackCapture(device);            
             _capture.DataAvailable += Capture_DataAvailable;
+
             _summaryTimer = new Timer(async _ => await _geminiServices.GenerateRollingSummary(GetTranscriptHistory()), null, 15000, 15000);
-
-
             _capture.StartRecording();
+            StartMonitoringDeviceChanges();
+
             Console.WriteLine("Listening started...");
         }
 
         public void StopListening(int appointnmentid)
         {
-
             if (_capture!=null)
             {
                 _capture.StopRecording();
+                _summaryTimer?.Dispose();
                 Console.WriteLine("Listening stopped. File saved.");
             }
             else
@@ -92,13 +87,50 @@ namespace Mentornote.Backend
             Console.WriteLine("🎧 Listening resumed");
         }
 
+        private MMDevice GetDefaultOutputDevice()
+        {
+            return new MMDeviceEnumerator().GetDefaultAudioEndpoint(
+                DataFlow.Render,
+                Role.Multimedia
+            );
+        }
+
+        private void StartMonitoringDeviceChanges()
+        {
+            _deviceMonitor = new Timer(_ =>
+            {
+                var device = GetDefaultOutputDevice();
+
+                if (device.ID != _currentDeviceId)
+                {
+                    RestartCapture(device);
+                }
+
+            }, null, 0, 1000); // check every 1 second
+        }
+
+        private void RestartCapture(MMDevice newDevice)
+        {
+            Console.WriteLine("🔄 Audio output changed. Restarting capture...");
+
+            _capture?.StopRecording();
+            _capture?.Dispose();
+
+            _currentDeviceId = newDevice.ID;
+
+            _capture = new WasapiLoopbackCapture(newDevice);
+            _capture.DataAvailable += Capture_DataAvailable;
+            _capture.StartRecording();
+        }
+
+
         private async void  Capture_DataAvailable(object sender, WaveInEventArgs e)
         {
 
             try
             {
                 // 1️  keep writing to the full meeting file
-                _writer.Write(e.Buffer, 0, e.BytesRecorded);
+                //_writer.Write(e.Buffer, 0, e.BytesRecorded);
 
                 // 2️  collect data in memory for small chunks
                 lock (_buffer)

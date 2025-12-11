@@ -1,16 +1,8 @@
 ﻿#nullable disable
-using DocumentFormat.OpenXml.Vml;
 using Mentornote.Backend.DTO;
 using Mentornote.Backend.Models;
-using Mentornote.Backend.Services;
-using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Mvc;
-using System.Diagnostics;
-using System.IO;
-using System.Net.Http;
 using System.Text;
 using System.Text.Json;
-using static System.Net.WebRequestMethods;
 namespace Mentornote.Backend.Services
 {
     public class GeminiServices
@@ -20,12 +12,14 @@ namespace Mentornote.Backend.Services
         private readonly RagService _ragService;
         private DateTime _lastSummaryTime = DateTime.MinValue;
         private readonly List<string> _summaries = new();
+
         public GeminiServices(IConfiguration configuration, RagService ragService)
         {
             _httpClient = new HttpClient();
             _apiKey = configuration["Gemini:ApiKey"];
             _ragService = ragService;
         }
+
         public async Task<string> GenerateSuggestionAsync(int appointmentId, SuggestionRequest request)
         {
             // 1️⃣ Get relevant document chunks using the question
@@ -84,6 +78,13 @@ namespace Mentornote.Backend.Services
             string memory = string.Join("\n- ", request.MemorySummaries ?? new List<string>());
             string recency = string.Join("\n", request.RecentUtterances ?? new List<string>());
             string question = request.UserQuestion ?? "";
+
+            Console.WriteLine("-----------------------------------------------------------");
+            Console.WriteLine($"This was the Queestion: {question}");
+            Console.WriteLine($"This are the Recent Utterances: {recency}");
+            Console.WriteLine($"This is the memory that the Model Has: {memory}");
+            Console.WriteLine("-----------------------------------------------------------");
+
 
             return $"""
                         You are acting as the candidate in a live job interview.
@@ -290,11 +291,6 @@ namespace Mentornote.Backend.Services
 
                 _summaries.Add(summary);
                 _lastSummaryTime = DateTime.UtcNow;
-
-                foreach (var sumnarytt in _summaries)
-                {
-                    Console.WriteLine(sumnarytt);
-                }   
                 return _summaries;
             }
             catch (Exception ex)

@@ -34,7 +34,6 @@ namespace Mentornote.Backend.Controllers
             if (latestMeetingId != null)
             {
                 var transcript = _memory.GetTranscript(latestMeetingId);
-                Console.WriteLine($"Transcript for {latestMeetingId}: {transcript}");
                 return transcript;
             }
             return "";
@@ -46,10 +45,7 @@ namespace Mentornote.Backend.Controllers
         {
             var transcripts = _audioListener.GetTranscriptHistory();
             transcripts = transcripts.Where(u => u != null).ToList();
-            foreach (var transcript in transcripts)
-            {
-                Console.WriteLine(transcript.Text);
-            }
+           
             return transcripts;
         }
 

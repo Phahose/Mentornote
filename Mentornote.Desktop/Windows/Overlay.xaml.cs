@@ -20,7 +20,6 @@ namespace Mentornote.Desktop
 {
     public partial class Overlay : Window
     {
-        private AudioListener _listener;
         private bool _isListening = false;
         private bool _isPaused = false;
 
@@ -101,6 +100,7 @@ namespace Mentornote.Desktop
                 string userQuestion = transcriptList.LastOrDefault();
                 string cleanedQuestion = CleanTranscript(userQuestion);
                 var recentUtterances = transcriptList
+                                        .Distinct()
                                         .TakeLast(15)
                                         .Select(CleanTranscript)
                                         .ToList();
@@ -161,8 +161,19 @@ namespace Mentornote.Desktop
 
 
             //Get transcript
-            List<string> transcriptList = await ApiClient.Client.GetFromJsonAsync<List<string>>("http://localhost:5085/api/transcribe/gettranscript");
-            string fullTranscript = string.Join(" ", transcriptList);
+            List<Utterance> transcriptList = await ApiClient.Client.GetFromJsonAsync<List<Utterance>>("http://localhost:5085/api/transcribe/gettranscript");
+            string fullTranscript = string.Empty;
+
+            // Handle null or empty
+            if (transcriptList == null || transcriptList.Count == 0)
+            {
+                fullTranscript = "";
+            }
+            else
+            {
+                // Join ONLY the text field from each utterance
+                fullTranscript = string.Join(" ", transcriptList .Where(u => u != null && !string.IsNullOrWhiteSpace(u.Text)).Select(u => u.Text));
+            }
 
             if (string.IsNullOrWhiteSpace(fullTranscript))
             {

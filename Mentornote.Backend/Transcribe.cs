@@ -14,6 +14,8 @@ namespace Mentornote.Backend
         private readonly object _lock = new(); // for thread safety
         private readonly List<string> _liveTranscripts = new();
         private readonly List<Utterance> _liveUtterances = new();
+        private string _lastTranscript = "";
+
         public Transcribe(IConfiguration config)
         {
             _deepgramApiKey = config["Deepgram:ApiKey"];
@@ -56,14 +58,24 @@ namespace Mentornote.Backend
             {
                 lock (_lock)
                 {
-                    _liveTranscripts.Add(transcript);
-                    _liveUtterances.Add(new Utterance
+                    if (transcript != _lastTranscript)
                     {
-                        Text = transcript,
-                        AppointmentId = appointmentId ,
-                        TimeStamp = DateTime.UtcNow
-                    });
+                        _lastTranscript = transcript;
 
+                        _liveTranscripts.Add(transcript);
+                        _liveUtterances.Add(new Utterance
+                        {
+                            Text = transcript,
+                            AppointmentId = appointmentId,
+                            TimeStamp = DateTime.UtcNow
+                        });
+
+                        Console.WriteLine("NEW: " + transcript);
+                    }
+                    else
+                    {
+                        Console.WriteLine("DUPLICATE SKIPPED: " + transcript);
+                    }
                 }
             }
             return _liveUtterances;
