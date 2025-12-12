@@ -59,7 +59,7 @@ namespace Mentornote.Backend.Controllers
 
         [HttpPost("stop/{appointmentId}")]
         [Authorize]
-        public async Task<IActionResult> Stop(int appointmentId)
+        public IActionResult Stop(int appointmentId)
         {
             _audioListener.StopListening(appointmentId);
 
@@ -68,7 +68,7 @@ namespace Mentornote.Backend.Controllers
 
         [HttpPost("pause")]
         [Authorize]
-        public async Task<IActionResult> Pause()
+        public IActionResult Pause()
         {
             _audioListener.PauseListening();
 

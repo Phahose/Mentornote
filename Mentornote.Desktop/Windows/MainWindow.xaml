@@ -58,7 +58,8 @@
                         Background="#FF2F2F2F"
                         Foreground="#FFDDDDDD"
                         BorderBrush="#FF444444"
-                        Margin="0,0,0,8"/>
+                        Margin="0,0,0,8"
+                        Click="SettingsButton_Click"/>
 
                 <Button Content="Profile"
                         Height="36"
