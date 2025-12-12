@@ -87,6 +87,7 @@ namespace Mentornote.Backend.Controllers
 
         
         [HttpGet("memory")]
+        [Authorize]
         public ActionResult<List<string>> GetMemory()
         {
             var summaries = _geminiServices.GetSummaries() ?? new List<string>();

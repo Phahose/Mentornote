@@ -46,9 +46,6 @@ namespace Mentornote.Backend
             var device = GetDefaultOutputDevice();
             _currentDeviceId = device.ID;
 
-            // _tempFile = Path.Combine(Path.GetTempPath(), $"meeting_{Guid.NewGuid()}.wav");
-            // _writer = new WaveFileWriter(_tempFile, _capture.WaveFormat);
-
             // start  capture system audio   
             _capture = new WasapiLoopbackCapture(device);            
             _capture.DataAvailable += Capture_DataAvailable;
@@ -95,6 +92,7 @@ namespace Mentornote.Backend
             );
         }
 
+        // Detect audio output device changes
         private void StartMonitoringDeviceChanges()
         {
             _deviceMonitor = new Timer(_ =>
@@ -109,6 +107,8 @@ namespace Mentornote.Backend
             }, null, 0, 1000); // check every 1 second
         }
 
+
+        // Restart capture with new device
         private void RestartCapture(MMDevice newDevice)
         {
             Console.WriteLine("🔄 Audio output changed. Restarting capture...");
@@ -160,7 +160,7 @@ namespace Mentornote.Backend
                         wavChunk = ms.ToArray(); // these bytes are now a proper .wav
                     }
 
-                    // After creating wavChunk 
+                    // Check for silence before processing
                     if (!IsSilent(chunk, _capture.WaveFormat))
                     {
                         if (_isPaused == false)
@@ -187,8 +187,6 @@ namespace Mentornote.Backend
 
                 throw;
             }
-       
-            
         }
 
 

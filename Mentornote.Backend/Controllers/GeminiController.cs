@@ -58,6 +58,7 @@ namespace Mentornote.Backend.Controllers
 
 
         [HttpPost("upload")]
+        [Authorize]
         public async Task<IActionResult> UploadMeetingFile(IFormFile file)
         {
             if (file == null || file.Length == 0)
@@ -85,6 +86,7 @@ namespace Mentornote.Backend.Controllers
         }
 
         [HttpPost("summary/{appointmentId}")]
+        [Authorize]
         public async Task<IActionResult> Summary(int appointmentId, [FromBody] SummaryRequest model)
         {
             var summary = await _geminiServices.GenerateMeetingSummary(appointmentId, model.Transcript);

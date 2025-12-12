@@ -1,9 +1,6 @@
 ﻿#nullable disable
-using DocumentFormat.OpenXml.Office2010.Excel;
-using Mentornote.Backend;
 using Mentornote.Backend.DTO;
 using Mentornote.Backend.Models;
-using Mentornote.Backend.Services;
 using Mentornote.Desktop.Services;
 using Mentornote.Desktop.Windows;
 using Newtonsoft.Json;
@@ -66,11 +63,9 @@ namespace Mentornote.Desktop
                 {
                     _isPaused = false;
                     ApiClient.Client.PostAsync($"http://localhost:5085/api/transcribe/resume", null);
-                    RecordingCheck.Text = "Listening In Ready To Help!!";
+                    RecordingCheck.Text = "Listening";
                     SuggestionSection.Visibility = Visibility.Visible;
-
                 }
-
             }
         }
 
