@@ -34,7 +34,7 @@
                        >
                 <TextBlock x:Name="RecordingCheck"
                            Text="🎧  Listening..."
-                           Foreground="Purple"
+                           Foreground="White"
                            FontWeight="Bold"
                            FontSize="16"/>
                 <ProgressBar IsIndeterminate="True"
@@ -64,14 +64,16 @@
                 </Grid.RowDefinitions>
 
                 <!-- === Scrollable Text Area === -->
-                <ScrollViewer Grid.Row="0"
-                      VerticalScrollBarVisibility="Auto"
-                      HorizontalScrollBarVisibility="Disabled"
-                      MaxHeight="380"
-                      PreviewMouseLeftButtonDown="Suggestion_PreviewMouseLeftButtonDown"
-                      MouseMove="Suggestion_MouseMove"
-                      CanContentScroll="False">
-
+                <ScrollViewer
+                      x:Name="SuggestionScrollViewer"
+                        Grid.Row="0"
+                        VerticalScrollBarVisibility="Auto"
+                        HorizontalScrollBarVisibility="Disabled"
+                        MaxHeight="380"
+                        PanningMode="VerticalOnly"
+                        IsManipulationEnabled="True"
+                        ScrollViewer.PanningDeceleration="0.001"
+                        ScrollViewer.PanningRatio="1.0">
                     <StackPanel>
                         <TextBlock x:Name="RecordedText"
                            Text=""
@@ -81,13 +83,13 @@
                            Margin="0,0,0,4"/>
 
                         <TextBlock Text="Here to Help!"
-                           Foreground="MediumPurple"
+                           Foreground="White"
                            FontSize="18"
                            TextWrapping="Wrap"/>
 
                         <TextBlock x:Name="StatementText"
                            Text=""
-                           Foreground="Yellow"
+                           Foreground="Cyan"
                            FontSize="18"
                            Margin="0,10,0,4"
                            HorizontalAlignment="Left"

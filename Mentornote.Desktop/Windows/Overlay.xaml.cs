@@ -45,7 +45,7 @@ namespace Mentornote.Desktop
             if (_isListening == false)
             {
                 ApiClient.Client.PostAsync($"http://localhost:5085/api/transcribe/start/{appId}", null);
-                RecordingCheck.Text = "Listening In Ready To Help!!";
+                RecordingCheck.Text = "Listening";
                 _isListening = true;
                 ListeningSection.Visibility = Visibility.Visible;
                 SuggestionSection.Visibility = Visibility.Visible;
