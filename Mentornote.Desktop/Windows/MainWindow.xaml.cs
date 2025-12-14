@@ -25,7 +25,6 @@ namespace Mentornote.Desktop
         private void ProfileButton_Click(object sender, RoutedEventArgs e)
         {
             MainFrame.Navigate(new ProfilePage());
-            HeaderTitle.Text = "Profile";
         }
         private void SettingsButton_Click(object sender, RoutedEventArgs e)
         {
