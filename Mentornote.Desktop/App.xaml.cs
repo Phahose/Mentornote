@@ -13,7 +13,6 @@ namespace Mentornote.Desktop
     /// </summary>
     public partial class App : System.Windows.Application
     {
-
         public App()
         {
          
@@ -28,10 +27,7 @@ namespace Mentornote.Desktop
                 TokenResponse token = AuthManager.LoadTokens();
 
                 ApiClient.SetToken(token.AccessToken, token.RefreshToken);
-                UserSession.SetUser(token.AccessToken);
-                      
-
-
+                UserSession.SetUser(token.AccessToken);                  
                 new MainWindow().Show();
             }
             else
@@ -40,5 +36,4 @@ namespace Mentornote.Desktop
             }
         }
     }
-
 }

@@ -833,5 +833,68 @@ namespace Mentornote.Backend.Services
             }
         }
 
+        public async Task<AppSettings> GetAsync(int userId)
+        {
+            using var conn = new SqlConnection(connectionString);
+            using var cmd = new SqlCommand("GetUserSettings", conn)
+            {
+                CommandType = CommandType.StoredProcedure
+            };
+
+            cmd.Parameters.AddWithValue("@UserId", userId);
+
+            await conn.OpenAsync();
+
+            using var reader = await cmd.ExecuteReaderAsync();
+
+            if (!reader.Read())
+            {
+                // No row → return defaults
+                return GetDefaultSettings();
+            }
+
+            return new AppSettings
+            {
+                ResponseFormat = (ResponseFormat)reader.GetInt32(reader.GetOrdinal("ResponseFormat")),
+                ResponseTone = (ResponseTone)reader.GetInt32(reader.GetOrdinal("ResponseTone")),
+                ResumeUsage = (ResumeUsage)reader.GetInt32(reader.GetOrdinal("ResumeUsage")),
+                Theme = (Theme)reader.GetInt32(reader.GetOrdinal("Theme")),
+                RecentUtteranceCount = reader.GetInt32(reader.GetOrdinal("RecentUtteranceCount")),
+                Creativity = reader.GetDouble(reader.GetOrdinal("Creativity"))
+            };
+        }
+
+        public async Task SaveAsync(int userId, AppSettings settings)
+        {
+            using var conn = new SqlConnection(connectionString);
+            using var cmd = new SqlCommand("SaveUserSettings", conn)
+            {
+                CommandType = CommandType.StoredProcedure
+            };
+
+            cmd.Parameters.AddWithValue("@UserId", userId);
+            cmd.Parameters.AddWithValue("@ResponseFormat", settings.ResponseFormat);
+            cmd.Parameters.AddWithValue("@ResponseTone", settings.ResponseTone);
+            cmd.Parameters.AddWithValue("@ResumeUsage", settings.ResumeUsage);
+            cmd.Parameters.AddWithValue("@Theme", settings.Theme);
+            cmd.Parameters.AddWithValue("@RecentUtteranceCount", settings.RecentUtteranceCount);
+            cmd.Parameters.AddWithValue("@Creativity", settings.Creativity);
+
+            await conn.OpenAsync();
+            await cmd.ExecuteNonQueryAsync();
+        }
+
+        private static AppSettings GetDefaultSettings()
+        {
+            return new AppSettings
+            {
+                ResponseFormat = (ResponseFormat)1,        // Guided
+                ResponseTone = 0,          // Professional
+                ResumeUsage = 0,           // Relevant only
+                Theme = 0,                 // Dark
+                RecentUtteranceCount = 15,
+                Creativity = 0.6
+            };
+        }
     }
 }  

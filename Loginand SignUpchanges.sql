@@ -1270,6 +1270,95 @@ BEGIN
 END
 
 
+CREATE TABLE UserSettings
+(
+    UserId INT NOT NULL PRIMARY KEY,
+
+    -- AI behavior
+    RecentUtteranceCount INT NOT NULL,
+    ResponseFormat INT NOT NULL,
+    ResponseTone INT NOT NULL,
+    ResumeUsage INT NOT NULL,
+    Creativity FLOAT NOT NULL,
+
+    -- App behavior
+    Theme INT NOT NULL,
+
+    CreatedAt DATETIME2 NOT NULL DEFAULT SYSUTCDATETIME(),
+    UpdatedAt DATETIME2 NOT NULL DEFAULT SYSUTCDATETIME()
+);
+
+
+CREATE PROCEDURE SaveUserSettings
+    @UserId INT,
+    @ResponseFormat INT,
+    @ResponseTone INT,
+    @ResumeUsage INT,
+    @Theme INT,
+    @RecentUtteranceCount INT,
+    @Creativity FLOAT
+AS
+BEGIN
+    SET NOCOUNT ON;
+
+    IF EXISTS (SELECT 1 FROM UserSettings WHERE UserId = @UserId)
+    BEGIN
+        UPDATE UserSettings
+        SET
+            ResponseFormat = @ResponseFormat,
+            ResponseTone = @ResponseTone,
+            ResumeUsage = @ResumeUsage,
+            Theme = @Theme,
+            RecentUtteranceCount = @RecentUtteranceCount,
+            Creativity = @Creativity,
+            UpdatedAt = SYSUTCDATETIME()
+        WHERE UserId = @UserId;
+    END
+    ELSE
+    BEGIN
+        INSERT INTO UserSettings
+        (
+            UserId,
+            ResponseFormat,
+            ResponseTone,
+            ResumeUsage,
+            Theme,
+            RecentUtteranceCount,
+            Creativity
+        )
+        VALUES
+        (
+            @UserId,
+            @ResponseFormat,
+            @ResponseTone,
+            @ResumeUsage,
+            @Theme,
+            @RecentUtteranceCount,
+            @Creativity
+        );
+    END
+END;
+
+
+CREATE PROCEDURE GetUserSettings
+    @UserId INT
+AS
+BEGIN
+    SET NOCOUNT ON;
+
+    SELECT
+        UserId,
+        ResponseFormat,
+        ResponseTone,
+        ResumeUsage,
+        Theme,
+        RecentUtteranceCount,
+        Creativity,
+        CreatedAt,
+        UpdatedAt
+    FROM UserSettings
+    WHERE UserId = @UserId;
+END;
 
 
 

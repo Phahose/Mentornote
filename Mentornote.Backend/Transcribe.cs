@@ -33,7 +33,7 @@ namespace Mentornote.Backend
         {
             var content = new ByteArrayContent(audioBytes);
 
-            if (audioBytes.Length == 0)
+            if (audioBytes.Length == 0 || audioBytes == null)
             {
                 return _liveUtterances;
             }

@@ -1,6 +1,7 @@
 ﻿<Window x:Class="Mentornote.Desktop.Overlay"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:md="clr-namespace:Markdig.Wpf;assembly=Markdig.Wpf"
         Title="MentorNote Overlay"
         WindowStyle="None"
         AllowsTransparency="True"
@@ -68,7 +69,8 @@
                       HorizontalScrollBarVisibility="Disabled"
                       MaxHeight="380"
                       PreviewMouseLeftButtonDown="Suggestion_PreviewMouseLeftButtonDown"
-                      MouseMove="Suggestion_MouseMove">
+                      MouseMove="Suggestion_MouseMove"
+                      CanContentScroll="False">
 
                     <StackPanel>
                         <TextBlock x:Name="RecordedText"
@@ -91,13 +93,16 @@
                            HorizontalAlignment="Left"
                            TextWrapping="Wrap"/>
 
-                        <TextBlock x:Name="SuggestionText"
-                           Text=""
-                           Foreground="white"
-                           FontSize="18"
-                           Margin="0,10,0,4"
-                           HorizontalAlignment="Right"
-                           TextWrapping="Wrap"/>
+                        <md:MarkdownViewer x:Name="SuggestionMarkdown"
+                                           Margin="0,10,0,4"
+                                           FontSize="18"
+                                           Foreground="White"
+                                           Background="Transparent"
+                                           HorizontalAlignment="Stretch"
+                                           VerticalAlignment="Top"
+                                           />
+
+                       
                     </StackPanel>
 
                 </ScrollViewer>

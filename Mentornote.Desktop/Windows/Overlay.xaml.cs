@@ -78,6 +78,7 @@ namespace Mentornote.Desktop
 
                 // 1️ Get transcript
                 List<Utterance> UtteraceList = await ApiClient.Client.GetFromJsonAsync<List<Utterance>>("http://localhost:5085/api/transcribe/gettranscript");
+                AppSettings settings = await ApiClient.Client.GetFromJsonAsync<AppSettings>("http://localhost:5085/api/settings/getAppSettings");
                 List<string> transcriptList = UtteraceList?.Select(u => u.Text).ToList();
 
                 // 2. Safely convert to one single string
@@ -96,7 +97,7 @@ namespace Mentornote.Desktop
                 string cleanedQuestion = CleanTranscript(userQuestion);
                 var recentUtterances = transcriptList
                                         .Distinct()
-                                        .TakeLast(15)
+                                        .TakeLast(settings.RecentUtteranceCount)
                                         .Select(CleanTranscript)
                                         .ToList();
 
@@ -107,7 +108,8 @@ namespace Mentornote.Desktop
                 {
                     UserQuestion = userQuestion,
                     RecentUtterances = recentUtterances,
-                    MemorySummaries = memorySummaries
+                    MemorySummaries = memorySummaries,
+                    AppSettings = settings
                 };
 
                 //  Serialize to JSON
@@ -120,11 +122,11 @@ namespace Mentornote.Desktop
                 response.EnsureSuccessStatusCode();
 
                 var suggestion = await response.Content.ReadAsStringAsync();
-                SuggestionText.Text = suggestion;
+                SuggestionMarkdown.Markdown = suggestion;
             }
             catch (Exception ex)
             {
-                SuggestionText.Text = $"Error: {ex.Message}";
+                SuggestionMarkdown.Markdown = $"Error: {ex.Message}";
             }
         }
 

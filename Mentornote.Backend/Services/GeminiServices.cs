@@ -45,7 +45,7 @@ namespace Mentornote.Backend.Services
                 },
                 generationConfig = new
                 {
-                    temperature = 0.7,
+                    temperature = request.AppSettings.Creativity,
                     maxOutputTokens = 800
                 }
             };
@@ -79,46 +79,215 @@ namespace Mentornote.Backend.Services
             string recency = string.Join("\n", request.RecentUtterances ?? new List<string>());
             string question = request.UserQuestion ?? "";
 
-            Console.WriteLine("-----------------------------------------------------------");
-            Console.WriteLine($"This was the Queestion: {question}");
-            Console.WriteLine($"This are the Recent Utterances: {recency}");
-            Console.WriteLine($"This is the memory that the Model Has: {memory}");
-            Console.WriteLine("-----------------------------------------------------------");
+            string toneInstruction = GetToneInstruction(request.AppSettings.ResponseTone);
+
+            switch (request.AppSettings.ResponseFormat)
+            {
+                case ResponseFormat.BulletPoints:
+                    return $"""
+                            You are acting as a real-time interview coach.
+
+                            Your task is to generate **talking points** the candidate can expand on,
+                            NOT a full answer.
+
+                            TONE:
+                            {toneInstruction}
+
+                            ===========================
+                            RELEVANT DOCUMENT CONTEXT (PRIMARY SOURCE)
+                            {docContext}
+                            ===========================
+
+                            MEETING MEMORY (SECONDARY CONTEXT)
+                            {memory}
+                            ===========================
+
+                            RECENT TRANSCRIPT
+                            {recency}
+                            ===========================
+
+                            CURRENT QUESTION:
+                            "{question}"
+                            ===========================
+
+                            CONTEXT PRIORITY RULES (VERY IMPORTANT):
+                            1. You MUST first look for relevant information in the document context.
+                            2. If the document contains relevant experience, you MUST use it.
+                            3. Only if the document is insufficient may you generalize.
+                            4. Use placeholders like [[ADD YOUR EXAMPLE]] instead of guessing.
+
+                            OUTPUT FORMAT:
+                            - Respond using **Markdown**
+                            - Use **bullet points only**
+                            - Each bullet should represent a distinct talking point
+                            - Use **bold** to highlight key themes
+                            - Do NOT write full, scripted sentences
+                            - Do NOT use code blocks
+
+                            DEPTH GUIDANCE:
+                            - Provide 4–6 strong, high-quality talking points
+                            - Focus on *what to mention*, *why it matters*, or *how to frame it*
+
+                            RULES:
+                            - Do NOT invent employers, projects, metrics, or dates
+                            - Do NOT repeat the question
+                            """;
 
 
-            return $"""
-                        You are acting as the candidate in a live job interview.
+                case ResponseFormat.Guided:
+                    return $"""
+                            You are acting as an interview coach helping the candidate craft a strong response.
 
-                        Your task is to generate a confident, natural spoken reply to the interviewer's CURRENT question.
+                            Your task is to generate a **well-structured, expressive answer**
+                            that the candidate can personalize.
 
-                        ===========================
-                        MEETING MEMORY (Summary of past context)
-                        - {memory}
-                        ===========================
+                            TONE:
+                            {toneInstruction}
 
-                        RECENT TRANSCRIPT (last moments of conversation)
-                        {recency}
-                        ===========================
+                            ===========================
+                            RELEVANT DOCUMENT CONTEXT (PRIMARY SOURCE)
+                            {docContext}
+                            ===========================
 
-                        RELEVANT DOCUMENT CONTEXT (resume, notes, job description)
-                        {docContext}
-                        ===========================
+                            MEETING MEMORY (SECONDARY CONTEXT)
+                            {memory}
+                            ===========================
 
-                        CURRENT QUESTION TO ANSWER:
-                        "{question}"
-                        ===========================
+                            RECENT TRANSCRIPT
+                            {recency}
+                            ===========================
 
-                        INSTRUCTIONS:
-                        - Answer ONLY the current question.
-                        - Use meeting memory + recent transcript only for context.
-                        - Use the resume context when helpful, but do NOT rely exclusively on it.
-                        - You may generalize and create believable examples.
-                        - DO NOT invent employers, degrees, or dates.
-                        - Do NOT repeat the question.
-                        - Speak as if you are answering in real time.
-                    """;
+                            CURRENT QUESTION:
+                            "{question}"
+                            ===========================
+
+                            CONTEXT PRIORITY RULES (VERY IMPORTANT):
+                            1. Always attempt to ground your response in the document context first.
+                            2. Reuse language, examples, or themes from the document where relevant.
+                            3. If the document does not provide enough detail, generalize cautiously.
+                            4. Use placeholders like [[INSERT YOUR EXPERIENCE]] instead of guessing.
+
+                            OUTPUT FORMAT:
+                            - Respond using **Markdown**
+                            - Use short paragraphs and/or bullet points
+                            - Use **bold** for emphasis
+                            - Do NOT use code blocks
+
+                            STRUCTURE:
+                            1. **Opening context** (grounded in document experience if possible)
+                            2. **2–3 detailed points or examples**
+                            3. **Closing reflection** (what this demonstrates about you)
+
+                            DEPTH GUIDANCE:
+                            - Be descriptive and explanatory
+                            - Explain *why* actions were taken and *what impact* they had
+
+                            RULES:
+                            - Do NOT invent employers, projects, metrics, or dates
+                            - Do NOT repeat the question
+                            """;
+
+
+                case ResponseFormat.FullScript:
+                    return $"""
+                            You are acting as the candidate in a live job interview.
+
+                            Your task is to generate a **detailed, word-for-word spoken answer**
+                            that could be delivered confidently in real time.
+
+                            TONE:
+                            {toneInstruction}
+
+                            ===========================
+                            RELEVANT DOCUMENT CONTEXT (PRIMARY SOURCE)
+                            {docContext}
+                            ===========================
+
+                            MEETING MEMORY (SECONDARY CONTEXT)
+                            {memory}
+                            ===========================
+
+                            RECENT TRANSCRIPT
+                            {recency}
+                            ===========================
+
+                            CURRENT QUESTION:
+                            "{question}"
+                            ===========================
+
+                            CONTEXT PRIORITY RULES (VERY IMPORTANT):
+                            1. Use the document context as your primary source of truth.
+                            2. Incorporate specific responsibilities, skills, or examples from the document where applicable.
+                            3. Only generalize if the document does not contain sufficient detail.
+                            4. If details are missing, leave minimal placeholders rather than inventing facts.
+
+                            OUTPUT FORMAT:
+                            - Respond using **Markdown**
+                            - Use natural paragraphs suitable for speaking aloud
+                            - Use **bold** sparingly for emphasis
+                            - Do NOT use code blocks
+
+                            DEPTH GUIDANCE:
+                            - Be thorough and specific
+                            - Clearly explain context, actions, reasoning, and outcomes
+
+                            RULES:
+                            - Do NOT invent employers, degrees, metrics, or dates
+                            - Do NOT repeat the question
+                            """;
+
+
+                default:
+                    return $"""
+                            You are acting as the candidate in a live job interview.
+
+                            Answer the interviewer's question clearly and professionally.
+
+                            ===========================
+                            MEETING MEMORY
+                            {memory}
+                            ===========================
+                            
+                            RECENT TRANSCRIPT
+                            {recency}
+                            ===========================
+                            
+                            RELEVANT DOCUMENT CONTEXT
+                            {docContext}
+                            ===========================
+                            
+                            CURRENT QUESTION:
+                            "{question}"
+
+                            OUTPUT FORMAT:
+                            - Respond using **Markdown**
+                            - Keep formatting simple and readable
+                            - Do NOT use code blocks
+                            ===========================
+                            """;
+            }
         }
 
+        private string GetToneInstruction(ResponseTone tone)
+        {
+            return tone switch
+            {
+                ResponseTone.Professional =>
+                    "Use a professional, composed, and interview-appropriate tone. Avoid slang.",
+
+                ResponseTone.Polite =>
+                    "Use a polite, respectful, and courteous tone. Slightly soften statements without sounding uncertain.",
+
+                ResponseTone.Casual =>
+                    "Use a relaxed, natural, conversational tone while remaining appropriate for a professional setting.",
+
+                ResponseTone.Executive =>
+                    "Use a confident, concise, executive-level tone. Be decisive, outcome-focused, and direct.",
+
+                _ =>
+                    "Use a clear and professional tone."
+            };
+        }
 
         public async Task<string> GenerateMeetingSummary(int appointmentId, string fullTranscript)
         {
