@@ -44,7 +44,7 @@ namespace Mentornote.Backend
                 content
             );
 
-            var json = await response.Content.ReadAsStringAsync();
+            var json = await response.Content.ReadAsStringAsync(); 
 
             using var doc = JsonDocument.Parse(json);
             var root = doc.RootElement;

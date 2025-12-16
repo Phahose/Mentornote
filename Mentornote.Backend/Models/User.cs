@@ -12,5 +12,7 @@ namespace Mentornote.Backend.Models
         public string AuthProvider { get; set; } = "local";
         public DateTime CreatedAt { get; set; }
         public string UserType { get; set; }
+        public int TrialMeetingsRemaining { get; set; }
+        public bool IsSubscribed { get; set; }
     }
 }

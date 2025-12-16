@@ -7,5 +7,7 @@
         public string Email { get; set; } = string.Empty;
         public string Password { get; set; } = string.Empty;
         public string UserType { get; set; } = string.Empty;
+        public int TrialMeetingsRemaining { get; set; }
+        public bool IsSubscribed { get; set; }
     }
 }

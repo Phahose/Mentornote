@@ -720,7 +720,10 @@ namespace Mentornote.Backend.Services
                         PasswordSalt = (byte[])reader["PasswordSalt"],
                         PasswordHash = (byte[])reader["PasswordHash"],
                         UserType = (string)reader["UserType"],
-                        CreatedAt = reader.GetDateTime(reader.GetOrdinal("CreatedAt"))
+                        CreatedAt = reader.GetDateTime(reader.GetOrdinal("CreatedAt")),
+                        AuthProvider = (string)reader["AuthProvider"],
+                        TrialMeetingsRemaining = (int)reader["TrialMeetingsRemaining"],
+                        IsSubscribed = (bool)reader["IsSubscribed"]
                     };
                 }
             }
@@ -743,6 +746,9 @@ namespace Mentornote.Backend.Services
                 cmd.Parameters.AddWithValue("@PasswordSalt", user.PasswordSalt);
                 cmd.Parameters.AddWithValue("@UserType", user.UserType);
                 cmd.Parameters.AddWithValue("@AuthProvider", user.AuthProvider);
+                cmd.Parameters.AddWithValue("@TrialMeetingsRemaining", user.TrialMeetingsRemaining);
+                cmd.Parameters.AddWithValue("@IsSubscribed", user.IsSubscribed);
+
 
 
 
@@ -882,6 +888,18 @@ namespace Mentornote.Backend.Services
 
             await conn.OpenAsync();
             await cmd.ExecuteNonQueryAsync();
+        }
+        public async Task UpdateUserTrialAfterMeetingAsync(int userId)
+        {
+            using (SqlConnection connection = new SqlConnection(connectionString))
+            using (SqlCommand command = new SqlCommand("UpdateUserTrialAfterMeeting", connection))
+            {
+                command.CommandType = CommandType.StoredProcedure;
+                command.Parameters.Add("@UserId", SqlDbType.Int).Value = userId;
+
+                await connection.OpenAsync();
+                await command.ExecuteNonQueryAsync();
+            }
         }
 
         private static AppSettings GetDefaultSettings()

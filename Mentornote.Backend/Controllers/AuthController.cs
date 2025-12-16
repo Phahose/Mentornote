@@ -1,14 +1,10 @@
-﻿using DocumentFormat.OpenXml.InkML;
+﻿#nullable disable
 using Mentornote.Backend.DTO;
-using Mentornote.Backend.Models;
 using Mentornote.Backend.Services;
-using Microsoft.AspNetCore.Authentication;
-using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity.Data;
 using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
-using System.Security.Cryptography;
-using System.Text;
 
 namespace Mentornote.Backend.Controllers
 {
@@ -32,13 +28,13 @@ namespace Mentornote.Backend.Controllers
                 return BadRequest("Email and password are required.");
             }
 
-            var result =  _authService.AuthenticateAsync(dto.Email, dto.Password);
+            var result = _authService.AuthenticateAsync(dto.Email, dto.Password);
 
             if (result == null)
             {
                 return Unauthorized("Invalid email or password.");
             }
-                
+
 
             return Ok(result);
         }
@@ -79,7 +75,7 @@ namespace Mentornote.Backend.Controllers
             _dbService.DeleteRefreshToken(existingToken.Id);
             _dbService.SaveRefreshToken(newRefreshToken);
 
-           
+
             var newAccessToken = _authService.GenerateJwtToken(user);
 
             return Ok(new
@@ -88,6 +84,30 @@ namespace Mentornote.Backend.Controllers
                 refreshToken = newRefreshToken.Token,
                 expiresIn = 3600
             });
+        }
+
+        [Authorize]
+        [HttpGet("getUser")]
+        public IActionResult GetUserByEmail()
+        {
+            string email = (string)(User.FindFirst(ClaimTypes.Email).Value);
+            var user = _dbService.GetUserByEmail(email);
+            if (user == null)
+            {
+                return NotFound("User not found.");
+            }
+            return Ok(user);
+
+        }
+
+        [Authorize]
+        [HttpPost("consume-trial")]
+        public async Task<IActionResult> ConsumeTrial()
+        {
+            int userId = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier).Value);
+            await _dbService.UpdateUserTrialAfterMeetingAsync(userId);
+
+            return Ok();
         }
 
     }

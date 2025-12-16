@@ -10,8 +10,7 @@ namespace Mentornote.Models
         public byte[] PasswordHash { get; set; }
         public byte[] PasswordSalt { get; set; }
         public string AuthProvider { get; set; } = "local";
-
-        public ICollection<FlashcardSet> FlashcardSets { get; set; } = new List<FlashcardSet>();
-        public ICollection<PortfolioItem> PortfolioItems { get; set; } = new List<PortfolioItem>();
+        public int TrialMeetingsRemaining { get; set; }
+        public bool IsSubscribed { get; set; }
     }
 }

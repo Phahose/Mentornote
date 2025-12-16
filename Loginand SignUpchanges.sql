@@ -16,6 +16,17 @@ ADD
     PasswordSalt VARBINARY(MAX) NOT NULL;
 
 
+ALTER TABLE Users
+ADD
+    TrialMeetingsRemaining INT NOT NULL CONSTRAINT DF_Users_TrialMeetingsRemaining DEFAULT 5,
+    IsSubscribed BIT NOT NULL CONSTRAINT DF_Users_IsSubscribed DEFAULT 0;
+
+UPDATE Users
+SET TrialMeetingsRemaining = 5
+WHERE TrialMeetingsRemaining IS NULL;
+
+
+
 DROP TABLE Users;
 
 EXEC sp_rename 'Users', 'Users_OLD';
@@ -1204,7 +1215,9 @@ CREATE OR ALTER PROCEDURE RegisterUser
 	@Firstname VARCHAR(32),
 	@LastName VARCHAR(32),
 	@UserType NVARCHAR(50),
-	@AuthProvider NVARCHAR(100)
+	@AuthProvider NVARCHAR(100),
+	@TrialMeetingsRemaining INT,
+	@IsSubscribed BIT 
 AS
 BEGIN
     SET NOCOUNT ON;
@@ -1215,8 +1228,8 @@ BEGIN
         RETURN;
     END
 
-    INSERT INTO Users (FirstName, LastName, Email, PasswordHash, PasswordSalt, CreatedAt, UserType, AuthProvider)
-    VALUES (@FirstName, @LastName, @Email, @PasswordHash, @PasswordSalt, SYSUTCDATETIME(), @UserType, @AuthProvider);
+    INSERT INTO Users (FirstName, LastName, Email, PasswordHash, PasswordSalt, CreatedAt, UserType, AuthProvider, TrialMeetingsRemaining, IsSubscribed)
+    VALUES (@FirstName, @LastName, @Email, @PasswordHash, @PasswordSalt, SYSUTCDATETIME(), @UserType, @AuthProvider, @TrialMeetingsRemaining, @IsSubscribed);
 
     SET @UserId = SCOPE_IDENTITY();
 END
@@ -1361,6 +1374,19 @@ BEGIN
 END;
 
 
+CREATE PROCEDURE UpdateUserTrialAfterMeeting
+    @UserId INT
+AS
+BEGIN
+    SET NOCOUNT ON;
+
+    UPDATE Users
+    SET TrialMeetingsRemaining = TrialMeetingsRemaining - 1
+    WHERE
+        Id = @UserId
+        AND IsSubscribed = 0
+        AND TrialMeetingsRemaining > 0;
+END
 
 
 

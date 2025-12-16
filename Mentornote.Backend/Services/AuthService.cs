@@ -79,7 +79,9 @@ namespace Mentornote.Backend.Services
                 PasswordSalt = hmac.Key,
                 AuthProvider = "local",
                 CreatedAt = DateTime.UtcNow,
-                UserType = dto.UserType
+                UserType = dto.UserType,
+                TrialMeetingsRemaining = dto.TrialMeetingsRemaining,
+                IsSubscribed = dto.IsSubscribed
             };
 
             int userId = _dBServices.RegisterUser(user);

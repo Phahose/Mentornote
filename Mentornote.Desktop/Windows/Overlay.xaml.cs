@@ -40,11 +40,24 @@ namespace Mentornote.Desktop
             Loaded += (_, __) => MakeTransparentLayer();
         }
 
-        private void Mic_Click(object sender, RoutedEventArgs e)
+        private async void Mic_Click(object sender, RoutedEventArgs e)
         {
+            User currentUser =  await ApiClient.Client.GetFromJsonAsync<User>("http://localhost:5085/api/auth/getUser");
+
+            if (currentUser == null) 
+            {
+                System.Windows.MessageBox.Show("User not found. Please log in again.", "User Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                return;
+            }
+
+            if (currentUser.IsSubscribed == false && currentUser.TrialMeetingsRemaining <= 0)
+            {
+                System.Windows.MessageBox.Show("You have reached the limit of trial meetings. Please subscribe to continue using the transcription feature.", "Trial Limit Reached", MessageBoxButton.OK, MessageBoxImage.Warning);
+                return;
+            }
             if (_isListening == false)
             {
-                ApiClient.Client.PostAsync($"http://localhost:5085/api/transcribe/start/{appId}", null);
+                await ApiClient.Client.PostAsync($"http://localhost:5085/api/transcribe/start/{appId}", null);
                 RecordingCheck.Text = "Listening";
                 _isListening = true;
                 ListeningSection.Visibility = Visibility.Visible;
@@ -55,14 +68,14 @@ namespace Mentornote.Desktop
                 if (_isPaused == false)
                 {
                     _isPaused = true;
-                    ApiClient.Client.PostAsync($"http://localhost:5085/api/transcribe/pause", null);
+                    await ApiClient.Client.PostAsync($"http://localhost:5085/api/transcribe/pause", null);
                     RecordingCheck.Text = "Listening Paused";
                     SuggestionSection.Visibility = Visibility.Collapsed;
                 }
                 else
                 {
                     _isPaused = false;
-                    ApiClient.Client.PostAsync($"http://localhost:5085/api/transcribe/resume", null);
+                    await ApiClient.Client.PostAsync($"http://localhost:5085/api/transcribe/resume", null);
                     RecordingCheck.Text = "Listening";
                     SuggestionSection.Visibility = Visibility.Visible;
                 }
@@ -94,6 +107,10 @@ namespace Mentornote.Desktop
                 StatementText.Text = string.Join(" ", cleanedTranscript.Split(' ').TakeLast(15));
 
                 string userQuestion = transcriptList.LastOrDefault();
+                if (userQuestion == null)
+                {
+                    userQuestion = "No Question Asked Yet";
+                }
                 string cleanedQuestion = CleanTranscript(userQuestion);
                 var recentUtterances = transcriptList
                                         .Distinct()
@@ -221,7 +238,7 @@ namespace Mentornote.Desktop
                         }
                     }
                 }
-
+                await ApiClient.Client.PostAsync($"http://localhost:5085/api/auth/consume-trial", null);
                 ListeningSection.Visibility = Visibility.Collapsed;
                 Close();
             }

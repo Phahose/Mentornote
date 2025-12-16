@@ -103,7 +103,9 @@ namespace Mentornote.Desktop.Pages
                 LastName = LastNameBox.Text,
                 Email = EmailBox.Text,
                 Password = PasswordBox.Password,
-                UserType = "Free"
+                UserType = "Free",
+                TrialMeetingsRemaining = 5,
+                IsSubscribed = false
             };
 
             try
