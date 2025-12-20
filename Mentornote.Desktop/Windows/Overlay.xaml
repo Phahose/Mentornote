@@ -13,6 +13,10 @@
         Height="{x:Static SystemParameters.PrimaryScreenHeight}">
 
     <!-- Root grid is transparent; click-through except where we set IsHitTestVisible="True" -->
+    <Border BorderBrush="MediumPurple"
+        BorderThickness="3"
+        Margin="1"
+        Background="Transparent">
     <Grid>
 
         <!-- transparent, click-through background -->
@@ -151,4 +155,5 @@
         </StackPanel>
 
     </Grid>
+   </Border>
 </Window>

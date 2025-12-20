@@ -49,12 +49,12 @@ namespace Mentornote.Backend.Controllers
             {
                 UserId = userId,
                 Title = appointmentDTO.Title,
-                Description = appointmentDTO.Description,
                 StartTime = appointmentDTO.StartTime,
                 EndTime = appointmentDTO.EndTime,
                 Organizer = appointmentDTO.Organizer,
                 Date = appointmentDTO.Date,
-                Status = "Scheduled"
+                Status = "Scheduled",
+                AppointmentType = appointmentDTO.AppointmentType
             };
 
             var appointmentId = _dBServices.AddAppointment(appointment, userId);
@@ -151,12 +151,12 @@ namespace Mentornote.Backend.Controllers
                     Id = appointmentId,
                     UserId = userId,
                     Title = appointmentDTO.Title,
-                    Description = appointmentDTO.Description,
                     StartTime = appointmentDTO.StartTime,
                     EndTime = appointmentDTO.EndTime,
                     Organizer = appointmentDTO.Organizer,
                     Date = appointmentDTO.Date,
-                    Status = appointmentDTO.Status
+                    Status = appointmentDTO.Status,
+                    AppointmentType = appointmentDTO.AppointmentType
                 };
 
                 _dBServices.UpdateAppointment(updatedAppointment, userId);

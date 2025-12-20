@@ -21,9 +21,10 @@ ADD
     TrialMeetingsRemaining INT NOT NULL CONSTRAINT DF_Users_TrialMeetingsRemaining DEFAULT 5,
     IsSubscribed BIT NOT NULL CONSTRAINT DF_Users_IsSubscribed DEFAULT 0;
 
-UPDATE Users
-SET TrialMeetingsRemaining = 5
-WHERE TrialMeetingsRemaining IS NULL;
+ALTER TABLE Users
+ADD StripeCustomerId NVARCHAR(255) NULL,
+    StripeSubscriptionId NVARCHAR(255) NULL;
+
 
 
 
@@ -794,7 +795,6 @@ CREATE TABLE Appointments
     Id INT IDENTITY(1,1) PRIMARY KEY,
     UserId INT NOT NULL,  
     Title NVARCHAR(200) NOT NULL,
-    Description NVARCHAR(MAX) NULL,
     StartTime DATETIME2 NULL,
     EndTime DATETIME2 NULL,
     CreatedAt DATETIME2 NOT NULL DEFAULT SYSUTCDATETIME(),
@@ -807,6 +807,8 @@ CREATE TABLE Appointments
 );
 
 Alter Table Appointments
+DROP Column Description
+ADD AppointmentType NVARCHAR(MAX) NULL
 ADD Organizer NVARCHAR(200) NULL,
    [Date] DATE NULL;
 
@@ -833,24 +835,25 @@ CREATE TABLE AppointmentNotes
 );
 
 ALTER TABLE AppointmentNotes 
+
 ADD FileHash NVARCHAR(MAX) NULL;
 
 CREATE OR ALTER PROCEDURE AddAppointment
     @UserId INT,
     @Title NVARCHAR(200),
-    @Description NVARCHAR(MAX) = NULL,
     @StartTime DATETIME2 = NULL,
     @EndTime DATETIME2 = NULL,
     @Status NVARCHAR(50) = NULL,
     @Notes NVARCHAR(MAX) = NULL,
 	@Date DATE = NULL,
-	@Organizer NVARCHAR(200) = NULL
+	@Organizer NVARCHAR(200) = NULL,
+	@AppointmentType NVARCHAR(MAX)
 AS
 BEGIN
     SET NOCOUNT ON;
 
-    INSERT INTO Appointments (UserId, Title, Description, StartTime, EndTime, Status, Notes, CreatedAt, [Date], Organizer)
-    VALUES (@UserId, @Title, @Description, @StartTime, @EndTime, @Status, @Notes, SYSUTCDATETIME(), @Date, @Organizer);
+    INSERT INTO Appointments (UserId, Title, StartTime, EndTime, Status, Notes, CreatedAt, [Date], Organizer, AppointmentType)
+    VALUES (@UserId, @Title, @StartTime, @EndTime, @Status, @Notes, SYSUTCDATETIME(), @Date, @Organizer, @AppointmentType);
 
     SELECT SCOPE_IDENTITY() AS AppointmentId;
 END;
@@ -1075,25 +1078,25 @@ END
 CREATE OR ALTER Procedure UpdateAppointment
 	@AppointmentId INT,
 	@Title NVARCHAR(200),
-    @Description NVARCHAR(MAX),
     @Date DATE,
     @StartTime DATETIME,
     @EndTime DATETIME,
     @Organizer NVARCHAR(200),
     @Status NVARCHAR(50),
-	@UserId INT
+	@UserId INT,
+	@AppointmentType NVARCHAR(MAX)
 AS
 BEGIN 
 	UPDATE Appointments 
 	SET 
 	Title = @Title,
-	Description = @Description,
 	StartTime = @StartTime,
 	EndTime = @EndTime,
 	UpdatedAt = SYSUTCDATETIME(),
 	Status = @Status,
 	Organizer = @Organizer,
-	Date = @Date
+	Date = @Date,
+	AppointmentType = @AppointmentType
 
 	WHERE Appointments.Id = @AppointmentId
 	AND UserId = @UserId
@@ -1393,24 +1396,57 @@ END
 ALTER TABLE RefreshTokens
 ADD Email NVARCHAR(200) NULL;
 
+-- =============================================
+-- Stored Procedure: ActivateSubscription
+-- Activates a user's subscription after Stripe checkout
+-- =============================================
 
-Exec GetDocumentChunksForAppointment 2
+CREATE PROCEDURE ActivateSubscription
+    @UserId INT,
+    @StripeCustomerId NVARCHAR(255),
+    @StripeSubscriptionId NVARCHAR(255)
+AS
+BEGIN
+    SET NOCOUNT ON;
 
-SELECT ChunkText
-FROM AppointmentDocumentEmbeddings
-WHERE AppointmentId = 2
+    UPDATE Users
+    SET 
+        IsSubscribed = 1,
+        StripeCustomerId = @StripeCustomerId,
+        StripeSubscriptionId = @StripeSubscriptionId
+    WHERE Id = @UserId;
+END
+GO
 
+-- =============================================
+-- Stored Procedure: GetStripeCustomerId
+-- Returns the Stripe customer ID for a user
+-- =============================================
+CREATE PROCEDURE GetStripeCustomerId
+    @UserId INT
+AS
+BEGIN
+    SET NOCOUNT ON;
 
-DELETE FROM AppointmentDocumentEmbeddings;
--- Reset identity seed
-DBCC CHECKIDENT ('Appointments', RESEED, 0);
+    SELECT StripeCustomerId
+    FROM Users
+    WHERE Id = @UserId;
+END
+GO
 
-DELETE FROM [AppointmentNotes];
--- Reset identity seed
-DBCC CHECKIDENT ('Appointments', RESEED, 0);
+-- =============================================
+-- Stored Procedure: DeactivateSubscription
+-- Deactivates subscription when canceled in Stripe
+-- =============================================
+CREATE PROCEDURE DeactivateSubscription
+    @StripeSubscriptionId NVARCHAR(255)
+AS
+BEGIN
+    SET NOCOUNT ON;
 
-DELETE FROM Appointments;
--- Reset identity seed
-DBCC CHECKIDENT ('Appointments', RESEED, 0);
+    UPDATE Users
+    SET IsSubscribed = 0
+    WHERE StripeSubscriptionId = @StripeSubscriptionId;
+END
+GO
 
-DELETE FROM BackgroundJobs

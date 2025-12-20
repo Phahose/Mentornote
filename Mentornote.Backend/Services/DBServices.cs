@@ -7,14 +7,14 @@ namespace Mentornote.Backend.Services
 {
     public class DBServices
     {
-        private string? connectionString;
+        private string? _connectionString;
         public DBServices()
         {
             ConfigurationBuilder DatabaseUserBuilder = new ConfigurationBuilder();
             DatabaseUserBuilder.SetBasePath(Directory.GetCurrentDirectory());
             DatabaseUserBuilder.AddJsonFile("appsettings.json");
             IConfiguration DatabaseUserConfiguration = DatabaseUserBuilder.Build();
-            connectionString = DatabaseUserConfiguration.GetConnectionString("DefaultConnection");
+            _connectionString = DatabaseUserConfiguration.GetConnectionString("DefaultConnection");
         }
 
         public int AddAppointment(Appointment appointment, int userId)
@@ -23,7 +23,7 @@ namespace Mentornote.Backend.Services
             {
                 int appointmentId;
 
-                using SqlConnection connection = new SqlConnection(connectionString);
+                using SqlConnection connection = new SqlConnection(_connectionString);
                 {
                     connection.Open();
 
@@ -45,12 +45,6 @@ namespace Mentornote.Backend.Services
                     {
                         Direction = ParameterDirection.Input,
                         SqlValue = appointment.Title ?? (object)DBNull.Value
-                    });
-
-                    cmd.Parameters.Add(new SqlParameter("@Description", SqlDbType.NVarChar)
-                    {
-                        Direction = ParameterDirection.Input,
-                        SqlValue = appointment.Description ?? (object)DBNull.Value
                     });
 
                     cmd.Parameters.Add(new SqlParameter("@StartTime", SqlDbType.DateTime2)
@@ -87,6 +81,11 @@ namespace Mentornote.Backend.Services
                         Direction = ParameterDirection.Input,
                         SqlValue = appointment.Organizer ?? (object)DBNull.Value
                     });
+                    cmd.Parameters.Add(new SqlParameter("@AppointmentType", SqlDbType.NVarChar, 200)
+                    {
+                        Direction = ParameterDirection.Input,
+                        SqlValue = appointment.AppointmentType ?? (object)DBNull.Value
+                    });
 
 
                     appointmentId = Convert.ToInt32((decimal)cmd.ExecuteScalar());
@@ -108,7 +107,7 @@ namespace Mentornote.Backend.Services
         {
             try
             {
-                using SqlConnection connection = new SqlConnection(connectionString);
+                using SqlConnection connection = new SqlConnection(_connectionString);
                 {
                     connection.Open();
                     SqlCommand cmd = new SqlCommand
@@ -156,7 +155,7 @@ namespace Mentornote.Backend.Services
 
         public int AddAppointmentDocumentEmbedding(AppointmentDocumentEmbedding embedding)
         {
-            using var connection = new SqlConnection(connectionString);
+            using var connection = new SqlConnection(_connectionString);
             using var command = new SqlCommand("AddAppointmentDocumentEmbedding", connection);
             command.CommandType = CommandType.StoredProcedure;
 
@@ -176,7 +175,7 @@ namespace Mentornote.Backend.Services
             try
             {
                 List<Appointment> appointments = new List<Appointment>();
-                using SqlConnection connection = new SqlConnection(connectionString);
+                using SqlConnection connection = new SqlConnection(_connectionString);
                 {
                     connection.Open();
                     SqlCommand cmd = new SqlCommand
@@ -198,7 +197,7 @@ namespace Mentornote.Backend.Services
                             Id = reader.GetInt32(reader.GetOrdinal("Id")),
                             UserId = reader.GetInt32(reader.GetOrdinal("UserId")),
                             Title = reader.GetString(reader.GetOrdinal("Title")),
-                            Description = reader.IsDBNull(reader.GetOrdinal("Description")) ? null : reader.GetString(reader.GetOrdinal("Description")),
+                            AppointmentType = reader.GetString(reader.GetOrdinal("AppointmentType")),
                             StartTime = reader.IsDBNull(reader.GetOrdinal("StartTime")) ? (DateTime?)null : reader.GetDateTime(reader.GetOrdinal("StartTime")),
                             EndTime = reader.IsDBNull(reader.GetOrdinal("EndTime")) ? (DateTime?)null : reader.GetDateTime(reader.GetOrdinal("EndTime")),
                             Status = reader.GetString(reader.GetOrdinal("Status")),
@@ -225,7 +224,7 @@ namespace Mentornote.Backend.Services
         public Appointment GetAppointmentById(int appointmentId, int userId)
         {
             Appointment appointment = new();
-            using SqlConnection connection = new SqlConnection(connectionString);
+            using SqlConnection connection = new SqlConnection(_connectionString);
             {
                 connection.Open();
                 SqlCommand cmd = new SqlCommand
@@ -252,7 +251,7 @@ namespace Mentornote.Backend.Services
                         Id = reader.GetInt32(reader.GetOrdinal("Id")),
                         UserId = reader.GetInt32(reader.GetOrdinal("UserId")),
                         Title = reader.GetString(reader.GetOrdinal("Title")),
-                        Description = reader.IsDBNull(reader.GetOrdinal("Description")) ? null : reader.GetString(reader.GetOrdinal("Description")),
+                        AppointmentType = reader.GetString(reader.GetOrdinal("AppointmentType")),
                         StartTime = reader.IsDBNull(reader.GetOrdinal("StartTime")) ? (DateTime?)null : reader.GetDateTime(reader.GetOrdinal("StartTime")),
                         EndTime = reader.IsDBNull(reader.GetOrdinal("EndTime")) ? (DateTime?)null : reader.GetDateTime(reader.GetOrdinal("EndTime")),
                         Status = reader.GetString(reader.GetOrdinal("Status")),
@@ -261,7 +260,6 @@ namespace Mentornote.Backend.Services
                         Date = reader.IsDBNull(reader.GetOrdinal("Date")) ? (DateTime?)null : reader.GetDateTime(reader.GetOrdinal("Date")),
                         Organizer = reader.GetString(reader.GetOrdinal("Organizer")),
                         SummaryExists = reader.GetBoolean(reader.GetOrdinal("SummaryExists"))
-                        // UpdatedAt = reader.GetDateTime(reader.GetOrdinal("UpdatedAt"))
                     };
                 }
                 connection.Close();
@@ -272,7 +270,7 @@ namespace Mentornote.Backend.Services
         public List<AppointmentDocument> GetAppointmentDocumentsByAppointmentId(int appointmentId, int userId)
         {
             List<AppointmentDocument> documents = new List<AppointmentDocument>();
-            using SqlConnection connection = new SqlConnection(connectionString);
+            using SqlConnection connection = new SqlConnection(_connectionString);
             {
                 connection.Open();
                 SqlCommand cmd = new SqlCommand
@@ -313,7 +311,7 @@ namespace Mentornote.Backend.Services
         public List<AppointmentDocumentEmbedding> GetEmbeddingsByDocumentId(int appointmentDocumentId)
         {
             List<AppointmentDocumentEmbedding> embeddings = new List<AppointmentDocumentEmbedding>();
-            using SqlConnection connection = new SqlConnection(connectionString);
+            using SqlConnection connection = new SqlConnection(_connectionString);
             {
                 connection.Open();
                 SqlCommand cmd = new SqlCommand
@@ -348,7 +346,7 @@ namespace Mentornote.Backend.Services
 
         public long CreateJob(BackgroundJob job)
         {
-            using var conn = new SqlConnection(connectionString);
+            using var conn = new SqlConnection(_connectionString);
             using var cmd = new SqlCommand("CreateBackgroundJob", conn)
             {
                 CommandType = CommandType.StoredProcedure
@@ -374,7 +372,7 @@ namespace Mentornote.Backend.Services
 
         public void UpdateJob(BackgroundJob job)
         {
-            using var conn = new SqlConnection(connectionString);
+            using var conn = new SqlConnection(_connectionString);
             using var cmd = new SqlCommand("UpdateBackgroundJob", conn)
             {
                 CommandType = CommandType.StoredProcedure
@@ -392,7 +390,7 @@ namespace Mentornote.Backend.Services
         {
             BackgroundJob job = new();
 
-            using var conn = new SqlConnection(connectionString);
+            using var conn = new SqlConnection(_connectionString);
             using var cmd = new SqlCommand("GetBackgroundJob", conn)
             {
                 CommandType = CommandType.StoredProcedure
@@ -424,7 +422,7 @@ namespace Mentornote.Backend.Services
             {
                 var results = new List<AppointmentDocumentEmbedding>();
 
-                using (var conn = new SqlConnection(connectionString))
+                using (var conn = new SqlConnection(_connectionString))
                 using (var cmd = new SqlCommand("GetDocumentChunksForAppointment", conn))
                 {
                     cmd.CommandType = CommandType.StoredProcedure;
@@ -461,7 +459,7 @@ namespace Mentornote.Backend.Services
         {
             try
             {
-                using SqlConnection conn = new SqlConnection(connectionString);
+                using SqlConnection conn = new SqlConnection(_connectionString);
                 using SqlCommand cmd = new SqlCommand("DeleteAppointment", conn)
                 {
                     CommandType = CommandType.StoredProcedure
@@ -487,8 +485,7 @@ namespace Mentornote.Backend.Services
         {
             try
             {
-                int appointmentId;
-                using SqlConnection connection = new SqlConnection(connectionString);
+                using SqlConnection connection = new SqlConnection(_connectionString);
                 {
                     connection.Open();
                     SqlCommand cmd = new SqlCommand
@@ -512,11 +509,6 @@ namespace Mentornote.Backend.Services
                     {
                         Direction = ParameterDirection.Input,
                         SqlValue = appointment.Title ?? (object)DBNull.Value
-                    });
-                    cmd.Parameters.Add(new SqlParameter("@Description", SqlDbType.NVarChar)
-                    {
-                        Direction = ParameterDirection.Input,
-                        SqlValue = appointment.Description ?? (object)DBNull.Value
                     });
                     cmd.Parameters.Add(new SqlParameter("@StartTime", SqlDbType.DateTime2)
                     {
@@ -543,6 +535,11 @@ namespace Mentornote.Backend.Services
                         Direction = ParameterDirection.Input,
                         SqlValue = appointment.Organizer ?? (object)DBNull.Value
                     });
+                    cmd.Parameters.Add(new SqlParameter("@AppointmentType", SqlDbType.NVarChar, 200)
+                    {
+                        Direction = ParameterDirection.Input,
+                        SqlValue = appointment.AppointmentType ?? (object)DBNull.Value
+                    });
 
                     //  cmd.ExecuteNonQuery();
 
@@ -566,7 +563,7 @@ namespace Mentornote.Backend.Services
         {
             var documents = new List<AppointmentDocument>();
 
-            using var conn = new SqlConnection(connectionString);
+            using var conn = new SqlConnection(_connectionString);
             using var cmd = new SqlCommand("GetAppointmentDocumentsById", conn)
             {
                 CommandType = CommandType.StoredProcedure
@@ -602,7 +599,7 @@ namespace Mentornote.Backend.Services
 
         public bool DeleteAppointmentDocument(int documentId, int userId)
         {
-            using (SqlConnection conn = new SqlConnection(connectionString))
+            using (SqlConnection conn = new SqlConnection(_connectionString))
             using (SqlCommand cmd = new SqlCommand("DeleteAppointmentDocument", conn))
             {
                 cmd.CommandType = CommandType.StoredProcedure;
@@ -640,7 +637,7 @@ namespace Mentornote.Backend.Services
 
         public int AddAppointmentSummary(int appointmentId, string summaryText)
         {
-            using SqlConnection connection = new SqlConnection(connectionString);
+            using SqlConnection connection = new SqlConnection(_connectionString);
             connection.Open();
 
             using SqlCommand cmd = new SqlCommand("AddAppointmentSummary", connection)
@@ -657,7 +654,7 @@ namespace Mentornote.Backend.Services
 
         public AppointmentSummary GetSummaryByAppointmentId(int appointmentId)
         {
-            using SqlConnection conn = new SqlConnection(connectionString);
+            using SqlConnection conn = new SqlConnection(_connectionString);
             conn.Open();
 
             using SqlCommand cmd = new SqlCommand("GetAppointmentSummary", conn)
@@ -686,7 +683,7 @@ namespace Mentornote.Backend.Services
         {
             User user = new();
             SqlConnection mentornoteCoonnection = new SqlConnection();
-            mentornoteCoonnection.ConnectionString = connectionString;
+            mentornoteCoonnection.ConnectionString = _connectionString;
             mentornoteCoonnection.Open();
 
             SqlCommand GetUser = new()
@@ -734,7 +731,7 @@ namespace Mentornote.Backend.Services
 
         public int RegisterUser(User user)
         {
-            using (SqlConnection conn = new SqlConnection(connectionString))
+            using (SqlConnection conn = new SqlConnection(_connectionString))
             {
                 SqlCommand cmd = new SqlCommand("RegisterUser", conn);
                 cmd.CommandType = CommandType.StoredProcedure;
@@ -767,7 +764,7 @@ namespace Mentornote.Backend.Services
 
         public void SaveRefreshToken(RefreshToken token)
         {
-            using var conn = new SqlConnection(connectionString);
+            using var conn = new SqlConnection(_connectionString);
             conn.Open();
 
             using var cmd = new SqlCommand("SaveRefreshToken", conn);
@@ -784,7 +781,7 @@ namespace Mentornote.Backend.Services
 
         public RefreshToken GetRefreshToken(string token)
         {
-            using var conn = new SqlConnection(connectionString);
+            using var conn = new SqlConnection(_connectionString);
             conn.Open();
 
             using var cmd = new SqlCommand("GetRefreshToken", conn);
@@ -813,7 +810,7 @@ namespace Mentornote.Backend.Services
 
         public void RevokeToken(int id, string replacedByToken)
         {
-            using var conn = new SqlConnection(connectionString);
+            using var conn = new SqlConnection(_connectionString);
             conn.Open();
 
             using var cmd = new SqlCommand("RevokeRefreshToken", conn);
@@ -827,7 +824,7 @@ namespace Mentornote.Backend.Services
 
         public void DeleteRefreshToken(int tokenId)
         {
-            using (var conn = new SqlConnection(connectionString))
+            using (var conn = new SqlConnection(_connectionString))
             using (var cmd = new SqlCommand("DeleteRefreshToken", conn))
             {
                 cmd.CommandType = CommandType.StoredProcedure;
@@ -841,7 +838,7 @@ namespace Mentornote.Backend.Services
 
         public async Task<AppSettings> GetAsync(int userId)
         {
-            using var conn = new SqlConnection(connectionString);
+            using var conn = new SqlConnection(_connectionString);
             using var cmd = new SqlCommand("GetUserSettings", conn)
             {
                 CommandType = CommandType.StoredProcedure
@@ -872,7 +869,7 @@ namespace Mentornote.Backend.Services
 
         public async Task SaveAsync(int userId, AppSettings settings)
         {
-            using var conn = new SqlConnection(connectionString);
+            using var conn = new SqlConnection(_connectionString);
             using var cmd = new SqlCommand("SaveUserSettings", conn)
             {
                 CommandType = CommandType.StoredProcedure
@@ -891,7 +888,7 @@ namespace Mentornote.Backend.Services
         }
         public async Task UpdateUserTrialAfterMeetingAsync(int userId)
         {
-            using (SqlConnection connection = new SqlConnection(connectionString))
+            using (SqlConnection connection = new SqlConnection(_connectionString))
             using (SqlCommand command = new SqlCommand("UpdateUserTrialAfterMeeting", connection))
             {
                 command.CommandType = CommandType.StoredProcedure;
@@ -901,6 +898,57 @@ namespace Mentornote.Backend.Services
                 await command.ExecuteNonQueryAsync();
             }
         }
+
+        public async Task ActivateSubscriptionAsync(int userId, string stripeCustomerId, string stripeSubscriptionId)
+        {
+            using (SqlConnection conn = new SqlConnection(_connectionString))
+            {
+                using (SqlCommand cmd = new SqlCommand("ActivateSubscription", conn))
+                {
+                    cmd.CommandType = CommandType.StoredProcedure;
+                    cmd.Parameters.AddWithValue("@UserId", userId);
+                    cmd.Parameters.AddWithValue("@StripeCustomerId", stripeCustomerId);
+                    cmd.Parameters.AddWithValue("@StripeSubscriptionId", stripeSubscriptionId);
+
+                    await conn.OpenAsync();
+                    await cmd.ExecuteNonQueryAsync();
+                }
+            }
+        }
+
+        public async Task<string> GetStripeCustomerIdAsync(int userId)
+        {
+            using (SqlConnection conn = new SqlConnection(_connectionString))
+            {
+                using (SqlCommand cmd = new SqlCommand("GetStripeCustomerId", conn))
+                {
+                    cmd.CommandType = CommandType.StoredProcedure;
+                    cmd.Parameters.AddWithValue("@UserId", userId);
+
+                    await conn.OpenAsync();
+
+                    object result = await cmd.ExecuteScalarAsync();
+                    return result?.ToString();
+                }
+            }
+        }
+
+        public async Task DeactivateSubscriptionAsync(string stripeSubscriptionId)
+        {
+            using (SqlConnection conn = new SqlConnection(_connectionString))
+            {
+                using (SqlCommand cmd = new SqlCommand("DeactivateSubscription", conn))
+                {
+                    cmd.CommandType = CommandType.StoredProcedure;
+                    cmd.Parameters.AddWithValue("@StripeSubscriptionId", stripeSubscriptionId);
+
+                    await conn.OpenAsync();
+                    await cmd.ExecuteNonQueryAsync();
+                }
+            }
+        }
+        // Looks like I will have to move into deplpoymeny I am so scared right now 
+
 
         private static AppSettings GetDefaultSettings()
         {

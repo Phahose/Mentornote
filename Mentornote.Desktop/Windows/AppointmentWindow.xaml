@@ -58,21 +58,26 @@
                             Padding="2"
                             Text="Tennis Meet"/>
                 
-                <!--<TextBlock Text="Appointment Description"
-                           Foreground="#FFBFBFBF"
-                           FontSize="14"
-                           Margin="0,0,0,5"/>
 
-                <TextBox x:Name="AppointmentDescription"
-                         AcceptsReturn="True"
-                         Height="120"
-                         TextWrapping="Wrap"
-                         Background="#FF2A2A2A"
-                         Foreground="White"
-                         BorderBrush="#FF3A3A3A"
-                         Padding="8"
-                         Text="The Meeting with tennis this is a test appointment to see ow the program works"/>-->
-                
+                <TextBlock Text="Appointment Type"
+                             Foreground="#FFBFBFBF"
+                             FontSize="14"
+                             Margin="0,0,0,5"/>
+
+                <ComboBox x:Name="AppointmentTypeInput"
+                          SelectedIndex="0"
+                          Margin="0,0,0,5">
+                    <ComboBoxItem Content="Job Interview"/>
+                    <ComboBoxItem Content="Performance Review"/>
+                    <ComboBoxItem Content="Client Meeting"/>
+                    <ComboBoxItem Content="Sales Call"/>
+                    <ComboBoxItem Content="Team Meeting"/>
+                    <ComboBoxItem Content="Technical Interview"/>
+                    <ComboBoxItem Content="One-on-One"/>
+                    <ComboBoxItem Content="General Conversation"/>
+                </ComboBox>
+
+
                 <TextBlock Text="Organizer Name:"
                            Foreground="#FFBFBFBF"
                            FontSize="14"

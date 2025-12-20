@@ -22,6 +22,7 @@ namespace Mentornote.Desktop
 
         private int appId;
         private bool _dragFromSuggestionPanel = false;
+        private Appointment _appointment;
 
 
         public Overlay(int appointmentId)
@@ -43,6 +44,7 @@ namespace Mentornote.Desktop
         private async void Mic_Click(object sender, RoutedEventArgs e)
         {
             User currentUser =  await ApiClient.Client.GetFromJsonAsync<User>("http://localhost:5085/api/auth/getUser");
+            _appointment = await ApiClient.Client.GetFromJsonAsync<Appointment>($"appointments/getAppointmentById/{appId}");
 
             if (currentUser == null) 
             {
@@ -126,7 +128,8 @@ namespace Mentornote.Desktop
                     UserQuestion = userQuestion,
                     RecentUtterances = recentUtterances,
                     MemorySummaries = memorySummaries,
-                    AppSettings = settings
+                    AppSettings = settings,
+                    AppointmenType = _appointment.AppointmentType
                 };
 
                 //  Serialize to JSON

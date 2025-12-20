@@ -11,6 +11,7 @@ namespace Mentornote.Backend.DTO
         public DateTime EndTime { get; set; }
         public string Description { get; set; }
         public string Status { get; set; }  
+        public string AppointmentType { get; set; }
 
         //Document Info
         public List<IFormFile> Files { get; set; }

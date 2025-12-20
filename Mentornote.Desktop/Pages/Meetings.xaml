@@ -139,7 +139,7 @@
 
                                     </StackPanel>
 
-                                    <TextBlock Text="{Binding Description}" 
+                                    <TextBlock Text="{Binding AppointmentType}" 
                                                Foreground="#FFBFBFBF" 
                                                Margin="0,2,0,0"/>
                                     <TextBlock Text="{Binding Status}" 
@@ -147,7 +147,7 @@
                                                FontWeight="SemiBold"
                                                Margin="0,6,0,0"/>
 
-                                    <Button  Content="Load More"
+                                    <Button  Content="Edit Appointment"
                                              Width="120"
                                              Height="36"
                                              Background="#FF3A3A3A"
@@ -251,14 +251,14 @@
                                                    Margin="2,5"/>
 
                                     </StackPanel>
-                                    <TextBlock Text="{Binding Description}" 
+                                    <TextBlock Text="{Binding AppointmentType}" 
                                                Foreground="#FFBFBFBF" 
                                                Margin="0,2,0,0"/>
                                     <TextBlock Text="{Binding Status}" 
                                                Foreground="#FF7DBEFF"
                                                FontWeight="SemiBold"
                                                Margin="0,6,0,0"/>
-                                    <Button  Content="Load More"
+                                    <Button  Content="Edit Appointment"
                                              Width="120"
                                              Height="36"
                                              Background="#FF3A3A3A"

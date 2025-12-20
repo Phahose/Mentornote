@@ -97,7 +97,7 @@ namespace Mentornote.Desktop.Pages
             var button = (System.Windows.Controls.Button)sender;
 
             var confirm = System.Windows.MessageBox.Show(
-                $"Delete appointment '{button.Tag}'? Are you sure? You want to delete There is NO WAY of Retriving it back",
+                $"Delete appointment '{button.Tag}'? Are you sure? You want to delete There is NO WAY of Retriving it",
                 "Confirm Delete",
                 MessageBoxButton.YesNo,
                 MessageBoxImage.Warning);
@@ -188,9 +188,9 @@ namespace Mentornote.Desktop.Pages
                             {
                                 Id = appointment.Id,
                                 Title = appointment.Title,
-                                Description = appointment.Description,
                                 StartTime = appointment.StartTime,
                                 EndTime = appointment.EndTime,
+                                AppointmentType = appointment.AppointmentType,
                                 Status = appointment.Status,
                                 SummaryExists = appointment.SummaryExists
                             });
@@ -201,11 +201,11 @@ namespace Mentornote.Desktop.Pages
                             {
                                 Id = appointment.Id,
                                 Title = appointment.Title,
-                                Description = appointment.Description,
                                 StartTime = appointment.StartTime,
                                 EndTime = appointment.EndTime,
                                 Status = appointment.Status,
-                                SummaryExists = appointment.SummaryExists
+                                SummaryExists = appointment.SummaryExists,
+                                AppointmentType = appointment.AppointmentType,
                             });
                         }
                     }
@@ -216,11 +216,11 @@ namespace Mentornote.Desktop.Pages
                         {
                             Id = appointment.Id,
                             Title = appointment.Title,
-                            Description = appointment.Description,
                             StartTime = appointment.StartTime,
                             EndTime = appointment.EndTime,
                             Status = appointment.Status,
-                            SummaryExists = appointment.SummaryExists
+                            SummaryExists = appointment.SummaryExists,
+                            AppointmentType = appointment.AppointmentType,
                         });
                     }
 

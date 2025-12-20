@@ -1,4 +1,5 @@
-﻿using Mentornote.Backend.Models;
+﻿#nullable disable
+using Mentornote.Backend.Models;
 
 namespace Mentornote.Backend.DTO
 {
@@ -8,5 +9,6 @@ namespace Mentornote.Backend.DTO
         public List<string> RecentUtterances { get; set; }
         public List<string> MemorySummaries { get; set; }
         public AppSettings AppSettings { get; set; }
+        public string AppointmenType { get; set; }  
     }
 }

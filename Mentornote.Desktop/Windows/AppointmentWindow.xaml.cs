@@ -120,13 +120,13 @@ namespace Mentornote.Desktop
             {
                 using var appointment = new MultipartFormDataContent();
                 appointment.Add(new StringContent(TitleInput.Text), "Title");
-                //appointment.Add(new StringContent(AppointmentDescription.Text), "Description");
                 appointment.Add(new StringContent(OrganizerInput.Text), "Organizer");
                 appointment.Add(new StringContent(DateInput.Text), "Date");
                 appointment.Add(new StringContent(StartTimeInput.Text), "StartTime");
                 appointment.Add(new StringContent(EndTimeInput.Text), "EndTime");
                 appointment.Add(new StringContent(DateInput.Text), "Date");
                 appointment.Add(new StringContent(OrganizerInput.Text), "Organizer");
+                appointment.Add(new StringContent(AppointmentTypeInput.Text), "AppointmentType");
 
                 foreach (var file in uploadedFiles)
                 {
@@ -151,8 +151,9 @@ namespace Mentornote.Desktop
                     long jobId = jobInfo!.jobId;
 
                     System.Windows.MessageBox.Show($"✅ Upload started You can keep working.");
-
+                    
                     StartPollingForStatus(jobId);
+                    this.Close();
                 }
             }
             catch (Exception)
@@ -212,7 +213,6 @@ namespace Mentornote.Desktop
             {
                 using var appointment = new MultipartFormDataContent();
                 appointment.Add(new StringContent(TitleInput.Text), "Title");
-                //appointment.Add(new StringContent(AppointmentDescription.Text), "Description");
                 appointment.Add(new StringContent(OrganizerInput.Text), "Organizer");
                 appointment.Add(new StringContent(DateInput.Text), "Date");
                 appointment.Add(new StringContent(StartTimeInput.Text), "StartTime");
@@ -220,6 +220,7 @@ namespace Mentornote.Desktop
                 appointment.Add(new StringContent(DateInput.Text), "Date");
                 appointment.Add(new StringContent(OrganizerInput.Text), "Organizer");
                 appointment.Add(new StringContent(StatusInput.Text), "Status");
+                appointment.Add(new StringContent(AppointmentTypeInput.Text), "AppointmentType");
 
                 // Add files to remove
                 foreach (var fileId in removedFilesID)
@@ -249,6 +250,7 @@ namespace Mentornote.Desktop
 
                     System.Windows.MessageBox.Show($"✅ Update started You can keep working.");
 
+                    this.Close();
                     StartPollingForStatus(jobId);
                 }
             }
@@ -318,11 +320,11 @@ namespace Mentornote.Desktop
 
             TitleInput.Text = appointment.Title;
             AppointmentInfoTitle.Text = appointment.Title;
-            //AppointmentDescription.Text = appointment.Description;
             DateInput.Text = appointment.Date.ToString();
             StartTimeInput.Text = appointment.StartTime?.ToString("h:mm tt") ?? "";
             EndTimeInput.Text = appointment.EndTime?.ToString("h:mm tt") ?? "";
             OrganizerInput.Text = appointment.Organizer;
+            AppointmentTypeInput.Text = appointment.AppointmentType;
 
             // Set the Default Status
             StatusInput.Items.Add("Scheduled");
