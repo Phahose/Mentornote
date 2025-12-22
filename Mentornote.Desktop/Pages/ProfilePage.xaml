@@ -70,7 +70,8 @@
 
                     <Button Content="Change Password"
                             Height="40"
-                            Margin="0,0,0,10"/>
+                            Margin="0,0,0,10"
+                            Click="ChangePassword_Click"/>
 
                     <Button Content="Delete Account"
                             Height="40"

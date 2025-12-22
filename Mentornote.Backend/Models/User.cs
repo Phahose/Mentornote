@@ -14,5 +14,6 @@ namespace Mentornote.Backend.Models
         public string UserType { get; set; }
         public int TrialMeetingsRemaining { get; set; }
         public bool IsSubscribed { get; set; }
+        public DateTime PasswordChangedAt { get; set; }
     }
 }

@@ -720,7 +720,58 @@ namespace Mentornote.Backend.Services
                         CreatedAt = reader.GetDateTime(reader.GetOrdinal("CreatedAt")),
                         AuthProvider = (string)reader["AuthProvider"],
                         TrialMeetingsRemaining = (int)reader["TrialMeetingsRemaining"],
-                        IsSubscribed = (bool)reader["IsSubscribed"]
+                        IsSubscribed = (bool)reader["IsSubscribed"],
+                        PasswordChangedAt = reader.GetDateTime(reader.GetOrdinal("PasswordChangedAt")),
+                    };
+                }
+            }
+            reader.Close();
+            mentornoteCoonnection.Close();
+            return user;
+        }
+        public User GetUserById(int userid)
+        {
+            User user = new();
+            SqlConnection mentornoteCoonnection = new SqlConnection();
+            mentornoteCoonnection.ConnectionString = _connectionString;
+            mentornoteCoonnection.Open();
+
+            SqlCommand GetUser = new()
+            {
+                CommandType = CommandType.StoredProcedure,
+                Connection = mentornoteCoonnection,
+                CommandText = "GetUserById"
+            };
+
+            SqlParameter IdParameter = new()
+            {
+                ParameterName = "@UserId",
+                SqlDbType = SqlDbType.VarChar,
+                Direction = ParameterDirection.Input,
+                SqlValue = userid
+            };
+
+            GetUser.Parameters.Add(IdParameter);
+            SqlDataReader reader = GetUser.ExecuteReader();
+
+            if (reader.HasRows)
+            {
+                while (reader.Read())
+                {
+                    user = new User
+                    {
+                        Id = (int)reader["Id"],
+                        FirstName = (string)reader["FirstName"],
+                        LastName = (string)reader["LastName"],
+                        Email = (string)reader["Email"],
+                        PasswordSalt = (byte[])reader["PasswordSalt"],
+                        PasswordHash = (byte[])reader["PasswordHash"],
+                        UserType = (string)reader["UserType"],
+                        CreatedAt = reader.GetDateTime(reader.GetOrdinal("CreatedAt")),
+                        AuthProvider = (string)reader["AuthProvider"],
+                        TrialMeetingsRemaining = (int)reader["TrialMeetingsRemaining"],
+                        IsSubscribed = (bool)reader["IsSubscribed"],
+                        PasswordChangedAt = reader.GetDateTime(reader.GetOrdinal("PasswordChangedAt")),
                     };
                 }
             }
@@ -746,9 +797,6 @@ namespace Mentornote.Backend.Services
                 cmd.Parameters.AddWithValue("@TrialMeetingsRemaining", user.TrialMeetingsRemaining);
                 cmd.Parameters.AddWithValue("@IsSubscribed", user.IsSubscribed);
 
-
-
-
                 SqlParameter outputId = new SqlParameter("@UserId", SqlDbType.Int)
                 {
                     Direction = ParameterDirection.Output
@@ -761,6 +809,24 @@ namespace Mentornote.Backend.Services
                 return (int)outputId.Value;
             }
         }
+
+        public void UpdateUserPassword(User user)
+        {
+            using var conn = new SqlConnection(_connectionString);
+            conn.Open();
+
+            using var cmd = new SqlCommand("UpdateUserPassword", conn);
+            cmd.CommandType = CommandType.StoredProcedure;
+
+            cmd.Parameters.AddWithValue("@UserId", user.Id);
+            cmd.Parameters.AddWithValue("@PasswordHash", user.PasswordHash);
+            cmd.Parameters.AddWithValue("@PasswordSalt", user.PasswordSalt);
+            cmd.Parameters.AddWithValue("@PasswordChangedAt", user.PasswordChangedAt);
+
+            cmd.ExecuteNonQuery();
+            conn.Close();
+        }
+
 
         public void SaveRefreshToken(RefreshToken token)
         {
@@ -777,6 +843,7 @@ namespace Mentornote.Backend.Services
             cmd.Parameters.AddWithValue("@CreatedAt", token.CreatedAt);
 
             cmd.ExecuteNonQuery();
+            conn.Close();
         }
 
         public RefreshToken GetRefreshToken(string token)

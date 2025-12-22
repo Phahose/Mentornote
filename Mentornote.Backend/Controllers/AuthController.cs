@@ -69,6 +69,11 @@ namespace Mentornote.Backend.Controllers
             // Rotate refresh token
             var user = _dbService.GetUserByEmail(existingToken.Email);
 
+            if (existingToken.CreatedAt < user.PasswordChangedAt)
+            {
+                return Unauthorized("Session expired. Please log in again.");
+            }
+
             var newRefreshToken = _authService.CreateRefreshToken(user);
 
             _dbService.RevokeToken(existingToken.Id, newRefreshToken.Token);
@@ -109,6 +114,24 @@ namespace Mentornote.Backend.Controllers
 
             return Ok();
         }
+
+        [Authorize]
+        [HttpPost("change-password")]
+        public IActionResult ChangePassword(ChangePasswordDto dto)
+        {
+            int userId = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier).Value);
+
+            var result = _authService.ChangePassword(userId, dto);
+
+            if (!result.Success)
+            {
+                return BadRequest(result.Message);
+            }
+
+            return Ok(result.Message);
+        }
+
+       
 
     }
 }

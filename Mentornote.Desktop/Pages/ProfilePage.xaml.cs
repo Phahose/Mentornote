@@ -38,5 +38,12 @@ namespace Mentornote.Desktop.Pages
             // close the MainWindow
             Window.GetWindow(this).Close();
         }
+
+        private void ChangePassword_Click(object sender, RoutedEventArgs e)
+        {
+            var window = new ChangePasswordWindow();
+            window.ShowDialog();
+        }
+
     }
 }

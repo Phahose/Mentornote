@@ -17,7 +17,7 @@ ADD
 
 
 ALTER TABLE Users
-ADD
+ADD PasswordChangedAt DATETIME2 NULL,
     TrialMeetingsRemaining INT NOT NULL CONSTRAINT DF_Users_TrialMeetingsRemaining DEFAULT 5,
     IsSubscribed BIT NOT NULL CONSTRAINT DF_Users_IsSubscribed DEFAULT 0;
 
@@ -26,9 +26,9 @@ ADD StripeCustomerId NVARCHAR(255) NULL,
     StripeSubscriptionId NVARCHAR(255) NULL;
 
 
+UPDATE Users
+SET PasswordChangedAt = CreatedAt;
 
-
-DROP TABLE Users;
 
 EXEC sp_rename 'Users', 'Users_OLD';
 
@@ -1450,3 +1450,37 @@ BEGIN
 END
 GO
 
+CREATE OR ALTER PROCEDURE UpdateUserPassword
+    @UserId INT,
+    @PasswordHash VARBINARY(64),
+    @PasswordSalt VARBINARY(128),
+    @PasswordChangedAt DATETIME2
+AS
+BEGIN
+    SET NOCOUNT ON;
+
+    UPDATE Users
+    SET PasswordHash = @PasswordHash,
+        PasswordSalt = @PasswordSalt,
+        PasswordChangedAt = @PasswordChangedAt
+    WHERE Id = @UserId;
+END
+
+CREATE OR ALTER PROCEDURE GetUserById
+    @UserId INT
+AS
+BEGIN
+    SET NOCOUNT ON;
+
+    SELECT *
+    FROM Users
+    WHERE Id = @UserId;
+END
+
+	
+
+DROP PROCEDURE UpdateUserPassword
+
+
+UPDATE Appointments
+SET AppointmentType = 'Job Interview';

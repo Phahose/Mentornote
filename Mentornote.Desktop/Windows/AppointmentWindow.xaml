@@ -5,7 +5,8 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:Mentornote.Desktop"
         mc:Ignorable="d"
-        Title="AppointmentWindow" Height="650" Width="800" MinHeight="500" MinWidth="650">
+        Title="AppointmentWindow" Height="650" Width="800" MinHeight="500" MinWidth="650"
+         ResizeMode="NoResize">
     <Grid Background="#FF242424">
        
         <!-- Define rows -->
