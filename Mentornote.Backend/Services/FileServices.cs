@@ -1,25 +1,19 @@
 ﻿#nullable disable
 using DocumentFormat.OpenXml.Packaging;
-using DocumentFormat.OpenXml.Vml;
-using Mentornote.Backend.DTO;
 using Mentornote.Backend.Models;
-using System.Numerics;
-using System.Text;
-using System.Text.Json;
 using System.Security.Cryptography;
 
 namespace Mentornote.Backend.Services
 {
     public class FileServices
     {
-        private readonly HttpClient _httpClient;
         private readonly RagService _ragService;
-        DBServices dBServices = new DBServices();
+        DBServices _dBServices;
 
-        public FileServices(RagService ragService)
+        public FileServices(RagService ragService, DBServices dBServices)
         {
-            _httpClient = new();
             _ragService = ragService;
+            _dBServices = dBServices;
         }
 
         public async Task ProcessFileAsync(string filePath, int documentID, int appointmentId)
@@ -44,7 +38,7 @@ namespace Mentornote.Backend.Services
                     };
 
                     // Save embedding to DB
-                    dBServices.AddAppointmentDocumentEmbedding(embedding);
+                    _dBServices.AddAppointmentDocumentEmbedding(embedding);
                 }
 
             }

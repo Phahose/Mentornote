@@ -11,7 +11,7 @@ namespace Mentornote.Backend.Controllers
     [Route("api/settings")]
     public class SettingsController : Controller
     {
-        DBServices _dBServices = new DBServices();
+        DBServices _dBServices;
 
         public SettingsController(DBServices dBServices)
         {

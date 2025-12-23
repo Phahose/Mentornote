@@ -12,21 +12,22 @@ namespace Mentornote.Backend.Services
     {
         private readonly HttpClient _httpClient;
         private readonly string _apiKey;
+        private readonly DBServices _dBServices;
 
-        public RagService(IConfiguration configuration)
+        public RagService(IConfiguration configuration, DBServices dBServices)
         {
             _httpClient = new HttpClient();
             _apiKey = configuration["Gemini:ApiKey"];
+            _dBServices = dBServices;
         }
 
         public async Task<List<AppointmentDocumentEmbedding>> GetRelevantChunksAsync(string transcript, int appointmentId)
         {
             // 1. Embed the user’s transcript snippet
             List<double> transcriptEmbed = await GenerateStatementEmbeddingAsync(transcript);
-            DBServices dBServices = new DBServices();
 
             // 2. Load all chunks for this meeting
-            List<AppointmentDocumentEmbedding> embeddings = await dBServices.GetChunksForAppointment(appointmentId);
+            List<AppointmentDocumentEmbedding> embeddings = await _dBServices.GetChunksForAppointment(appointmentId);
 
             // 3. Score them and store in an anonymous object
             var scored = embeddings.Select(e => new {

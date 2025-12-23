@@ -8,14 +8,20 @@ namespace Mentornote.Backend.Services
     public class DBServices
     {
         private string? _connectionString;
-        public DBServices()
+        //public DBServices()
+        //{
+        //    ConfigurationBuilder DatabaseUserBuilder = new ConfigurationBuilder();
+        //    DatabaseUserBuilder.SetBasePath(Directory.GetCurrentDirectory());
+        //    DatabaseUserBuilder.AddJsonFile("appsettings.json");
+        //    IConfiguration DatabaseUserConfiguration = DatabaseUserBuilder.Build();
+        //    // _connectionString = DatabaseUserConfiguration.GetConnectionString("DefaultConnection");
+        //    _connectionString = DatabaseUserConfiguration["ConnectionStrings:DefaultConnection"];
+        //}
+        public DBServices(IConfiguration configuration)
         {
-            ConfigurationBuilder DatabaseUserBuilder = new ConfigurationBuilder();
-            DatabaseUserBuilder.SetBasePath(Directory.GetCurrentDirectory());
-            DatabaseUserBuilder.AddJsonFile("appsettings.json");
-            IConfiguration DatabaseUserConfiguration = DatabaseUserBuilder.Build();
-            _connectionString = DatabaseUserConfiguration.GetConnectionString("DefaultConnection");
+            _connectionString = configuration.GetConnectionString("DefaultConnection")?? throw new InvalidOperationException("Database connection string not configured");
         }
+
 
         public int AddAppointment(Appointment appointment, int userId)
         {

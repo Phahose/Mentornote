@@ -7,9 +7,6 @@ using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using Stripe;
 using System.Text;
-
-
-
 namespace Mentornote.Backend
 {
     public class Program
@@ -25,9 +22,6 @@ namespace Mentornote.Backend
             // Make StripeSettings injectable
             builder.Services.AddSingleton(resolver =>
                 resolver.GetRequiredService<IOptions<StripeSettings>>().Value);
-
-            // Set Stripe API key (GLOBAL)
-            StripeConfiguration.ApiKey = builder.Configuration["Stripe:SecretKey"];
 
 
             // Register your service with the key

@@ -13,11 +13,12 @@ namespace Mentornote.Backend.Controllers
     public class AuthController : Controller
     {
         private readonly AuthService _authService;
-        private readonly DBServices _dbService = new DBServices();
+        private readonly DBServices _dbService;
 
-        public AuthController(AuthService authService)
+        public AuthController(AuthService authService, DBServices dBServices)
         {
             _authService = authService;
+            _dbService = dBServices;
         }
 
         [HttpPost("login")]

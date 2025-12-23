@@ -9,15 +9,19 @@ namespace Mentornote.Backend.Controllers
     [Route("api/summary")]
     public class SummaryController : Controller
     {
-        DBServices dBServices = new DBServices();
-       
+        DBServices _dBServices;
+        public SummaryController(DBServices dBServices)
+        {
+            _dBServices = dBServices;
+        }
+
         [HttpPost("save/{appointmentId}")]
         [Authorize]
         public IActionResult SaveSummary(int appointmentId, [FromBody] SummaryRequest request)
         {
             try
             {
-                int id = dBServices.AddAppointmentSummary(appointmentId, request.Summary);
+                int id = _dBServices.AddAppointmentSummary(appointmentId, request.Summary);
                 return Ok(new { SummaryId = id });
             }
             catch (Exception ex)
@@ -30,7 +34,7 @@ namespace Mentornote.Backend.Controllers
         [Authorize]
         public IActionResult GetSummary(int appointmentId)
         {
-            var summary = dBServices.GetSummaryByAppointmentId(appointmentId);
+            var summary = _dBServices.GetSummaryByAppointmentId(appointmentId);
 
             if (summary == null)
                 return NotFound("No summary exists for this appointment.");

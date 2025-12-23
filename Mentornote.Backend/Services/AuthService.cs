@@ -13,14 +13,13 @@ namespace Mentornote.Backend.Services
 {
     public class AuthService
     {
-        private readonly DBServices _dbServices = new DBServices();
+        private readonly DBServices _dbServices;
         private readonly IConfiguration _config;
-        private readonly DBServices _dBServices = new DBServices();
 
         public AuthService( IConfiguration config, DBServices dBServices)
         {
             _config = config;
-            _dBServices = dBServices;
+            _dbServices = dBServices;
         }
 
         public LoginResponseDTO AuthenticateAsync(string email, string password)
@@ -59,7 +58,7 @@ namespace Mentornote.Backend.Services
 
         public (bool Success ,string Message) RegisterAsync(UserDto dto)
         {
-            var existingUser = _dBServices.GetUserByEmail(dto.Email);
+            var existingUser = _dbServices.GetUserByEmail(dto.Email);
 
             if (existingUser.Email != "")
             {
@@ -82,7 +81,7 @@ namespace Mentornote.Backend.Services
                 IsSubscribed = dto.IsSubscribed
             };
 
-            int userId = _dBServices.RegisterUser(user);
+            int userId = _dbServices.RegisterUser(user);
             return (true, "Account Created Successfully");
         }
 
@@ -128,7 +127,7 @@ namespace Mentornote.Backend.Services
 
         public (bool Success, string Message) ChangePassword(int userId, ChangePasswordDto dto)
         {
-            var user = _dBServices.GetUserById(userId);
+            var user = _dbServices.GetUserById(userId);
 
             if (user == null)
             {
@@ -159,7 +158,7 @@ namespace Mentornote.Backend.Services
             user.PasswordSalt = hmac.Key;
             user.PasswordChangedAt = DateTime.UtcNow;
 
-            _dBServices.UpdateUserPassword(user);
+            _dbServices.UpdateUserPassword(user);
 
             return (true, "Password updated successfully.");
         }
