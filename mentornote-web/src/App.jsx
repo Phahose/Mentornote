@@ -175,7 +175,7 @@ export default function App() {
       </section>
 
       {/* FEEDBACK */}
-<section className="feedback">
+{/* <section className="feedback">
   <h2>Share your thoughts</h2>
   <p className="feedback-subtitle">
     Your feedback helps make MentorNote better. Let us know what's working,
@@ -208,7 +208,7 @@ export default function App() {
       Send feedback
     </button>
   </div>
-</section>
+</section> */}
     </div>
   );
 }

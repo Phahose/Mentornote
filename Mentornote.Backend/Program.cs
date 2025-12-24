@@ -25,20 +25,28 @@ namespace Mentornote.Backend
 
 
             // Register your service with the key
-            builder.Services.AddSingleton<Transcribe>();
-            builder.Services.AddSingleton<ConversationMemory>();  
-            builder.Services.AddSingleton<RagService>();
-            builder.Services.AddSingleton<AudioListener>();
-            builder.Services.AddSingleton<AuthService>();
-            builder.Services.AddSingleton<DBServices>();
-            builder.Services.AddSingleton<FileServices>();
-            builder.Services.AddSingleton<GeminiServices>();
+            builder.Services.AddScoped<Transcribe>();
+            builder.Services.AddScoped<ConversationMemory>();  
+            builder.Services.AddScoped<RagService>();
+            builder.Services.AddScoped<AudioListener>();
+            builder.Services.AddScoped<AuthService>();
+            builder.Services.AddScoped<DBServices>();
+            builder.Services.AddScoped<FileServices>();
+            builder.Services.AddScoped<GeminiServices>();
 
 
             //Add controllers and Swagger (same as before)
             builder.Services.AddControllers();
             builder.Services.AddEndpointsApiExplorer();
             builder.Services.AddSwaggerGen();
+
+            var cs = builder.Configuration.GetConnectionString("DefaultConnection");
+
+            if (string.IsNullOrWhiteSpace(cs))
+            {
+                throw new InvalidOperationException("DefaultConnection is missing.");
+            }
+
 
             // JWT Authentication
             builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
@@ -72,6 +80,7 @@ namespace Mentornote.Backend
             app.UseAuthorization();
             app.MapControllers();
             app.Run();
+            app.MapGet("/health", () => Results.Ok("Healthy"));
         }
     }
 
