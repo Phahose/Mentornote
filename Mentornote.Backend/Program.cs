@@ -25,14 +25,14 @@ namespace Mentornote.Backend
 
 
             // Register your service with the key
-            builder.Services.AddScoped<Transcribe>();
-            builder.Services.AddScoped<ConversationMemory>();  
-            builder.Services.AddScoped<RagService>();
-            builder.Services.AddScoped<AudioListener>();
-            builder.Services.AddScoped<AuthService>();
-            builder.Services.AddScoped<DBServices>();
-            builder.Services.AddScoped<FileServices>();
-            builder.Services.AddScoped<GeminiServices>();
+            builder.Services.AddSingleton<Transcribe>();
+            builder.Services.AddSingleton<ConversationMemory>();  
+            builder.Services.AddSingleton<RagService>();
+            builder.Services.AddSingleton<AudioListener>();
+            builder.Services.AddSingleton<AuthService>();
+            builder.Services.AddSingleton<DBServices>();
+            builder.Services.AddSingleton<FileServices>();
+            builder.Services.AddSingleton<GeminiServices>();
 
 
             //Add controllers and Swagger (same as before)

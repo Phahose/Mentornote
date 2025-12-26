@@ -150,7 +150,7 @@ namespace Mentornote.Desktop
                     var jobInfo = JsonSerializer.Deserialize<JobResponse>(json);
                     long jobId = jobInfo!.jobId;
 
-                    System.Windows.MessageBox.Show($"✅ Upload started You can keep working.");
+                    System.Windows.MessageBox.Show($"✅ Upload started Click Ok to Continue.");
                     
                     StartPollingForStatus(jobId);
                     this.Close();
@@ -447,6 +447,7 @@ namespace Mentornote.Desktop
             if (string.IsNullOrWhiteSpace(TitleInput.Text))
             {
                 MarkInvalid(TitleInput);
+                ErrorInfo.Text = "Title is required.";
                 isValid = false;
             }
             else MarkValid(TitleInput);
@@ -455,6 +456,7 @@ namespace Mentornote.Desktop
             if (!DateTime.TryParse(DateInput.Text, out _))
             {
                 MarkInvalid(DateInput);
+                ErrorInfo.Text = "Valid date is required.";
                 isValid = false;
             }
             else MarkValid(DateInput);
@@ -463,6 +465,7 @@ namespace Mentornote.Desktop
             if (!DateTime.TryParse(StartTimeInput.Text, out var startTime))
             {
                 MarkInvalid(StartTimeInput);
+                ErrorInfo.Text = "Valid start time is required.";
                 isValid = false;
             }
             else MarkValid(StartTimeInput);
@@ -471,6 +474,7 @@ namespace Mentornote.Desktop
             if (!DateTime.TryParse(EndTimeInput.Text, out var endTime))
             {
                 MarkInvalid(EndTimeInput);
+                ErrorInfo.Text = "Valid end time is required.";
                 isValid = false;
             }
             else MarkValid(EndTimeInput);
@@ -483,6 +487,7 @@ namespace Mentornote.Desktop
                 {
                     MarkInvalid(StartTimeInput);
                     MarkInvalid(EndTimeInput);
+                    ErrorInfo.Text = "Start time must be before end time.";
                     isValid = false;
                 }
             }

@@ -3,20 +3,15 @@ using Mentornote.Backend.Models;
 using Mentornote.Backend.Services;
 using NAudio.CoreAudioApi;
 using NAudio.Wave;
+using System.Media;
 
 namespace Mentornote.Backend
 {
-    /// <summary>
-    /// Captures system audio (loopback) and emits both:
-    ///  - full WAV file at the end (AudioFileReady)
-    ///  - small byte[] chunks during recording (AudioChunkReady)
-    /// </summary>
     public class AudioListener : IDisposable
     {
         private WasapiLoopbackCapture _capture;
         private string _currentDeviceId;
         private WaveFileWriter _writer;
-        private string _tempFile;
         private Timer _deviceMonitor;
 
         private readonly List<byte> _buffer = new();          
@@ -42,19 +37,37 @@ namespace Mentornote.Backend
       
         public void StartListening(int appointmentId)
         {
+     
             _appointmentId = appointmentId;
             var device = GetDefaultOutputDevice();
+
             _currentDeviceId = device.ID;
 
             // start  capture system audio   
-            _capture = new WasapiLoopbackCapture(device);            
+            _capture = new WasapiLoopbackCapture(device);
             _capture.DataAvailable += Capture_DataAvailable;
+            _capture.StartRecording();
+                
+
+            _capture.RecordingStopped += (s, e) =>
+            {
+                StopListening(appointmentId);
+                if (e.Exception != null)
+                {
+                    Console.WriteLine($"🛑 RecordingStopped with error: {e.Exception.Message}");
+                }
+                else
+                {
+                    Console.WriteLine("🛑 RecordingStopped normally (no error)");
+                }
+            };
 
             _summaryTimer = new Timer(async _ => await _geminiServices.GenerateRollingSummary(GetTranscriptHistory()), null, 15000, 15000);
-            _capture.StartRecording();
-            StartMonitoringDeviceChanges();
 
+
+            StartMonitoringDeviceChanges();
             Console.WriteLine("Listening started...");
+           
         }
 
         public void StopListening(int appointnmentid)
@@ -84,6 +97,8 @@ namespace Mentornote.Backend
             Console.WriteLine("🎧 Listening resumed");
         }
 
+
+
         private MMDevice GetDefaultOutputDevice()
         {
             return new MMDeviceEnumerator().GetDefaultAudioEndpoint(
@@ -91,6 +106,7 @@ namespace Mentornote.Backend
                 Role.Multimedia
             );
         }
+
 
         // Detect audio output device changes
         private void StartMonitoringDeviceChanges()
@@ -121,12 +137,13 @@ namespace Mentornote.Backend
             _capture = new WasapiLoopbackCapture(newDevice);
             _capture.DataAvailable += Capture_DataAvailable;
             _capture.StartRecording();
+            Console.WriteLine("Restart Capture");
+            Console.WriteLine(_capture.CaptureState);
         }
 
 
         private async void  Capture_DataAvailable(object sender, WaveInEventArgs e)
         {
-
             try
             {
                 // 1️  keep writing to the full meeting file

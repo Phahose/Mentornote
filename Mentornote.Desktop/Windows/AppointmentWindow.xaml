@@ -35,12 +35,13 @@
                            FontSize="16"
                            FontWeight="SemiBold"
                            Foreground="White"/>
-                
-                <TextBlock Text="23:00PM - 5:00AM"
-                           FontSize="10"
+
+                <TextBlock x:Name="ErrorInfo"
+                           Text="The Value Cannot be Null"
+                           FontSize="13"
                            Margin="30,0,0,0"
                            FontWeight="Bold"
-                           Foreground="LightBlue"/>
+                           Foreground="PaleVioletRed"/>
            </StackPanel>
         </Border>
 

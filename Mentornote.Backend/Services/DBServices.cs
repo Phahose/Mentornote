@@ -1,4 +1,5 @@
-﻿using Mentornote.Backend.Models;
+﻿#nullable disable
+using Mentornote.Backend.Models;
 using Microsoft.Data.SqlClient;
 using System.Data;
 
@@ -7,16 +8,8 @@ namespace Mentornote.Backend.Services
 {
     public class DBServices
     {
-        private string? _connectionString;
-        //public DBServices()
-        //{
-        //    ConfigurationBuilder DatabaseUserBuilder = new ConfigurationBuilder();
-        //    DatabaseUserBuilder.SetBasePath(Directory.GetCurrentDirectory());
-        //    DatabaseUserBuilder.AddJsonFile("appsettings.json");
-        //    IConfiguration DatabaseUserConfiguration = DatabaseUserBuilder.Build();
-        //    // _connectionString = DatabaseUserConfiguration.GetConnectionString("DefaultConnection");
-        //    _connectionString = DatabaseUserConfiguration["ConnectionStrings:DefaultConnection"];
-        //}
+        private string _connectionString;
+
         public DBServices(IConfiguration configuration)
         {
             _connectionString = configuration.GetConnectionString("DefaultConnection")?? throw new InvalidOperationException("Database connection string not configured");
@@ -200,18 +193,42 @@ namespace Mentornote.Backend.Services
                     {
                         Appointment appointment = new Appointment
                         {
-                            Id = reader.GetInt32(reader.GetOrdinal("Id")),
-                            UserId = reader.GetInt32(reader.GetOrdinal("UserId")),
-                            Title = reader.GetString(reader.GetOrdinal("Title")),
-                            AppointmentType = reader.GetString(reader.GetOrdinal("AppointmentType")),
-                            StartTime = reader.IsDBNull(reader.GetOrdinal("StartTime")) ? (DateTime?)null : reader.GetDateTime(reader.GetOrdinal("StartTime")),
-                            EndTime = reader.IsDBNull(reader.GetOrdinal("EndTime")) ? (DateTime?)null : reader.GetDateTime(reader.GetOrdinal("EndTime")),
-                            Status = reader.GetString(reader.GetOrdinal("Status")),
-                            Notes = reader.IsDBNull(reader.GetOrdinal("Notes")) ? null : reader.GetString(reader.GetOrdinal("Notes")),
-                            CreatedAt = reader.GetDateTime(reader.GetOrdinal("CreatedAt")),
-                            Date = reader.IsDBNull(reader.GetOrdinal("Date")) ? (DateTime?)null : reader.GetDateTime(reader.GetOrdinal("Date")),
-                            Organizer = reader.GetString(reader.GetOrdinal("Organizer")),
-                            SummaryExists = reader.GetBoolean(reader.GetOrdinal("SummaryExists"))
+                            Id = reader.IsDBNull(reader.GetOrdinal("Id"))
+                                ? 0
+                                : reader.GetInt32(reader.GetOrdinal("Id")),
+                                                        UserId = reader.IsDBNull(reader.GetOrdinal("UserId"))
+                                ? 0
+                                : reader.GetInt32(reader.GetOrdinal("UserId")),
+                                                        Title = reader.IsDBNull(reader.GetOrdinal("Title"))
+                                ? null
+                                : reader.GetString(reader.GetOrdinal("Title")),
+                                                        AppointmentType = reader.IsDBNull(reader.GetOrdinal("AppointmentType"))
+                                ? null
+                                : reader.GetString(reader.GetOrdinal("AppointmentType")),
+                                                        StartTime = reader.IsDBNull(reader.GetOrdinal("StartTime"))
+                                ? (DateTime?)null
+                                : reader.GetDateTime(reader.GetOrdinal("StartTime")),
+                                                        EndTime = reader.IsDBNull(reader.GetOrdinal("EndTime"))
+                                ? (DateTime?)null
+                                : reader.GetDateTime(reader.GetOrdinal("EndTime")),
+                                                        Status = reader.IsDBNull(reader.GetOrdinal("Status"))
+                                ? null
+                                : reader.GetString(reader.GetOrdinal("Status")),
+                                                        Notes = reader.IsDBNull(reader.GetOrdinal("Notes"))
+                                ? null
+                                : reader.GetString(reader.GetOrdinal("Notes")),
+                                                        CreatedAt = reader.IsDBNull(reader.GetOrdinal("CreatedAt"))
+                                ? default(DateTime)
+                                : reader.GetDateTime(reader.GetOrdinal("CreatedAt")),
+                                                        Date = reader.IsDBNull(reader.GetOrdinal("Date"))
+                                ? (DateTime?)null
+                                : reader.GetDateTime(reader.GetOrdinal("Date")),
+                                                        Organizer = reader.IsDBNull(reader.GetOrdinal("Organizer"))
+                                ? null
+                                : reader.GetString(reader.GetOrdinal("Organizer")),
+                                                        SummaryExists = reader.IsDBNull(reader.GetOrdinal("SummaryExists"))
+                                ? false
+                                : reader.GetBoolean(reader.GetOrdinal("SummaryExists"))
                         };
                         appointments.Add(appointment);
                     }
@@ -254,18 +271,42 @@ namespace Mentornote.Backend.Services
                 {
                     appointment = new Appointment
                     {
-                        Id = reader.GetInt32(reader.GetOrdinal("Id")),
-                        UserId = reader.GetInt32(reader.GetOrdinal("UserId")),
-                        Title = reader.GetString(reader.GetOrdinal("Title")),
-                        AppointmentType = reader.GetString(reader.GetOrdinal("AppointmentType")),
-                        StartTime = reader.IsDBNull(reader.GetOrdinal("StartTime")) ? (DateTime?)null : reader.GetDateTime(reader.GetOrdinal("StartTime")),
-                        EndTime = reader.IsDBNull(reader.GetOrdinal("EndTime")) ? (DateTime?)null : reader.GetDateTime(reader.GetOrdinal("EndTime")),
-                        Status = reader.GetString(reader.GetOrdinal("Status")),
-                        Notes = reader.IsDBNull(reader.GetOrdinal("Notes")) ? null : reader.GetString(reader.GetOrdinal("Notes")),
-                        CreatedAt = reader.GetDateTime(reader.GetOrdinal("CreatedAt")),
-                        Date = reader.IsDBNull(reader.GetOrdinal("Date")) ? (DateTime?)null : reader.GetDateTime(reader.GetOrdinal("Date")),
-                        Organizer = reader.GetString(reader.GetOrdinal("Organizer")),
-                        SummaryExists = reader.GetBoolean(reader.GetOrdinal("SummaryExists"))
+                        Id = reader.IsDBNull(reader.GetOrdinal("Id"))
+                                ? 0
+                                : reader.GetInt32(reader.GetOrdinal("Id")),
+                        UserId = reader.IsDBNull(reader.GetOrdinal("UserId"))
+                                ? 0
+                                : reader.GetInt32(reader.GetOrdinal("UserId")),
+                        Title = reader.IsDBNull(reader.GetOrdinal("Title"))
+                                ? null
+                                : reader.GetString(reader.GetOrdinal("Title")),
+                        AppointmentType = reader.IsDBNull(reader.GetOrdinal("AppointmentType"))
+                                ? null
+                                : reader.GetString(reader.GetOrdinal("AppointmentType")),
+                        StartTime = reader.IsDBNull(reader.GetOrdinal("StartTime"))
+                                ? (DateTime?)null
+                                : reader.GetDateTime(reader.GetOrdinal("StartTime")),
+                        EndTime = reader.IsDBNull(reader.GetOrdinal("EndTime"))
+                                ? (DateTime?)null
+                                : reader.GetDateTime(reader.GetOrdinal("EndTime")),
+                        Status = reader.IsDBNull(reader.GetOrdinal("Status"))
+                                ? null
+                                : reader.GetString(reader.GetOrdinal("Status")),
+                        Notes = reader.IsDBNull(reader.GetOrdinal("Notes"))
+                                ? null
+                                : reader.GetString(reader.GetOrdinal("Notes")),
+                        CreatedAt = reader.IsDBNull(reader.GetOrdinal("CreatedAt"))
+                                ? default(DateTime)
+                                : reader.GetDateTime(reader.GetOrdinal("CreatedAt")),
+                        Date = reader.IsDBNull(reader.GetOrdinal("Date"))
+                                ? (DateTime?)null
+                                : reader.GetDateTime(reader.GetOrdinal("Date")),
+                        Organizer = reader.IsDBNull(reader.GetOrdinal("Organizer"))
+                                ? null
+                                : reader.GetString(reader.GetOrdinal("Organizer")),
+                        SummaryExists = reader.IsDBNull(reader.GetOrdinal("SummaryExists"))
+                                ? false
+                                : reader.GetBoolean(reader.GetOrdinal("SummaryExists"))
                     };
                 }
                 connection.Close();
@@ -359,9 +400,9 @@ namespace Mentornote.Backend.Services
             };
 
             cmd.Parameters.AddWithValue("@JobType", job.JobType);
-            cmd.Parameters.AddWithValue("@ReferenceId", (object?)job.ReferenceId ?? DBNull.Value);
-            cmd.Parameters.AddWithValue("@ReferenceType", (object?)job.ReferenceType ?? DBNull.Value);
-            cmd.Parameters.AddWithValue("@Payload", (object?)job.Payload ?? DBNull.Value);
+            cmd.Parameters.AddWithValue("@ReferenceId", (object)job.ReferenceId ?? DBNull.Value);
+            cmd.Parameters.AddWithValue("@ReferenceType", (object)job.ReferenceType ?? DBNull.Value);
+            cmd.Parameters.AddWithValue("@Payload", (object)job.Payload ?? DBNull.Value);
 
             var output = new SqlParameter("@JobId", SqlDbType.BigInt)
             {
@@ -386,8 +427,8 @@ namespace Mentornote.Backend.Services
 
             cmd.Parameters.AddWithValue("@JobId", job.Id);
             cmd.Parameters.AddWithValue("@Status", job.Status);
-            cmd.Parameters.AddWithValue("@ResultMessage", (object?)job.ResultMessage ?? DBNull.Value);
-            cmd.Parameters.AddWithValue("@ErrorTrace", (object?)job.ErrorTrace ?? DBNull.Value);
+            cmd.Parameters.AddWithValue("@ResultMessage", (object)job.ResultMessage ?? DBNull.Value);
+            cmd.Parameters.AddWithValue("@ErrorTrace", (object)job.ErrorTrace ?? DBNull.Value);
 
             conn.Open();
             cmd.ExecuteNonQuery();
@@ -717,17 +758,17 @@ namespace Mentornote.Backend.Services
                     user = new User
                     {
                         Id = (int)reader["Id"],
-                        FirstName = (string)reader["FirstName"],
-                        LastName = (string)reader["LastName"],
-                        Email = (string)reader["Email"],
-                        PasswordSalt = (byte[])reader["PasswordSalt"],
-                        PasswordHash = (byte[])reader["PasswordHash"],
-                        UserType = (string)reader["UserType"],
-                        CreatedAt = reader.GetDateTime(reader.GetOrdinal("CreatedAt")),
-                        AuthProvider = (string)reader["AuthProvider"],
-                        TrialMeetingsRemaining = (int)reader["TrialMeetingsRemaining"],
-                        IsSubscribed = (bool)reader["IsSubscribed"],
-                        PasswordChangedAt = reader.GetDateTime(reader.GetOrdinal("PasswordChangedAt")),
+                        FirstName = reader["FirstName"] as string,
+                        LastName = reader["LastName"] as string,
+                        Email = reader["Email"] as string,
+                        PasswordSalt = reader["PasswordSalt"] as byte[],
+                        PasswordHash = reader["PasswordHash"] as byte[],
+                        UserType = reader["UserType"] as string,
+                        CreatedAt = reader.IsDBNull(reader.GetOrdinal("CreatedAt")) ? default(DateTime): reader.GetDateTime(reader.GetOrdinal("CreatedAt")),
+                        AuthProvider = reader["AuthProvider"] as string,
+                        TrialMeetingsRemaining = reader.IsDBNull(reader.GetOrdinal("TrialMeetingsRemaining"))? 0: (int)reader["TrialMeetingsRemaining"],
+                        IsSubscribed = reader.IsDBNull(reader.GetOrdinal("IsSubscribed"))? false : (bool)reader["IsSubscribed"],
+                        PasswordChangedAt = reader.IsDBNull(reader.GetOrdinal("PasswordChangedAt"))? default(DateTime): reader.GetDateTime(reader.GetOrdinal("PasswordChangedAt")),
                     };
                 }
             }
