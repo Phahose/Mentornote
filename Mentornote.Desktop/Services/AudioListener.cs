@@ -1,11 +1,18 @@
 ﻿#nullable disable
+using Mentornote.Backend.DTO;
 using Mentornote.Backend.Models;
 using Mentornote.Backend.Services;
+using Mentornote.Desktop.Services;
 using NAudio.CoreAudioApi;
 using NAudio.Wave;
+using System.IO;
 using System.Media;
+using System.Net.Http;
+using System.Net.Http.Json;
+using System.Threading.Tasks;
+using Timer = System.Threading.Timer;
 
-namespace Mentornote.Backend
+namespace Mentornote.Desktop
 {
     public class AudioListener : IDisposable
     {
@@ -20,24 +27,21 @@ namespace Mentornote.Backend
         // This is an event it is not a regular declaration
         // It says "when the audio file is ready and when we have a new chunck of audi ready for processig, notify anyone who is listening"
         public event EventHandler<byte[]> AudioChunkReady;    // chunk ready for real-time processing
-        private readonly Transcribe _transcribe;
-        private readonly GeminiServices _geminiServices;
         public event EventHandler<string> TranscriptReady;
         private readonly List<Utterance> _transcriptHistory = new();
         public string FullMeetingTranscript;
         public Timer _summaryTimer;
         public int _appointmentId;
         public bool _isPaused = false;
-        public AudioListener(Transcribe transcribe, GeminiServices geminiServices)
+        public AudioListener()
         {
-            _transcribe = transcribe;
-            _geminiServices = geminiServices;
+
         }
 
-      
-        public void StartListening(int appointmentId)
+
+        public async Task StartListening(int appointmentId)
         {
-     
+
             _appointmentId = appointmentId;
             var device = GetDefaultOutputDevice();
 
@@ -47,7 +51,7 @@ namespace Mentornote.Backend
             _capture = new WasapiLoopbackCapture(device);
             _capture.DataAvailable += Capture_DataAvailable;
             _capture.StartRecording();
-                
+
 
             _capture.RecordingStopped += (s, e) =>
             {
@@ -61,14 +65,44 @@ namespace Mentornote.Backend
                     Console.WriteLine("🛑 RecordingStopped normally (no error)");
                 }
             };
+            
+            //List<Utterance> utterancesHistory = GetTranscriptHistory();
+            //var response = await ApiClient.Client.PostAsJsonAsync("gemini/generateRollingSummary", utterancesHistory);
+            //response.EnsureSuccessStatusCode();
+            //List<string> transcriptHistory = await response.Content.ReadFromJsonAsync<List<string>>();
 
-            _summaryTimer = new Timer(async _ => await _geminiServices.GenerateRollingSummary(GetTranscriptHistory()), null, 15000, 15000);
+            //var transcriptHistory =  _geminiServices.GenerateRollingSummary(utterancesHistory);
+            //_summaryTimer = new Timer(async _ => await _geminiServices.GenerateRollingSummary(GetTranscriptHistory()), null, 15000, 15000);
+            _summaryTimer = new Timer(
+                            async _ =>
+                            {
+                                try
+                                {
+                                    var resp = await ApiClient.Client.PostAsJsonAsync(
+                                        "gemini/generateRollingSummary",
+                                        GetTranscriptHistory()
+                                    );
+
+                                    resp.EnsureSuccessStatusCode();
+
+                                    List<string> transcriptHistory = await resp.Content.ReadFromJsonAsync<List<string>>();
+                                }
+                                catch (Exception ex)
+                                {
+                                    Console.WriteLine($"❌ Summary timer failed: {ex.Message}");
+                                }
+                            },
+                            null,
+                            TimeSpan.FromSeconds(15),
+                            TimeSpan.FromSeconds(15)
+                        );
+
 
 
             StartMonitoringDeviceChanges();
             Console.WriteLine("Listening started...");
-           
         }
+
 
         public void StopListening(int appointnmentid)
         {
@@ -182,8 +216,16 @@ namespace Mentornote.Backend
                     {
                         if (_isPaused == false)
                         {
-                            List<Utterance> transcriptList = await _transcribe.DeepGramLiveTranscribe(wavChunk, _appointmentId);
+                            var request = new AudioChunkRequest
+                            {
+                                WavChunk = wavChunk,
+                                AppointmentId = _appointmentId,
+                            };
+                            var response = await ApiClient.Client.PostAsJsonAsync($"transcribe/deepgramTranscribe/live", request);
 
+                            response.EnsureSuccessStatusCode();
+
+                            List<Utterance> transcriptList = await response.Content.ReadFromJsonAsync<List<Utterance>>(); 
                             foreach (var utterance in transcriptList)
                             {
                                 if (string.IsNullOrWhiteSpace(utterance.Text))

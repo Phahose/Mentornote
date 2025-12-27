@@ -1,4 +1,5 @@
 ﻿#nullable disable
+using Mentornote.Backend.DTO;
 using Mentornote.Backend.Models;
 using Mentornote.Backend.Services;
 using Microsoft.AspNetCore.Authorization;
@@ -13,14 +14,14 @@ namespace Mentornote.Backend.Controllers
     {
         private readonly ConversationMemory _memory = new();
         private readonly Transcribe _transcribe;
-        private readonly AudioListener _audioListener;
+
         private readonly GeminiServices _geminiServices;
 
-        public TranscribeController(ConversationMemory memory, Transcribe transcribe, AudioListener audioListener, GeminiServices geminiServices)
+        public TranscribeController(ConversationMemory memory, Transcribe transcribe, GeminiServices geminiServices)
         {
             _memory = memory;
             _transcribe = transcribe;
-            _audioListener = audioListener;
+
             _geminiServices = geminiServices;
         }
 
@@ -39,53 +40,6 @@ namespace Mentornote.Backend.Controllers
             return "";
         }
 
-        [HttpGet("gettranscript")]
-        [Authorize]
-        public List<Utterance> GetTranscriptHistory()
-        {
-            var transcripts = _audioListener.GetTranscriptHistory();
-            transcripts = transcripts.Where(u => u != null).ToList();
-           
-            return transcripts;
-        }
-
-        [HttpPost("start/{appointmentId}")]
-        [Authorize]
-        public IActionResult Start(int appointmentId)
-        {
-            _audioListener.StartListening(appointmentId);
-            return Ok("Listening started");
-        }
-
-        [HttpPost("stop/{appointmentId}")]
-        [Authorize]
-        public IActionResult Stop(int appointmentId)
-        {
-            _audioListener.StopListening(appointmentId);
-
-            return Ok("Listening stopped");
-        }
-
-        [HttpPost("pause")]
-        [Authorize]
-        public IActionResult Pause()
-        {
-            _audioListener.PauseListening();
-
-            return Ok("Listening paused");
-        }
-
-        
-        [HttpPost("resume")]
-        [Authorize]
-        public IActionResult Resune()
-        {
-            _audioListener.ResumeListening();
-
-            return Ok("Listening Resumed");
-        }
-
-        
         [HttpGet("memory")]
         [Authorize]
         public ActionResult<List<string>> GetMemory()
@@ -93,6 +47,20 @@ namespace Mentornote.Backend.Controllers
             var summaries = _geminiServices.GetSummaries() ?? new List<string>();
             return Ok(summaries);
         }
+
+        [HttpPost("deepgramTranscribe/live")]
+        [Authorize]
+        public async Task<IActionResult> DeepgramLive(AudioChunkRequest request)
+        {
+            if (request.WavChunk == null || request.WavChunk.Length == 0)
+            {
+                return BadRequest("Empty audio Chunk");
+            }
+            var transcriptList = await _transcribe.DeepGramLiveTranscribe(request.WavChunk, request.AppointmentId);
+
+            return Ok(transcriptList);
+        }
+
     }
 }
 

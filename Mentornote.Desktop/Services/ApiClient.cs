@@ -17,8 +17,8 @@ namespace Mentornote.Desktop.Services
         static ApiClient()
         {
             Client = new HttpClient();
-           // Client.BaseAddress = new Uri("http://localhost:5085/");
-            Client.BaseAddress = new Uri("https://api.mentornote.app/api/");
+            Client.BaseAddress = new Uri("http://localhost:5085/api/");
+            //Client.BaseAddress = new Uri("https://api.mentornote.app/api/");
         }
 
         public static void SetToken(string accessToken, string refreshToken)

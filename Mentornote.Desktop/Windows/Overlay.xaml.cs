@@ -1,4 +1,6 @@
 ﻿#nullable disable
+using AngleSharp.Io;
+using Azure;
 using Mentornote.Backend.DTO;
 using Mentornote.Backend.Models;
 using Mentornote.Desktop.Services;
@@ -23,7 +25,7 @@ namespace Mentornote.Desktop
         private int appId;
         private bool _dragFromSuggestionPanel = false;
         private Appointment _appointment;
-
+        AudioListener audioListener = new AudioListener();
 
         public Overlay(int appointmentId)
         {
@@ -43,7 +45,7 @@ namespace Mentornote.Desktop
 
         private async void Mic_Click(object sender, RoutedEventArgs e)
         {
-            User currentUser =  await ApiClient.Client.GetFromJsonAsync<User>("http://localhost:5085/api/auth/getUser");
+            User currentUser =  await ApiClient.Client.GetFromJsonAsync<User>("auth/getUser");
             _appointment = await ApiClient.Client.GetFromJsonAsync<Appointment>($"appointments/getAppointmentById/{appId}");
 
             if (currentUser == null) 
@@ -59,7 +61,10 @@ namespace Mentornote.Desktop
             }
             if (_isListening == false)
             {
-                await ApiClient.Client.PostAsync($"http://localhost:5085/api/transcribe/start/{appId}", null);
+              // var response =  await ApiClient.Client.PostAsync($"transcribe/start/{appId}", null);
+                await audioListener.StartListening(appId);
+
+                //response.EnsureSuccessStatusCode();
                 RecordingCheck.Text = "Listening";
                 _isListening = true;
                 ListeningSection.Visibility = Visibility.Visible;
@@ -70,14 +75,20 @@ namespace Mentornote.Desktop
                 if (_isPaused == false)
                 {
                     _isPaused = true;
-                    await ApiClient.Client.PostAsync($"http://localhost:5085/api/transcribe/pause", null);
+                    // var response = await ApiClient.Client.PostAsync($"transcribe/pause", null);
+                    // response.EnsureSuccessStatusCode();
+                    
+                    audioListener.PauseListening();
+                  
                     RecordingCheck.Text = "Listening Paused";
                     SuggestionSection.Visibility = Visibility.Collapsed;
                 }
                 else
                 {
                     _isPaused = false;
-                    await ApiClient.Client.PostAsync($"http://localhost:5085/api/transcribe/resume", null);
+                    //var response = await ApiClient.Client.PostAsync($"transcribe/resume", null);
+                    //response.EnsureSuccessStatusCode();
+                    audioListener.ResumeListening();
                     RecordingCheck.Text = "Listening";
                     SuggestionSection.Visibility = Visibility.Visible;
                 }
@@ -90,10 +101,13 @@ namespace Mentornote.Desktop
             try
             {
                 StatementText.Text = "Generating suggestion...";
+               
 
                 // 1️ Get transcript
-                List<Utterance> UtteraceList = await ApiClient.Client.GetFromJsonAsync<List<Utterance>>("http://localhost:5085/api/transcribe/gettranscript");
-                AppSettings settings = await ApiClient.Client.GetFromJsonAsync<AppSettings>("http://localhost:5085/api/settings/getAppSettings");
+               // List<Utterance> UtteraceList = await ApiClient.Client.GetFromJsonAsync<List<Utterance>>("transcribe/gettranscript");
+                List<Utterance> UtteraceList = audioListener.GetTranscriptHistory();
+                UtteraceList = UtteraceList.Where(u => u != null).ToList();
+                AppSettings settings = await ApiClient.Client.GetFromJsonAsync<AppSettings>("settings/getAppSettings");
                 List<string> transcriptList = UtteraceList?.Select(u => u.Text).ToList();
 
                 // 2. Safely convert to one single string
@@ -120,7 +134,7 @@ namespace Mentornote.Desktop
                                         .Select(CleanTranscript)
                                         .ToList();
 
-                var memorySummaries =  await ApiClient.Client.GetFromJsonAsync<List<string>>("http://localhost:5085/api/transcribe/memory");
+                var memorySummaries =  await ApiClient.Client.GetFromJsonAsync<List<string>>("transcribe/memory");
 
                 //Build SuggestionRequest
                 var requestPayload = new SuggestionRequest
@@ -138,7 +152,7 @@ namespace Mentornote.Desktop
 
 
                 // POST and get streaming response
-                var response = await ApiClient.Client.PostAsync($"http://localhost:5085/api/gemini/suggest/{appId}", content);
+                var response = await ApiClient.Client.PostAsync($"gemini/suggest/{appId}", content);
                 response.EnsureSuccessStatusCode();
 
                 var suggestion = await response.Content.ReadAsStringAsync();
@@ -173,12 +187,13 @@ namespace Mentornote.Desktop
 
         private async void Close_Click(object sender, RoutedEventArgs e)
         {
-            await ApiClient.Client.PostAsync($"http://localhost:5085/api/transcribe/stop/{appId}", null);
+            //await ApiClient.Client.PostAsync($"transcribe/stop/{appId}", null);
+            audioListener.StopListening(appId);
             _isListening = false;
 
 
             //Get transcript
-            List<Utterance> transcriptList = await ApiClient.Client.GetFromJsonAsync<List<Utterance>>("http://localhost:5085/api/transcribe/gettranscript");
+            List<Utterance> transcriptList = await ApiClient.Client.GetFromJsonAsync<List<Utterance>>("transcribe/gettranscript");
             string fullTranscript = string.Empty;
 
             // Handle null or empty
@@ -213,7 +228,7 @@ namespace Mentornote.Desktop
                 string summary;
                 if (appointment.SummaryExists == false)
                 {
-                    summary = await ApiClient.Client.PostAsync($"http://localhost:5085/api/gemini/summary/{appId}", transcriptContent).Result.Content.ReadAsStringAsync();
+                    summary = await ApiClient.Client.PostAsync($"gemini/summary/{appId}", transcriptContent).Result.Content.ReadAsStringAsync();
                 }
                 else
                 {
@@ -232,7 +247,7 @@ namespace Mentornote.Desktop
                             var body = new { summary = summary };
                             var json = JsonConvert.SerializeObject(body);
                             var content = new StringContent(json, Encoding.UTF8, "application/json");
-                            var response = await ApiClient.Client.PostAsync($"http://localhost:5085/api/summary/save/{appId}", content);
+                            var response = await ApiClient.Client.PostAsync($"summary/save/{appId}", content);
                             System.Windows.MessageBox.Show("Summary saved!");
                         }
                         catch (Exception ex)
@@ -241,7 +256,7 @@ namespace Mentornote.Desktop
                         }
                     }
                 }
-                await ApiClient.Client.PostAsync($"http://localhost:5085/api/auth/consume-trial", null);
+                await ApiClient.Client.PostAsync($"auth/consume-trial", null);
                 ListeningSection.Visibility = Visibility.Collapsed;
                 Close();
             }

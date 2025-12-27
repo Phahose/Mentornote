@@ -421,7 +421,7 @@ namespace Mentornote.Backend.Services
                         {
                             EmbeddingId = reader.GetInt32(reader.GetOrdinal("EmbeddingId")),
                             AppointmentId = reader.GetInt32(reader.GetOrdinal("AppointmentId")),
-                            AppointmentDocumentId = reader.GetOrdinal("AppointmentDocumentId"),
+                            AppointmentDocumentId = reader.GetInt32("AppointmentDocumentId"),
                             ChunkText = reader.GetString(reader.GetOrdinal("ChunkText")),
                             ChunkIndex = reader.GetInt32(reader.GetOrdinal("ChunkIndex")),
                             Vector = reader.GetString(reader.GetOrdinal("Vector"))

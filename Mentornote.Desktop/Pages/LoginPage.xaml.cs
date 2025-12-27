@@ -44,7 +44,7 @@ namespace Mentornote.Desktop.Pages
                     Password = password 
                 };
 
-                var response = await _http.PostAsJsonAsync("http://localhost:5085/api/auth/login", loginRequest);
+                var response = await _http.PostAsJsonAsync("auth/login", loginRequest);
 
                 if (!response.IsSuccessStatusCode)
                 {

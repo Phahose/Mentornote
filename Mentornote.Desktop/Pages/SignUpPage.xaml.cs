@@ -12,7 +12,7 @@ namespace Mentornote.Desktop.Pages
     public partial class SignUpPage : Page
     {
         private readonly AuthWindow _parent;
-        private readonly HttpClient _http = new HttpClient { BaseAddress = new Uri("http://localhost:5085/api/") };
+        private readonly HttpClient _http = new HttpClient { BaseAddress = new Uri("") };
 
 
         public SignUpPage(AuthWindow parent)
@@ -110,7 +110,7 @@ namespace Mentornote.Desktop.Pages
 
             try
             {
-                var response = await _http.PostAsJsonAsync("http://localhost:5085/api/auth/register", user);
+                var response = await _http.PostAsJsonAsync("auth/register", user);
 
                 if (!response.IsSuccessStatusCode)
                 {

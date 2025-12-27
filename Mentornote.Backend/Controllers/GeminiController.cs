@@ -23,14 +23,13 @@ namespace Mentornote.Backend.Controllers
         private readonly string _apiKey;
         private readonly HttpClient _httpClient;
         private readonly RagService _ragService;
-        private readonly AudioListener _audioListener;
+        //private readonly AudioListener _audioListener;
         private readonly GeminiServices _geminiServices;
-        public GeminiController(IConfiguration configuration, RagService ragService, AudioListener audioListener, GeminiServices geminiServices)
+        public GeminiController(IConfiguration configuration, RagService ragService, GeminiServices geminiServices)
         {
             _httpClient = new HttpClient();
             _apiKey = configuration["Gemini:ApiKey"];
             _ragService = ragService;
-            _audioListener = audioListener;
             _geminiServices = geminiServices;
         }
 
@@ -90,6 +89,14 @@ namespace Mentornote.Backend.Controllers
         public async Task<IActionResult> Summary(int appointmentId, [FromBody] SummaryRequest model)
         {
             var summary = await _geminiServices.GenerateMeetingSummary(appointmentId, model.Transcript);
+            return Ok(summary);
+        }
+
+        [HttpPost("generateRollingSummary")]
+        [Authorize]
+        public async Task<IActionResult> GenerateRollingSummary([FromBody] List<Utterance> utterances)
+        {
+            var summary = await _geminiServices.GenerateRollingSummary(utterances);
             return Ok(summary);
         }
 

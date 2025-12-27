@@ -31,6 +31,8 @@ namespace Mentornote.Desktop
         private List<FileDTO> uploadedFiles = new();
         private List<int> removedFilesID = new();
         private int appointmentId;
+        private const long MaxFileSizeBytes = 100L * 1024 * 1024; // 100 MB
+
 
 
         public AppointmentWindow(int appointmentId)
@@ -65,7 +67,18 @@ namespace Mentornote.Desktop
                 foreach (var path in dialog.FileNames)
                 {
                     if (!SelectedFiles.Any(f => f.FilePath == path))
+                    {
                         SelectedFiles.Add(new AppointmentFile { FilePath = path });
+                        var fileInfo = new FileInfo(path);
+                        if (fileInfo.Length > MaxFileSizeBytes)
+                        {
+                            System.Windows.MessageBox.Show($"❌ File '{fileInfo.Name}' exceeds the maximum size of 100 MB and will not be added.",
+                                "File Too Large",
+                                MessageBoxButton.OK,
+                                MessageBoxImage.Warning);
+                            return;
+                        }
+                    }   
                 }
             }
         }
@@ -92,6 +105,7 @@ namespace Mentornote.Desktop
                 string filePath = pendingFile.FilePath;
                 string fileName = $"{Guid.NewGuid()}_{System.IO.Path.GetFileName(filePath)}";
 
+              
                 try
                 { 
                     // Create file content
@@ -135,7 +149,7 @@ namespace Mentornote.Desktop
 
 
                 // 3️⃣ Send to backend API
-                var response = await ApiClient.Client.PostAsync("http://127.0.0.1:5085/api/appointments/upload", appointment);
+                var response = await ApiClient.Client.PostAsync("appointments/upload", appointment);
 
                 // 4️⃣ Handle response
                 if (!response.IsSuccessStatusCode)

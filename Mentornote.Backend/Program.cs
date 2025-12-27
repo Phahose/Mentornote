@@ -40,7 +40,7 @@ namespace Mentornote.Backend
             builder.Services.AddSingleton<Transcribe>();
             builder.Services.AddSingleton<ConversationMemory>();  
             builder.Services.AddSingleton<RagService>();
-            builder.Services.AddSingleton<AudioListener>();
+           // builder.Services.AddSingleton<AudioListener>();
             builder.Services.AddSingleton<AuthService>();
             builder.Services.AddSingleton<DBServices>();
             builder.Services.AddSingleton<FileServices>();
