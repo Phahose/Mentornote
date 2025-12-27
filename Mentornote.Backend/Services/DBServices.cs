@@ -9,10 +9,12 @@ namespace Mentornote.Backend.Services
     public class DBServices
     {
         private string _connectionString;
+        private readonly ILogger<DBServices> _logger;
 
-        public DBServices(IConfiguration configuration)
+        public DBServices(IConfiguration configuration, ILogger<DBServices> logger)
         {
             _connectionString = configuration.GetConnectionString("DefaultConnection")?? throw new InvalidOperationException("Database connection string not configured");
+            _logger = logger;
         }
 
 
@@ -20,11 +22,13 @@ namespace Mentornote.Backend.Services
         {
             try
             {
+                _logger.LogInformation("Adding appointment for UserId: {UserId}, Title: {Title}", userId, appointment.Title);
                 int appointmentId;
 
                 using SqlConnection connection = new SqlConnection(_connectionString);
                 {
                     connection.Open();
+                    _logger.LogInformation("Database connection opened for AddAppointment");
 
                     SqlCommand cmd = new SqlCommand
                     {
@@ -33,71 +37,27 @@ namespace Mentornote.Backend.Services
                         CommandText = "AddAppointment"
                     };
 
-                    // Parameters
-                    cmd.Parameters.Add(new SqlParameter("@UserId", SqlDbType.Int)
-                    {
-                        Direction = ParameterDirection.Input,
-                        SqlValue = userId
-                    });
-
-                    cmd.Parameters.Add(new SqlParameter("@Title", SqlDbType.NVarChar, 200)
-                    {
-                        Direction = ParameterDirection.Input,
-                        SqlValue = appointment.Title ?? (object)DBNull.Value
-                    });
-
-                    cmd.Parameters.Add(new SqlParameter("@StartTime", SqlDbType.DateTime2)
-                    {
-                        Direction = ParameterDirection.Input,
-                        SqlValue = appointment.StartTime ?? (object)DBNull.Value
-                    });
-
-                    cmd.Parameters.Add(new SqlParameter("@EndTime", SqlDbType.DateTime2)
-                    {
-                        Direction = ParameterDirection.Input,
-                        SqlValue = appointment.EndTime ?? (object)DBNull.Value
-                    });
-
-                    cmd.Parameters.Add(new SqlParameter("@Status", SqlDbType.NVarChar, 50)
-                    {
-                        Direction = ParameterDirection.Input,
-                        SqlValue = appointment.Status ?? (object)"Scheduled"
-                    });
-
-                    cmd.Parameters.Add(new SqlParameter("@Notes", SqlDbType.NVarChar)
-                    {
-                        Direction = ParameterDirection.Input,
-                        SqlValue = appointment.Notes ?? (object)DBNull.Value
-                    });
-
-                    cmd.Parameters.Add(new SqlParameter("@Date", SqlDbType.Date)
-                    {
-                        Direction = ParameterDirection.Input,
-                        SqlValue = appointment.Date
-                    });
-                    cmd.Parameters.Add(new SqlParameter("@Organizer", SqlDbType.NVarChar, 200)
-                    {
-                        Direction = ParameterDirection.Input,
-                        SqlValue = appointment.Organizer ?? (object)DBNull.Value
-                    });
-                    cmd.Parameters.Add(new SqlParameter("@AppointmentType", SqlDbType.NVarChar, 200)
-                    {
-                        Direction = ParameterDirection.Input,
-                        SqlValue = appointment.AppointmentType ?? (object)DBNull.Value
-                    });
-
+                    cmd.Parameters.Add(new SqlParameter("@UserId", SqlDbType.Int) { Direction = ParameterDirection.Input, SqlValue = userId });
+                    cmd.Parameters.Add(new SqlParameter("@Title", SqlDbType.NVarChar, 200) { Direction = ParameterDirection.Input, SqlValue = appointment.Title ?? (object)DBNull.Value });
+                    cmd.Parameters.Add(new SqlParameter("@StartTime", SqlDbType.DateTime2) { Direction = ParameterDirection.Input, SqlValue = appointment.StartTime ?? (object)DBNull.Value });
+                    cmd.Parameters.Add(new SqlParameter("@EndTime", SqlDbType.DateTime2) { Direction = ParameterDirection.Input, SqlValue = appointment.EndTime ?? (object)DBNull.Value });
+                    cmd.Parameters.Add(new SqlParameter("@Status", SqlDbType.NVarChar, 50) { Direction = ParameterDirection.Input, SqlValue = appointment.Status ?? (object)"Scheduled" });
+                    cmd.Parameters.Add(new SqlParameter("@Notes", SqlDbType.NVarChar) { Direction = ParameterDirection.Input, SqlValue = appointment.Notes ?? (object)DBNull.Value });
+                    cmd.Parameters.Add(new SqlParameter("@Date", SqlDbType.Date) { Direction = ParameterDirection.Input, SqlValue = appointment.Date });
+                    cmd.Parameters.Add(new SqlParameter("@Organizer", SqlDbType.NVarChar, 200) { Direction = ParameterDirection.Input, SqlValue = appointment.Organizer ?? (object)DBNull.Value });
+                    cmd.Parameters.Add(new SqlParameter("@AppointmentType", SqlDbType.NVarChar, 200) { Direction = ParameterDirection.Input, SqlValue = appointment.AppointmentType ?? (object)DBNull.Value });
 
                     appointmentId = Convert.ToInt32((decimal)cmd.ExecuteScalar());
-
                     connection.Close();
 
+                    _logger.LogInformation("Successfully added appointment with Id: {AppointmentId} for UserId: {UserId}", appointmentId, userId);
                 }
 
                 return appointmentId;
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"Error adding appointment: {ex.Message}");
+                _logger.LogError(ex, "Error adding appointment for UserId: {UserId}. Error: {ErrorMessage}", userId, ex.Message);
                 return 0;
             }
         }
@@ -106,367 +66,344 @@ namespace Mentornote.Backend.Services
         {
             try
             {
+                _logger.LogInformation("Adding appointment document for AppointmentId: {AppointmentId}, UserId: {UserId}", appointmentDoc.AppointmentId, appointmentDoc.UserId);
+
                 using SqlConnection connection = new SqlConnection(_connectionString);
                 {
                     connection.Open();
-                    SqlCommand cmd = new SqlCommand
-                    {
-                        CommandType = CommandType.StoredProcedure,
-                        Connection = connection,
-                        CommandText = "AddAppointmentDocument"
-                    };
-                    // Parameters
-                    cmd.Parameters.Add(new SqlParameter("@UserId", SqlDbType.Int)
-                    {
-                        Direction = ParameterDirection.Input,
-                        SqlValue = appointmentDoc.UserId,
-                    });
-                    cmd.Parameters.Add(new SqlParameter("@AppointmentId", SqlDbType.Int)
-                    {
-                        Direction = ParameterDirection.Input,
-                        SqlValue = appointmentDoc.AppointmentId
-                    });
-                    cmd.Parameters.Add(new SqlParameter("@DocumentPath", SqlDbType.NVarChar)
-                    {
-                        Direction = ParameterDirection.Input,
-                        SqlValue = appointmentDoc.DocumentPath ?? (object)DBNull.Value
-                    });
-                    cmd.Parameters.Add(new SqlParameter("@FileHash", SqlDbType.NVarChar)
-                    {
-                        Direction = ParameterDirection.Input,
-                        SqlValue = appointmentDoc.FileHash ?? (object)DBNull.Value
-                    });
+                    _logger.LogInformation("Database connection opened for AddAppointmentDocument");
+
+                    SqlCommand cmd = new SqlCommand { CommandType = CommandType.StoredProcedure, Connection = connection, CommandText = "AddAppointmentDocument" };
+                    cmd.Parameters.Add(new SqlParameter("@UserId", SqlDbType.Int) { Direction = ParameterDirection.Input, SqlValue = appointmentDoc.UserId });
+                    cmd.Parameters.Add(new SqlParameter("@AppointmentId", SqlDbType.Int) { Direction = ParameterDirection.Input, SqlValue = appointmentDoc.AppointmentId });
+                    cmd.Parameters.Add(new SqlParameter("@DocumentPath", SqlDbType.NVarChar) { Direction = ParameterDirection.Input, SqlValue = appointmentDoc.DocumentPath ?? (object)DBNull.Value });
+                    cmd.Parameters.Add(new SqlParameter("@FileHash", SqlDbType.NVarChar) { Direction = ParameterDirection.Input, SqlValue = appointmentDoc.FileHash ?? (object)DBNull.Value });
 
                     var result = cmd.ExecuteScalar();
-
-
                     connection.Close();
 
-                    return Convert.ToInt32(result);
+                    int documentId = Convert.ToInt32(result);
+                    _logger.LogInformation("Successfully added appointment document with Id: {DocumentId}", documentId);
+
+                    return documentId;
                 }
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"Error adding appointment note: {ex.Message}");
+                _logger.LogError(ex, "Error adding appointment document for AppointmentId: {AppointmentId}. Error: {ErrorMessage}", appointmentDoc.AppointmentId, ex.Message);
                 return 0;
             }
         }
 
         public int AddAppointmentDocumentEmbedding(AppointmentDocumentEmbedding embedding)
         {
-            using var connection = new SqlConnection(_connectionString);
-            using var command = new SqlCommand("AddAppointmentDocumentEmbedding", connection);
-            command.CommandType = CommandType.StoredProcedure;
+            try
+            {
+                _logger.LogInformation("Adding embedding for AppointmentDocumentId: {DocumentId}, ChunkIndex: {ChunkIndex}", embedding.AppointmentDocumentId, embedding.ChunkIndex);
 
-            command.Parameters.AddWithValue("@AppointmentDocumentId", embedding.AppointmentDocumentId);
-            command.Parameters.AddWithValue("@AppointmentId", embedding.AppointmentId);
-            command.Parameters.AddWithValue("@ChunkIndex", embedding.ChunkIndex);
-            command.Parameters.AddWithValue("@ChunkText", embedding.ChunkText);
-            command.Parameters.AddWithValue("@Vector", embedding.Vector);
+                using var connection = new SqlConnection(_connectionString);
+                using var command = new SqlCommand("AddAppointmentDocumentEmbedding", connection);
+                command.CommandType = CommandType.StoredProcedure;
 
-            connection.Open();
-            var result = command.ExecuteScalar();
-            return Convert.ToInt32(result); // returns the new EmbeddingId
+                command.Parameters.AddWithValue("@AppointmentDocumentId", embedding.AppointmentDocumentId);
+                command.Parameters.AddWithValue("@AppointmentId", embedding.AppointmentId);
+                command.Parameters.AddWithValue("@ChunkIndex", embedding.ChunkIndex);
+                command.Parameters.AddWithValue("@ChunkText", embedding.ChunkText);
+                command.Parameters.AddWithValue("@Vector", embedding.Vector);
+
+                connection.Open();
+                var result = command.ExecuteScalar();
+                int embeddingId = Convert.ToInt32(result);
+
+                _logger.LogInformation("Successfully added embedding with Id: {EmbeddingId}", embeddingId);
+                return embeddingId;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error adding embedding for AppointmentDocumentId: {DocumentId}. Error: {ErrorMessage}", embedding.AppointmentDocumentId, ex.Message);
+                throw;
+            }
         }
 
         public List<Appointment> GetAppointmentsByUserId(int userId)
         {
             try
             {
+                _logger.LogInformation("Fetching appointments for UserId: {UserId}", userId);
+
                 List<Appointment> appointments = new List<Appointment>();
                 using SqlConnection connection = new SqlConnection(_connectionString);
                 {
                     connection.Open();
-                    SqlCommand cmd = new SqlCommand
-                    {
-                        CommandType = CommandType.StoredProcedure,
-                        Connection = connection,
-                        CommandText = "GetUserAppointments"
-                    };
-                    cmd.Parameters.Add(new SqlParameter("@UserId", SqlDbType.Int)
-                    {
-                        Direction = ParameterDirection.Input,
-                        SqlValue = userId
-                    });
+                    SqlCommand cmd = new SqlCommand { CommandType = CommandType.StoredProcedure, Connection = connection, CommandText = "GetUserAppointments" };
+                    cmd.Parameters.Add(new SqlParameter("@UserId", SqlDbType.Int) { Direction = ParameterDirection.Input, SqlValue = userId });
+
                     using SqlDataReader reader = cmd.ExecuteReader();
                     while (reader.Read())
                     {
                         Appointment appointment = new Appointment
                         {
-                            Id = reader.IsDBNull(reader.GetOrdinal("Id"))
-                                ? 0
-                                : reader.GetInt32(reader.GetOrdinal("Id")),
-                                                        UserId = reader.IsDBNull(reader.GetOrdinal("UserId"))
-                                ? 0
-                                : reader.GetInt32(reader.GetOrdinal("UserId")),
-                                                        Title = reader.IsDBNull(reader.GetOrdinal("Title"))
-                                ? null
-                                : reader.GetString(reader.GetOrdinal("Title")),
-                                                        AppointmentType = reader.IsDBNull(reader.GetOrdinal("AppointmentType"))
-                                ? null
-                                : reader.GetString(reader.GetOrdinal("AppointmentType")),
-                                                        StartTime = reader.IsDBNull(reader.GetOrdinal("StartTime"))
-                                ? (DateTime?)null
-                                : reader.GetDateTime(reader.GetOrdinal("StartTime")),
-                                                        EndTime = reader.IsDBNull(reader.GetOrdinal("EndTime"))
-                                ? (DateTime?)null
-                                : reader.GetDateTime(reader.GetOrdinal("EndTime")),
-                                                        Status = reader.IsDBNull(reader.GetOrdinal("Status"))
-                                ? null
-                                : reader.GetString(reader.GetOrdinal("Status")),
-                                                        Notes = reader.IsDBNull(reader.GetOrdinal("Notes"))
-                                ? null
-                                : reader.GetString(reader.GetOrdinal("Notes")),
-                                                        CreatedAt = reader.IsDBNull(reader.GetOrdinal("CreatedAt"))
-                                ? default(DateTime)
-                                : reader.GetDateTime(reader.GetOrdinal("CreatedAt")),
-                                                        Date = reader.IsDBNull(reader.GetOrdinal("Date"))
-                                ? (DateTime?)null
-                                : reader.GetDateTime(reader.GetOrdinal("Date")),
-                                                        Organizer = reader.IsDBNull(reader.GetOrdinal("Organizer"))
-                                ? null
-                                : reader.GetString(reader.GetOrdinal("Organizer")),
-                                                        SummaryExists = reader.IsDBNull(reader.GetOrdinal("SummaryExists"))
-                                ? false
-                                : reader.GetBoolean(reader.GetOrdinal("SummaryExists"))
+                            Id = reader.IsDBNull(reader.GetOrdinal("Id")) ? 0 : reader.GetInt32(reader.GetOrdinal("Id")),
+                            UserId = reader.IsDBNull(reader.GetOrdinal("UserId")) ? 0 : reader.GetInt32(reader.GetOrdinal("UserId")),
+                            Title = reader.IsDBNull(reader.GetOrdinal("Title")) ? null : reader.GetString(reader.GetOrdinal("Title")),
+                            AppointmentType = reader.IsDBNull(reader.GetOrdinal("AppointmentType")) ? null : reader.GetString(reader.GetOrdinal("AppointmentType")),
+                            StartTime = reader.IsDBNull(reader.GetOrdinal("StartTime")) ? (DateTime?)null : reader.GetDateTime(reader.GetOrdinal("StartTime")),
+                            EndTime = reader.IsDBNull(reader.GetOrdinal("EndTime")) ? (DateTime?)null : reader.GetDateTime(reader.GetOrdinal("EndTime")),
+                            Status = reader.IsDBNull(reader.GetOrdinal("Status")) ? null : reader.GetString(reader.GetOrdinal("Status")),
+                            Notes = reader.IsDBNull(reader.GetOrdinal("Notes")) ? null : reader.GetString(reader.GetOrdinal("Notes")),
+                            CreatedAt = reader.IsDBNull(reader.GetOrdinal("CreatedAt")) ? default(DateTime) : reader.GetDateTime(reader.GetOrdinal("CreatedAt")),
+                            Date = reader.IsDBNull(reader.GetOrdinal("Date")) ? (DateTime?)null : reader.GetDateTime(reader.GetOrdinal("Date")),
+                            Organizer = reader.IsDBNull(reader.GetOrdinal("Organizer")) ? null : reader.GetString(reader.GetOrdinal("Organizer")),
+                            SummaryExists = reader.IsDBNull(reader.GetOrdinal("SummaryExists")) ? false : reader.GetBoolean(reader.GetOrdinal("SummaryExists"))
                         };
                         appointments.Add(appointment);
                     }
                     connection.Close();
                 }
+
+                _logger.LogInformation("Retrieved {AppointmentCount} appointments for UserId: {UserId}", appointments.Count, userId);
                 return appointments;
             }
             catch (Exception ex)
             {
-                Console.WriteLine(ex.Message);
+                _logger.LogError(ex, "Error fetching appointments for UserId: {UserId}. Error: {ErrorMessage}", userId, ex.Message);
                 return new List<Appointment>();
             }
-
         }
 
         public Appointment GetAppointmentById(int appointmentId, int userId)
         {
-            Appointment appointment = new();
-            using SqlConnection connection = new SqlConnection(_connectionString);
+            try
             {
-                connection.Open();
-                SqlCommand cmd = new SqlCommand
+                _logger.LogInformation("Fetching appointment {AppointmentId} for UserId: {UserId}", appointmentId, userId);
+
+                Appointment appointment = new();
+                using SqlConnection connection = new SqlConnection(_connectionString);
                 {
-                    CommandType = CommandType.StoredProcedure,
-                    Connection = connection,
-                    CommandText = "GetAppointmentById"
-                };
-                cmd.Parameters.Add(new SqlParameter("@Id", SqlDbType.Int)
-                {
-                    Direction = ParameterDirection.Input,
-                    SqlValue = appointmentId
-                });
-                cmd.Parameters.Add(new SqlParameter("@UserId", SqlDbType.Int)
-                {
-                    Direction = ParameterDirection.Input,
-                    SqlValue = userId
-                });
-                using SqlDataReader reader = cmd.ExecuteReader();
-                if (reader.Read())
-                {
-                    appointment = new Appointment
+                    connection.Open();
+                    SqlCommand cmd = new SqlCommand { CommandType = CommandType.StoredProcedure, Connection = connection, CommandText = "GetAppointmentById" };
+                    cmd.Parameters.Add(new SqlParameter("@Id", SqlDbType.Int) { Direction = ParameterDirection.Input, SqlValue = appointmentId });
+                    cmd.Parameters.Add(new SqlParameter("@UserId", SqlDbType.Int) { Direction = ParameterDirection.Input, SqlValue = userId });
+
+                    using SqlDataReader reader = cmd.ExecuteReader();
+                    if (reader.Read())
                     {
-                        Id = reader.IsDBNull(reader.GetOrdinal("Id"))
-                                ? 0
-                                : reader.GetInt32(reader.GetOrdinal("Id")),
-                        UserId = reader.IsDBNull(reader.GetOrdinal("UserId"))
-                                ? 0
-                                : reader.GetInt32(reader.GetOrdinal("UserId")),
-                        Title = reader.IsDBNull(reader.GetOrdinal("Title"))
-                                ? null
-                                : reader.GetString(reader.GetOrdinal("Title")),
-                        AppointmentType = reader.IsDBNull(reader.GetOrdinal("AppointmentType"))
-                                ? null
-                                : reader.GetString(reader.GetOrdinal("AppointmentType")),
-                        StartTime = reader.IsDBNull(reader.GetOrdinal("StartTime"))
-                                ? (DateTime?)null
-                                : reader.GetDateTime(reader.GetOrdinal("StartTime")),
-                        EndTime = reader.IsDBNull(reader.GetOrdinal("EndTime"))
-                                ? (DateTime?)null
-                                : reader.GetDateTime(reader.GetOrdinal("EndTime")),
-                        Status = reader.IsDBNull(reader.GetOrdinal("Status"))
-                                ? null
-                                : reader.GetString(reader.GetOrdinal("Status")),
-                        Notes = reader.IsDBNull(reader.GetOrdinal("Notes"))
-                                ? null
-                                : reader.GetString(reader.GetOrdinal("Notes")),
-                        CreatedAt = reader.IsDBNull(reader.GetOrdinal("CreatedAt"))
-                                ? default(DateTime)
-                                : reader.GetDateTime(reader.GetOrdinal("CreatedAt")),
-                        Date = reader.IsDBNull(reader.GetOrdinal("Date"))
-                                ? (DateTime?)null
-                                : reader.GetDateTime(reader.GetOrdinal("Date")),
-                        Organizer = reader.IsDBNull(reader.GetOrdinal("Organizer"))
-                                ? null
-                                : reader.GetString(reader.GetOrdinal("Organizer")),
-                        SummaryExists = reader.IsDBNull(reader.GetOrdinal("SummaryExists"))
-                                ? false
-                                : reader.GetBoolean(reader.GetOrdinal("SummaryExists"))
-                    };
+                        appointment = new Appointment
+                        {
+                            Id = reader.IsDBNull(reader.GetOrdinal("Id")) ? 0 : reader.GetInt32(reader.GetOrdinal("Id")),
+                            UserId = reader.IsDBNull(reader.GetOrdinal("UserId")) ? 0 : reader.GetInt32(reader.GetOrdinal("UserId")),
+                            Title = reader.IsDBNull(reader.GetOrdinal("Title")) ? null : reader.GetString(reader.GetOrdinal("Title")),
+                            AppointmentType = reader.IsDBNull(reader.GetOrdinal("AppointmentType")) ? null : reader.GetString(reader.GetOrdinal("AppointmentType")),
+                            StartTime = reader.IsDBNull(reader.GetOrdinal("StartTime")) ? (DateTime?)null : reader.GetDateTime(reader.GetOrdinal("StartTime")),
+                            EndTime = reader.IsDBNull(reader.GetOrdinal("EndTime")) ? (DateTime?)null : reader.GetDateTime(reader.GetOrdinal("EndTime")),
+                            Status = reader.IsDBNull(reader.GetOrdinal("Status")) ? null : reader.GetString(reader.GetOrdinal("Status")),
+                            Notes = reader.IsDBNull(reader.GetOrdinal("Notes")) ? null : reader.GetString(reader.GetOrdinal("Notes")),
+                            CreatedAt = reader.IsDBNull(reader.GetOrdinal("CreatedAt")) ? default(DateTime) : reader.GetDateTime(reader.GetOrdinal("CreatedAt")),
+                            Date = reader.IsDBNull(reader.GetOrdinal("Date")) ? (DateTime?)null : reader.GetDateTime(reader.GetOrdinal("Date")),
+                            Organizer = reader.IsDBNull(reader.GetOrdinal("Organizer")) ? null : reader.GetString(reader.GetOrdinal("Organizer")),
+                            SummaryExists = reader.IsDBNull(reader.GetOrdinal("SummaryExists")) ? false : reader.GetBoolean(reader.GetOrdinal("SummaryExists"))
+                        };
+                        _logger.LogInformation("Successfully retrieved appointment {AppointmentId}", appointmentId);
+                    }
+                    else
+                    {
+                        _logger.LogWarning("Appointment {AppointmentId} not found for UserId: {UserId}", appointmentId, userId);
+                    }
+                    connection.Close();
                 }
-                connection.Close();
+                return appointment;
             }
-            return appointment;
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error fetching appointment {AppointmentId}. Error: {ErrorMessage}", appointmentId, ex.Message);
+                return new Appointment();
+            }
         }
 
         public List<AppointmentDocument> GetAppointmentDocumentsByAppointmentId(int appointmentId, int userId)
         {
-            List<AppointmentDocument> documents = new List<AppointmentDocument>();
-            using SqlConnection connection = new SqlConnection(_connectionString);
+            try
             {
-                connection.Open();
-                SqlCommand cmd = new SqlCommand
+                _logger.LogInformation("Fetching documents for AppointmentId: {AppointmentId}", appointmentId);
+
+                List<AppointmentDocument> documents = new List<AppointmentDocument>();
+                using SqlConnection connection = new SqlConnection(_connectionString);
                 {
-                    CommandType = CommandType.StoredProcedure,
-                    Connection = connection,
-                    CommandText = "GetAppointmentNotes"
-                };
-                cmd.Parameters.Add(new SqlParameter("@AppointmentId", SqlDbType.Int)
-                {
-                    Direction = ParameterDirection.Input,
-                    SqlValue = appointmentId
-                });
-                cmd.Parameters.Add(new SqlParameter("@UserId", SqlDbType.Int)
-                {
-                    Direction = ParameterDirection.Input,
-                    SqlValue = userId
-                });
-                using SqlDataReader reader = cmd.ExecuteReader();
-                while (reader.Read())
-                {
-                    AppointmentDocument document = new AppointmentDocument
+                    connection.Open();
+                    SqlCommand cmd = new SqlCommand { CommandType = CommandType.StoredProcedure, Connection = connection, CommandText = "GetAppointmentNotes" };
+                    cmd.Parameters.Add(new SqlParameter("@AppointmentId", SqlDbType.Int) { Direction = ParameterDirection.Input, SqlValue = appointmentId });
+                    cmd.Parameters.Add(new SqlParameter("@UserId", SqlDbType.Int) { Direction = ParameterDirection.Input, SqlValue = userId });
+
+                    using SqlDataReader reader = cmd.ExecuteReader();
+                    while (reader.Read())
                     {
-                        Id = reader.GetInt32(reader.GetOrdinal("Id")),
-                        UserId = reader.GetInt32(reader.GetOrdinal("UserId")),
-                        AppointmentId = reader.GetInt32(reader.GetOrdinal("AppointmentId")),
-                        DocumentPath = reader.GetString(reader.GetOrdinal("DocumentPath")),
-                        CreatedAt = reader.GetDateTime(reader.GetOrdinal("CreatedAt")),
-                        FileHash = reader.IsDBNull(reader.GetOrdinal("FileHash")) ? null: reader.GetString(reader.GetOrdinal("FileHash"))
-                    };
-                    documents.Add(document);
+                        AppointmentDocument document = new AppointmentDocument
+                        {
+                            Id = reader.GetInt32(reader.GetOrdinal("Id")),
+                            UserId = reader.GetInt32(reader.GetOrdinal("UserId")),
+                            AppointmentId = reader.GetInt32(reader.GetOrdinal("AppointmentId")),
+                            DocumentPath = reader.GetString(reader.GetOrdinal("DocumentPath")),
+                            CreatedAt = reader.GetDateTime(reader.GetOrdinal("CreatedAt")),
+                            FileHash = reader.IsDBNull(reader.GetOrdinal("FileHash")) ? null : reader.GetString(reader.GetOrdinal("FileHash"))
+                        };
+                        documents.Add(document);
+                    }
+                    connection.Close();
                 }
-                connection.Close();
+
+                _logger.LogInformation("Retrieved {DocumentCount} documents for AppointmentId: {AppointmentId}", documents.Count, appointmentId);
+                return documents;
             }
-            return documents;
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error fetching documents for AppointmentId: {AppointmentId}. Error: {ErrorMessage}", appointmentId, ex.Message);
+                return new List<AppointmentDocument>();
+            }
         }
 
         public List<AppointmentDocumentEmbedding> GetEmbeddingsByDocumentId(int appointmentDocumentId)
         {
-            List<AppointmentDocumentEmbedding> embeddings = new List<AppointmentDocumentEmbedding>();
-            using SqlConnection connection = new SqlConnection(_connectionString);
+            try
             {
-                connection.Open();
-                SqlCommand cmd = new SqlCommand
+                _logger.LogInformation("Fetching embeddings for AppointmentDocumentId: {DocumentId}", appointmentDocumentId);
+                
+                List<AppointmentDocumentEmbedding> embeddings = new List<AppointmentDocumentEmbedding>();
+                using SqlConnection connection = new SqlConnection(_connectionString);
                 {
-                    CommandType = CommandType.StoredProcedure,
-                    Connection = connection,
-                    CommandText = "GetEmbeddingsByDocumentId"
-                };
-                cmd.Parameters.Add(new SqlParameter("@AppointmentDocumentId", SqlDbType.Int)
-                {
-                    Direction = ParameterDirection.Input,
-                    SqlValue = appointmentDocumentId
-                });
-                using SqlDataReader reader = cmd.ExecuteReader();
-                while (reader.Read())
-                {
-                    AppointmentDocumentEmbedding embedding = new AppointmentDocumentEmbedding
+                    connection.Open();
+                    SqlCommand cmd = new SqlCommand { CommandType = CommandType.StoredProcedure, Connection = connection, CommandText = "GetEmbeddingsByDocumentId" };
+                    cmd.Parameters.Add(new SqlParameter("@AppointmentDocumentId", SqlDbType.Int) { Direction = ParameterDirection.Input, SqlValue = appointmentDocumentId });
+                    
+                    using SqlDataReader reader = cmd.ExecuteReader();
+                    while (reader.Read())
                     {
-                        EmbeddingId = reader.GetInt32(reader.GetOrdinal("EmbeddingId")),
-                        AppointmentDocumentId = reader.GetInt32(reader.GetOrdinal("AppointmentDocumentId")),
-                        ChunkIndex = reader.GetInt32(reader.GetOrdinal("ChunkIndex")),
-                        ChunkText = reader.GetString(reader.GetOrdinal("ChunkText")),
-                        Vector = reader.GetString(reader.GetOrdinal("Vector")),
-                        CreatedAt = reader.GetDateTime(reader.GetOrdinal("CreatedAt"))
-                    };
-                    embeddings.Add(embedding);
+                        AppointmentDocumentEmbedding embedding = new AppointmentDocumentEmbedding
+                        {
+                            EmbeddingId = reader.GetInt32(reader.GetOrdinal("EmbeddingId")),
+                            AppointmentDocumentId = reader.GetInt32(reader.GetOrdinal("AppointmentDocumentId")),
+                            ChunkIndex = reader.GetInt32(reader.GetOrdinal("ChunkIndex")),
+                            ChunkText = reader.GetString(reader.GetOrdinal("ChunkText")),
+                            Vector = reader.GetString(reader.GetOrdinal("Vector")),
+                            CreatedAt = reader.GetDateTime(reader.GetOrdinal("CreatedAt"))
+                        };
+                        embeddings.Add(embedding);
+                    }
+                    connection.Close();
                 }
-                connection.Close();
+                
+                _logger.LogInformation("Retrieved {EmbeddingCount} embeddings for DocumentId: {DocumentId}", embeddings.Count, appointmentDocumentId);
+                return embeddings;
             }
-            return embeddings;
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error fetching embeddings for DocumentId: {DocumentId}. Error: {ErrorMessage}", appointmentDocumentId, ex.Message);
+                return new List<AppointmentDocumentEmbedding>();
+            }
         }
 
         public long CreateJob(BackgroundJob job)
         {
-            using var conn = new SqlConnection(_connectionString);
-            using var cmd = new SqlCommand("CreateBackgroundJob", conn)
+            try
             {
-                CommandType = CommandType.StoredProcedure
-            };
+                _logger.LogInformation("Creating background job of type: {JobType}", job.JobType);
 
-            cmd.Parameters.AddWithValue("@JobType", job.JobType);
-            cmd.Parameters.AddWithValue("@ReferenceId", (object)job.ReferenceId ?? DBNull.Value);
-            cmd.Parameters.AddWithValue("@ReferenceType", (object)job.ReferenceType ?? DBNull.Value);
-            cmd.Parameters.AddWithValue("@Payload", (object)job.Payload ?? DBNull.Value);
+                using var conn = new SqlConnection(_connectionString);
+                using var cmd = new SqlCommand("CreateBackgroundJob", conn) { CommandType = CommandType.StoredProcedure };
 
-            var output = new SqlParameter("@JobId", SqlDbType.BigInt)
+                cmd.Parameters.AddWithValue("@JobType", job.JobType);
+                cmd.Parameters.AddWithValue("@ReferenceId", (object)job.ReferenceId ?? DBNull.Value);
+                cmd.Parameters.AddWithValue("@ReferenceType", (object)job.ReferenceType ?? DBNull.Value);
+                cmd.Parameters.AddWithValue("@Payload", (object)job.Payload ?? DBNull.Value);
+
+                var output = new SqlParameter("@JobId", SqlDbType.BigInt) { Direction = ParameterDirection.Output };
+                cmd.Parameters.Add(output);
+
+                conn.Open();
+                cmd.ExecuteNonQuery();
+
+                job.Id = (long)output.Value;
+                _logger.LogInformation("Successfully created background job with Id: {JobId}", job.Id);
+                return job.Id;
+            }
+            catch (Exception ex)
             {
-                Direction = ParameterDirection.Output
-            };
-            cmd.Parameters.Add(output);
-
-            conn.Open();
-            cmd.ExecuteNonQuery();
-
-            job.Id = (long)output.Value;  // Assign SQL-generated ID
-            return job.Id;
+                _logger.LogError(ex, "Error creating background job of type: {JobType}. Error: {ErrorMessage}", job.JobType, ex.Message);
+                throw;
+            }
         }
 
         public void UpdateJob(BackgroundJob job)
         {
-            using var conn = new SqlConnection(_connectionString);
-            using var cmd = new SqlCommand("UpdateBackgroundJob", conn)
+            try
             {
-                CommandType = CommandType.StoredProcedure
-            };
+                _logger.LogInformation("Updating background job {JobId} with status: {Status}", job.Id, job.Status);
 
-            cmd.Parameters.AddWithValue("@JobId", job.Id);
-            cmd.Parameters.AddWithValue("@Status", job.Status);
-            cmd.Parameters.AddWithValue("@ResultMessage", (object)job.ResultMessage ?? DBNull.Value);
-            cmd.Parameters.AddWithValue("@ErrorTrace", (object)job.ErrorTrace ?? DBNull.Value);
+                using var conn = new SqlConnection(_connectionString);
+                using var cmd = new SqlCommand("UpdateBackgroundJob", conn) { CommandType = CommandType.StoredProcedure };
 
-            conn.Open();
-            cmd.ExecuteNonQuery();
+                cmd.Parameters.AddWithValue("@JobId", job.Id);
+                cmd.Parameters.AddWithValue("@Status", job.Status);
+                cmd.Parameters.AddWithValue("@ResultMessage", (object)job.ResultMessage ?? DBNull.Value);
+                cmd.Parameters.AddWithValue("@ErrorTrace", (object)job.ErrorTrace ?? DBNull.Value);
+
+                conn.Open();
+                cmd.ExecuteNonQuery();
+
+                _logger.LogInformation("Successfully updated job {JobId}", job.Id);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error updating job {JobId}. Error: {ErrorMessage}", job.Id, ex.Message);
+                throw;
+            }
         }
         public BackgroundJob GetJobStatus(long jobId)
         {
-            BackgroundJob job = new();
-
-            using var conn = new SqlConnection(_connectionString);
-            using var cmd = new SqlCommand("GetBackgroundJob", conn)
+            try
             {
-                CommandType = CommandType.StoredProcedure
-            };
-            cmd.Parameters.AddWithValue("@JobId", jobId);
+                _logger.LogInformation("Fetching job status for JobId: {JobId}", jobId);
 
-            conn.Open();
-            using var reader = cmd.ExecuteReader();
-            if (reader.Read())
-            {
-                job = new BackgroundJob
+                BackgroundJob job = new();
+
+                using var conn = new SqlConnection(_connectionString);
+                using var cmd = new SqlCommand("GetBackgroundJob", conn) { CommandType = CommandType.StoredProcedure };
+                cmd.Parameters.AddWithValue("@JobId", jobId);
+
+                conn.Open();
+                using var reader = cmd.ExecuteReader();
+                if (reader.Read())
                 {
-                    Id = reader.GetInt64(0),
-                    JobType = reader.GetString(1),
-                    Status = reader.GetString(2),
-                    ResultMessage = reader.IsDBNull(3) ? null : reader.GetString(3),
-                    CreatedAt = reader.GetDateTime(4),
-                    StartedAt = reader.IsDBNull(5) ? null : reader.GetDateTime(5),
-                    CompletedAt = reader.IsDBNull(6) ? null : reader.GetDateTime(6)
-                };
-            }
+                    job = new BackgroundJob
+                    {
+                        Id = reader.GetInt64(0),
+                        JobType = reader.GetString(1),
+                        Status = reader.GetString(2),
+                        ResultMessage = reader.IsDBNull(3) ? null : reader.GetString(3),
+                        CreatedAt = reader.GetDateTime(4),
+                        StartedAt = reader.IsDBNull(5) ? null : reader.GetDateTime(5),
+                        CompletedAt = reader.IsDBNull(6) ? null : reader.GetDateTime(6)
+                    };
+                    _logger.LogInformation("Retrieved job {JobId} with status: {Status}", jobId, job.Status);
+                }
+                else
+                {
+                    _logger.LogWarning("Job not found: {JobId}", jobId);
+                }
 
-            return job;
+                return job;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error fetching job status for JobId: {JobId}. Error: {ErrorMessage}", jobId, ex.Message);
+                return new BackgroundJob();
+            }
         }
 
         public async Task<List<AppointmentDocumentEmbedding>> GetChunksForAppointment(int appointmentId)
         {
             try
             {
+                _logger.LogInformation("Fetching document chunks for AppointmentId: {AppointmentId}", appointmentId);
                 var results = new List<AppointmentDocumentEmbedding>();
 
                 using (var conn = new SqlConnection(_connectionString))
@@ -491,6 +428,7 @@ namespace Mentornote.Backend.Services
                         });
                     }
                 }
+                _logger.LogInformation("Retrieved {ChunkCount} chunks for AppointmentId: {AppointmentId}", results.Count, appointmentId);
 
                 return results;
             }
@@ -506,24 +444,20 @@ namespace Mentornote.Backend.Services
         {
             try
             {
-                using SqlConnection conn = new SqlConnection(_connectionString);
-                using SqlCommand cmd = new SqlCommand("DeleteAppointment", conn)
-                {
-                    CommandType = CommandType.StoredProcedure
-                };
+                _logger.LogInformation("Deleting appointment {AppointmentId}", appointmentId);
 
-                // Add parameter
-                cmd.Parameters.Add(new SqlParameter("@AppointmentId", SqlDbType.Int)
-                {
-                    Value = appointmentId
-                });
+                using SqlConnection conn = new SqlConnection(_connectionString);
+                using SqlCommand cmd = new SqlCommand("DeleteAppointment", conn) { CommandType = CommandType.StoredProcedure };
+                cmd.Parameters.Add(new SqlParameter("@AppointmentId", SqlDbType.Int) { Value = appointmentId });
 
                 await conn.OpenAsync();
                 await cmd.ExecuteNonQueryAsync();
+
+                _logger.LogInformation("Successfully deleted appointment {AppointmentId}", appointmentId);
             }
             catch (Exception ex)
             {
-                // Log error here if needed
+                _logger.LogError(ex, "Error deleting appointment {AppointmentId}. Error: {ErrorMessage}", appointmentId, ex.Message);
                 throw new Exception($"Error deleting appointment {appointmentId}: {ex.Message}", ex);
             }
         }
@@ -532,6 +466,8 @@ namespace Mentornote.Backend.Services
         {
             try
             {
+                _logger.LogInformation("Updating appointment {AppointmentId} for UserId: {UserId}", appointment.Id, userId);
+
                 using SqlConnection connection = new SqlConnection(_connectionString);
                 {
                     connection.Open();
@@ -588,60 +524,59 @@ namespace Mentornote.Backend.Services
                         SqlValue = appointment.AppointmentType ?? (object)DBNull.Value
                     });
 
-                    //  cmd.ExecuteNonQuery();
 
                     cmd.ExecuteNonQuery();
                     connection.Close();
+                    _logger.LogInformation("Successfully updated appointment {AppointmentId}", appointment.Id);
 
                     return 1;
                 }
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"Error updating appointment: {ex.Message}");
+                _logger.LogError(ex, "Error updating appointment {AppointmentId}. Error: {ErrorMessage}", appointment.Id, ex.Message);
                 return 0;
             }
-
-          
-
         }
 
         public async Task<List<AppointmentDocument>> GetAppointmentDocumentsById(int appointmentId, int userId)
         {
-            var documents = new List<AppointmentDocument>();
-
-            using var conn = new SqlConnection(_connectionString);
-            using var cmd = new SqlCommand("GetAppointmentDocumentsById", conn)
+            try
             {
-                CommandType = CommandType.StoredProcedure
-            };
+                _logger.LogInformation("Fetching appointment documents by Id for AppointmentId: {AppointmentId}", appointmentId);
 
-            cmd.Parameters.Add(new SqlParameter("@AppointmentId", SqlDbType.Int)
-            {
-                Value = appointmentId
-            });
-            cmd.Parameters.Add(new SqlParameter("@UserId", SqlDbType.Int)
-            {
-                Value = userId
-            });
+                var documents = new List<AppointmentDocument>();
 
-            await conn.OpenAsync();
-            using var reader = await cmd.ExecuteReaderAsync();
+                using var conn = new SqlConnection(_connectionString);
+                using var cmd = new SqlCommand("GetAppointmentDocumentsById", conn) { CommandType = CommandType.StoredProcedure };
 
-            while (await reader.ReadAsync())
-            {
-                documents.Add(new AppointmentDocument
+                cmd.Parameters.Add(new SqlParameter("@AppointmentId", SqlDbType.Int) { Value = appointmentId });
+                cmd.Parameters.Add(new SqlParameter("@UserId", SqlDbType.Int) { Value = userId });
+
+                await conn.OpenAsync();
+                using var reader = await cmd.ExecuteReaderAsync();
+
+                while (await reader.ReadAsync())
                 {
-                    Id = reader.GetInt32(reader.GetOrdinal("Id")),
-                    UserId = reader.GetInt32(reader.GetOrdinal("UserId")),
-                    AppointmentId = reader.GetInt32(reader.GetOrdinal("AppointmentId")),
-                    DocumentPath = reader.GetString(reader.GetOrdinal("DocumentPath")),
-                    CreatedAt = reader.GetDateTime(reader.GetOrdinal("CreatedAt")),
-                    FileHash = reader.IsDBNull(reader.GetOrdinal("FileHash")) ? null : reader.GetString(reader.GetOrdinal("FileHash"))
-                });
-            }
+                    documents.Add(new AppointmentDocument
+                    {
+                        Id = reader.GetInt32(reader.GetOrdinal("Id")),
+                        UserId = reader.GetInt32(reader.GetOrdinal("UserId")),
+                        AppointmentId = reader.GetInt32(reader.GetOrdinal("AppointmentId")),
+                        DocumentPath = reader.GetString(reader.GetOrdinal("DocumentPath")),
+                        CreatedAt = reader.GetDateTime(reader.GetOrdinal("CreatedAt")),
+                        FileHash = reader.IsDBNull(reader.GetOrdinal("FileHash")) ? null : reader.GetString(reader.GetOrdinal("FileHash"))
+                    });
+                }
 
-            return documents;
+                _logger.LogInformation("Retrieved {DocumentCount} appointment documents for AppointmentId: {AppointmentId}", documents.Count, appointmentId);
+                return documents;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error fetching appointment documents for AppointmentId: {AppointmentId}. Error: {ErrorMessage}", appointmentId, ex.Message);
+                throw;
+            }
         }
 
         public bool DeleteAppointmentDocument(int documentId, int userId)

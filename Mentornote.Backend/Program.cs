@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using Stripe;
+using System.Collections;
 using System.Text;
 namespace Mentornote.Backend
 {
@@ -13,6 +14,17 @@ namespace Mentornote.Backend
     {
         public static void Main(string[] args)
         {
+            Console.WriteLine("ENV DUMP:");
+            foreach (DictionaryEntry e in Environment.GetEnvironmentVariables())
+            {
+                if (e.Key.ToString()!.Contains("ConnectionStrings"))
+                {
+                    Console.WriteLine($"{e.Key} = {e.Value}");
+                }
+                    
+            }
+
+
             var builder = WebApplication.CreateBuilder(args);
 
             // Stripe configuration binding
@@ -35,7 +47,7 @@ namespace Mentornote.Backend
             builder.Services.AddSingleton<GeminiServices>();
 
 
-            //Add controllers and Swagger (same as before)
+            //Add controllers and Swagger
             builder.Services.AddControllers();
             builder.Services.AddEndpointsApiExplorer();
             builder.Services.AddSwaggerGen();
@@ -44,7 +56,12 @@ namespace Mentornote.Backend
 
             if (string.IsNullOrWhiteSpace(cs))
             {
-                throw new InvalidOperationException("DefaultConnection is missing.");
+
+                Console.WriteLine(
+                        builder.Configuration["ConnectionStrings:DefaultConnection"] ?? "NULL_FROM_CONFIG"
+                    );
+
+                throw new InvalidOperationException($"DefaultConnection is missing. This is what is there {cs}");
             }
 
 
@@ -79,8 +96,9 @@ namespace Mentornote.Backend
             app.UseAuthentication();
             app.UseAuthorization();
             app.MapControllers();
-            app.Run();
             app.MapGet("/health", () => Results.Ok("Healthy"));
+            app.MapGet("/", () => Results.Ok("MentorNote API is running"));
+            app.Run();
         }
     }
 
